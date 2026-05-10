@@ -38,6 +38,7 @@
 - 已盘点 `new system_副本/node_stage_designs/`：共有 15 个 node。
 - 已将每个 node 的 Stage 1 / Stage 2 / Stage 3 合并为一份对应的 `*_node__design.md`。
 - 合并文档保留定位、逻辑边界、contract 字段摘要和 Open Boundaries；删除阶段说明、examples、self-review、历史读档记录和重复解释。
+- 已新增 `SYSTEM_CONTEXT_SUMMARY.md`，提炼当前新系统、旧系统和两者关键差异，供新窗口快速建立上下文。
 
 ## 当前目标
 
@@ -53,6 +54,7 @@
 - `AGENTS.md`：操作入口和交接纪律。
 - `AUDIT_CHARTER.md`：稳定审计目的与立场约束。
 - `PROJECT_BRIEF.md`：项目背景速读。
+- `SYSTEM_CONTEXT_SUMMARY.md`：新系统、旧系统和关键差异的高密度上下文速读。
 - `PLANS.md`：轻量阶段导航。
 - `TASK_STATE.md`：当前状态和下一步。
 - `DECISIONS.md`：用户已接受的治理性决策。
@@ -86,11 +88,10 @@
 - 不要重新生成 45 份 Stage 文档，除非用户明确要求。
 
 ## 最近交接
-
 - 本窗口已按 `AGENTS.md` 必读顺序读取 `TASK_STATE.md`、`AUDIT_CHARTER.md`、`PROJECT_BRIEF.md`、`AGENTS.md`，并补读 `PLANS.md`、`DECISIONS.md` 以确认阶段与已接受治理决策。
 - 当前任务理解：先保持 Phase 1 的材料盘点 / 系统地图状态，等待用户指定具体审计问题、节点或流程；在进入具体审计前再读取 `new system_副本/new_system.md` 和对应 node 的 `__design.md`。
 - 本轮已按用户要求先读取新项目文档，完成当前系统材料的初步了解。
 - 读过 / 改过的当前系统材料包括：`PROJECT_BRIEF.md`、`new system_副本/new_system.md`、原 `new system_副本/node_stage_designs/` 下全部 Stage 文件结构与样本文档。
 - 当前理解：新系统文档已形成总纲 + 15 个 workflow node + 9 类 logs/memory stores 的材料结构；节点文档已覆盖 Stage 1/2/3，但仍有不少跨节点 contract、routing、authority、review、logging、case memory 和 implementation 边界保持开放。
 - 本轮最新动作：45 份原 Stage 文件已删除，替换为 15 份 `__design.md` 合并摘要。
-- 下一步最具体动作：如果用户认可当前瘦身方式，可继续从 15 份 `__design.md` 做材料盘点或正式审计；如果觉得仍然过长，应继续压缩这些合并摘要。
+- 之后新增 `SYSTEM_CONTEXT_SUMMARY.md`，记录新系统主流程、旧系统主流程、新旧差异、旧系统仍值得保留的约束和后续审计使用方式。
