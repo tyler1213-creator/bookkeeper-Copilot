@@ -2,68 +2,133 @@
 
 ## 文件职责
 
-`PLANS.md` 只提供轻量阶段导航。
+`PLANS.md` 负责审计阶段模型、退出标准和规划问题。
 
-它帮助新窗口理解当前审计大概处于哪里，但不定义产品设计细节、不设定审计成功标准、不替具体审计任务规定结论格式。
+它不负责：
 
-## 当前阶段
+- 实时交接状态
+- 临时风险
+- 下一步具体行动
+- 稳定宪章
+- 已接受的决策历史
+- 产品设计结论
 
-当前阶段：Phase 1，材料盘点与系统地图。
+## 规划目标
 
-含义：
+把这个仓库从复制过来的项目治理文档，转成聚焦第一性原理的系统审计工作流。
 
-- 先理解仓库里有哪些材料。
-- 先理解当前系统如何描述自己。
-- 暂时不要把旧系统当标准答案。
-- 暂时不要把当前系统当正确答案。
+审计应识别：当前系统哪些部分是必要的，哪些是过早抽象，哪些应该合并或删除，哪些需要用户先做产品决策后才能安全简化。
 
-当前具体下一步以 `TASK_STATE.md` 为准。
+## 当前路线图位置
 
-## 阶段导航
+当前阶段：Phase 1，材料盘点与系统地图（Source Inventory and System Map）。
 
-### Phase 0: 治理设置
+当前规划重点：
 
-用途：
-建立新窗口进入仓库时要遵守的基本规则。
+1. 先 map 当前系统，再评判它
+2. 防止旧系统材料变成虚假的评判标准
+3. 防止当前系统 node/stage 文档被默认视为自动有效
+4. 准备从核心产品目标出发的组件级审计
 
-状态：
-已基本完成。
+`TASK_STATE.md` 仍然是下一步行动和 active risks 的事实来源。
 
-### Phase 1: 材料盘点与系统地图
+## 阶段模型
 
-用途：
-让新窗口先知道当前系统文档、旧系统文档和治理文档分别在哪里、分别是什么角色。
+### Phase 0: 审计治理设置（Audit Governance Setup）
 
-状态：
-当前阶段。
+目的：
+为审计建立项目专属操作规则。
 
-### Phase 2: 具体审计
+成功标准：
 
-用途：
-围绕用户指定的问题、节点、流程或抽象进行第三方审计。
+- 根部治理文档指向真实存在的仓库路径
+- 旧系统文档被明确标记为设计意图样本，而不是标准
+- 当前系统文档被明确标记为审计对象，而不是已证明的答案
+- 核心产品目标被记录为审计标准
+- 未来 Codex 审计窗口知道要读什么、什么时候停止
 
-注意：
-具体审计方式应由当次用户问题和源材料决定，不在本文件预设。
+### Phase 1: 材料盘点与系统地图（Source Inventory and System Map）
 
-### Phase 3: 决策记录
+目的：
+在评判之前，先梳理当前系统的 nodes、logs、memory stores、data flows 和它们声称的职责。
 
-用途：
-当用户接受某个治理性或方向性结论时，把它记录到 `DECISIONS.md`。
+成功标准：
 
-注意：
-只有用户明确接受的内容才进入 `DECISIONS.md`。
+- 每个当前 workflow node 都有简明职责说明
+- 每个 log / memory store 都有明确读写 authority
+- 上游 / 下游依赖关系可见
+- 旧系统文件只被标记为意图参考，而不是 baseline requirements
+- 明显 source-of-truth 冲突被列出
 
-### Phase 4: 可选文档修订
+### Phase 2: 第一性原理组件审计（First-Principles Component Audit）
 
-用途：
-如果用户要求，把已接受的审计结论落实到相关文档。
+目的：
+审计每个 node、field group、log、memory layer 和 workflow step 的必要性。
 
-注意：
-不要因为审计发现存在，就自动改写产品设计 spec。
+成功标准：
 
-## 使用规则
+- 每个主要对象都被标记为保留、删除、合并、内联、重命名、收窄、拆分或暂缓
+- 每个保留建议都有具体产品理由
+- 每个删除 / 合并 / 内联建议都说明能力影响
+- 审计性、控制权、证据支持、纠错学习和自动化影响都被评估
+- 待用户决定的问题与 agent 结论被分开
 
-- `PLANS.md` 不作为审计 checklist。
-- `PLANS.md` 不写节点、字段、流程、memory、log 或 architecture 的评判标准。
-- `PLANS.md` 只帮助判断“现在大概处于哪一步”。
-- 具体下一步永远看 `TASK_STATE.md`。
+### Phase 3: 跨系统简化审计（Cross-System Simplification Audit）
+
+目的：
+跨 nodes 和 logs 检查重复职责、过早抽象、缺失 authority boundaries 和不必要 handoffs。
+
+成功标准：
+- 候选简化架构按能力损失比较，而不是按优雅程度比较
+
+### Phase 4: 审计决策 review（Audit Decision Review）
+
+目的：
+把审计 findings 转成用户可 review 的设计决策。
+
+成功标准：
+
+- 高影响简化需要 user-gated
+- 已接受决策记录在 `DECISIONS.md`
+- 被拒绝的想法不再保留为 shadow authority
+- 未解决决策被追踪，但不强行闭环
+
+### Phase 5: 可选 baseline 改写规划（Optional Baseline Rewrite Planning）
+
+目的：
+如果用户要求，在审计决策被接受后，规划对当前系统 spec 的聚焦编辑。
+
+成功标准：
+
+- 编辑范围限定在已接受决策内
+- 修订后当前系统文档仍然是 active baseline
+- 旧系统材料不会被改写成当前 authority
+- 开始编辑前，先说明 downstream contract impacts
+
+## 审计交付标准
+
+每次实质性审计 pass 都应回答：
+
+- 该对象试图完成什么
+- 这个目的是否必要
+- 当前结构是否是足够完成目的的最简单结构
+- 应保留、删除、合并、内联或重新设计什么
+- 哪些结论是 agent judgment，哪些需要用户决定
+- 哪些证据或源文本支持这个结论
+
+## 本文档非目标
+
+- 不要把这个文件用作 running handoff log
+- 不要在这里存放低层 field debate
+- 不要把这个文件变成 audit report
+- 不要用这个文件直接决定产品设计细节
+
+## 开放规划问题
+
+- 满足核心产品目标的最小 coherent system 是什么？
+- 哪些当前 nodes 源于真实产品必要性，哪些只是架构对称性？
+- 哪些 logs 是真正 durable audit / memory stores，哪些只是可以内联的 runtime artifacts？
+- accountant correction 在哪里变成可复用 memory，需要什么 authority？
+- 哪些旧系统能力表达了值得保留的长期意图？
+- 哪些当前抽象让设计更难审计或控制？
+- 什么审计顺序能最快暴露最大结构风险？
