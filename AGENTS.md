@@ -43,13 +43,16 @@
 
 1. `TASK_STATE.md`
 2. `AUDIT_CHARTER.md`
-3. `AGENTS.md`
+3. `PROJECT_BRIEF.md`
+4. `AGENTS.md`
 
 如果任务涉及审计当前系统，再读：
 
 1. `new system_副本/new_system.md`
-2. 与任务直接相关的 `new system_副本/node_stage_designs/` 文件
+2. 与任务直接相关的 `new system_副本/node_stage_designs/*__design.md` 合并文档
 3. 必要时再读相关 `old_system_nodedesign/` 文件，用于理解历史意图，而不是作为答案
+
+`new system_副本/node_stage_designs/` 现在每个 node 只保留一份 `__design.md` 合并摘要。不要再寻找或要求读取旧的 Stage 1 / Stage 2 / Stage 3 文件，除非用户明确要求通过 git 历史追溯旧全文。
 
 如果任务涉及治理文档修改，再读：
 
