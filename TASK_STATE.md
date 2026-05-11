@@ -39,6 +39,8 @@
 - 已将每个 node 的 Stage 1 / Stage 2 / Stage 3 合并为一份对应的 `*_node__design.md`。
 - 合并文档保留定位、逻辑边界、contract 字段摘要和 Open Boundaries；删除阶段说明、examples、self-review、历史读档记录和重复解释。
 - 已新增 `SYSTEM_CONTEXT_SUMMARY.md`，提炼当前新系统、旧系统和两者关键差异，供新窗口快速建立上下文。
+- 已将最新标准 spec 模板规则放入 `BK_Copilot/node_specs/`，并拆分为 workflow node 与 memory layer 两份模板规则文件。
+- 已按 workflow node 标准模板新增 `BK_Copilot/node_specs/workflow_nodes/entity_resolution_node/`，目前只覆盖 Stage 1-2，不创建 Stage 3 data contract。
 
 ## 当前目标
 
@@ -59,6 +61,9 @@
 - `TASK_STATE.md`：当前状态和下一步。
 - `DECISIONS.md`：用户已接受的治理性决策。
 - `new system_副本/`：当前系统材料，作为审计对象。
+- `BK_Copilot/node_specs/workflow_node_spec_template_rules.md`：后续最新标准 workflow node spec 的模板规则。
+- `BK_Copilot/node_specs/memory_layer_spec_template_rules.md`：后续最新标准 memory layer spec 的模板规则。
+- `BK_Copilot/node_specs/workflow_nodes/entity_resolution_node/`：Entity Resolution Node 的当前标准草案，覆盖 Functional Intent 与 Logic and Boundaries。
 - `old_system_nodedesign/`：旧系统材料，作为历史意图样本。
 
 ## 下一步
@@ -95,3 +100,6 @@
 - 当前理解：新系统文档已形成总纲 + 15 个 workflow node + 9 类 logs/memory stores 的材料结构；节点文档已覆盖 Stage 1/2/3，但仍有不少跨节点 contract、routing、authority、review、logging、case memory 和 implementation 边界保持开放。
 - 本轮最新动作：45 份原 Stage 文件已删除，替换为 15 份 `__design.md` 合并摘要。
 - 之后新增 `SYSTEM_CONTEXT_SUMMARY.md`，记录新系统主流程、旧系统主流程、新旧差异、旧系统仍值得保留的约束和后续审计使用方式。
+- 之后将标准 spec 模板规则迁移到 `BK_Copilot/node_specs/`，拆分为 `workflow_node_spec_template_rules.md` 与 `memory_layer_spec_template_rules.md`。
+- 模板规则明确：标准 spec 不是审计记录；workflow node 默认写到 Stage 1-2，memory layer 默认写到 M1-M2；数据契约只在接口、消费者和 authority 足够稳定时创建。
+- 本轮已重构 Entity Resolution Node 标准草案：保留 identity gate 职责；明确本节点只输出 identity result / identity authority annotations / runtime candidate signals；不直接写 durable memory，不保留 `rule_eligibility`、`case_context_eligibility` 或 `downstream_authority_summary` 作为本节点标准字段。
