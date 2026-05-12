@@ -41,8 +41,6 @@
 - 已新增 `SYSTEM_CONTEXT_SUMMARY.md`，提炼当前新系统、旧系统和两者关键差异，供新窗口快速建立上下文。
 - 已将最新标准 spec 模板规则放入 `BK_Copilot/node_specs/`，并拆分为 workflow node 与 memory layer 两份模板规则文件。
 - 已按 workflow node 标准模板新增 `BK_Copilot/node_specs/workflow_nodes/entity_resolution_node/`，目前只覆盖 Stage 1-2，不创建 Stage 3 data contract。
-- 已新增 `BK_Copilot/node_specs/memory_layers/case_log_boundary_note.md`，记录已接受的 Case Log 边界定义；该文件不是完整 M1-M2 spec。
-- 已按 memory layer 标准模板新增 `BK_Copilot/node_specs/memory_layers/entity_log/`，目前只覆盖 M1-M2，不创建 M3 data contract。
 
 ## 当前目标
 
@@ -66,8 +64,6 @@
 - `BK_Copilot/node_specs/workflow_node_spec_template_rules.md`：后续最新标准 workflow node spec 的模板规则。
 - `BK_Copilot/node_specs/memory_layer_spec_template_rules.md`：后续最新标准 memory layer spec 的模板规则。
 - `BK_Copilot/node_specs/workflow_nodes/entity_resolution_node/`：Entity Resolution Node 的当前标准草案，覆盖 Functional Intent 与 Logic and Boundaries。
-- `BK_Copilot/node_specs/memory_layers/case_log_boundary_note.md`：Case Log 过渡性边界说明，供后续正式 M1-M2 设计使用。
-- `BK_Copilot/node_specs/memory_layers/entity_log/`：Entity Log 的当前标准草案，覆盖 Memory Intent 与 Authority / Lifecycle / Boundaries。
 - `old_system_nodedesign/`：旧系统材料，作为历史意图样本。
 
 ## 下一步
@@ -98,7 +94,7 @@
 
 ## 最近交接
 - 本窗口已按 `AGENTS.md` 必读顺序读取 `TASK_STATE.md`、`AUDIT_CHARTER.md`、`PROJECT_BRIEF.md`、`AGENTS.md`，并补读 `PLANS.md`、`DECISIONS.md` 以确认阶段与已接受治理决策。
-- 当前任务理解：先保持 Phase 1 的材料盘点 / 系统地图状态，等待用户指定具体审计问题、节点或流程；在进入具体审计前再读取 `new system_副本/new_system.md` 和对应 node 的 `__design.md`。
+- 当前任务理解：先保持 Phase 1 的材料盘点 / 系统地图状态，等待用户指定具体审计问题、节点或流程；在进入具体审计前再读取 `new syste m_副本/new_system.md` 和对应 node 的 `__design.md`。
 - 本轮已按用户要求先读取新项目文档，完成当前系统材料的初步了解。
 - 读过 / 改过的当前系统材料包括：`PROJECT_BRIEF.md`、`new system_副本/new_system.md`、原 `new system_副本/node_stage_designs/` 下全部 Stage 文件结构与样本文档。
 - 当前理解：新系统文档已形成总纲 + 15 个 workflow node + 9 类 logs/memory stores 的材料结构；节点文档已覆盖 Stage 1/2/3，但仍有不少跨节点 contract、routing、authority、review、logging、case memory 和 implementation 边界保持开放。
@@ -107,7 +103,3 @@
 - 之后将标准 spec 模板规则迁移到 `BK_Copilot/node_specs/`，拆分为 `workflow_node_spec_template_rules.md` 与 `memory_layer_spec_template_rules.md`。
 - 模板规则明确：标准 spec 不是审计记录；workflow node 默认写到 Stage 1-2，memory layer 默认写到 M1-M2；数据契约只在接口、消费者和 authority 足够稳定时创建。
 - 本轮已重构 Entity Resolution Node 标准草案：保留 identity gate 职责；明确本节点只输出 identity result / identity authority annotations / runtime candidate signals；不直接写 durable memory，不保留 `rule_eligibility`、`case_context_eligibility` 或 `downstream_authority_summary` 作为本节点标准字段。
-- 本轮已接受 Case Log 新边界：Case Log 是以 `entity_id` 为主要索引的 completed-case learning memory，不是 transaction process log；它可供 Case Judgment、Post-Batch Lint、Review 和 Governance Review 读取，但只能提供依据，不能直接修改 Entity Log 或 Rule Log。
-- 后续仍需正式讨论 Case Log M1-M2；当前主线继续构建 Entity Log M1-M2，先确认保存内容、禁止内容、读写者和需要 governance approval 的 mutation。
-- 本轮已重构 Entity Log 标准草案：保留其作为 identity authority store 的职责；明确保存 entity identity、alias authority、role authority、lifecycle state、automation policy、risk flags 和 authority refs；明确不保存 COA/HST/JE、case precedent、classification history、rule condition 或 transaction audit trail。
-- Entity Log 当前只写到 M1-M2；`entity_record`、`alias_record`、`role_record`、automation policy projection、candidate entity persistence、merge/split behavior 等仍未冻结，不能进入 M3 data contract 或实现。
