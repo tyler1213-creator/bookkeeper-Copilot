@@ -22,9 +22,10 @@
 
 当前工作：
 
-- 已按用户要求瘦身 `new system_副本/node_stage_designs/`。
-- 原 15 个 node × 3 份 Stage 文档已合并为 15 份 `__design.md` 文档。
-- 本轮是文档压缩与结构合并，不做产品设计正确性判断。
+- 正在围绕 Entity / Entity Resolution / Case Log 边界做第一性原理讨论。
+- Entity 讨论是整个系统 audit 当前聚焦点，不是脱离系统审计的独立产品设计任务。
+- 最新 Entity 讨论记录在 `entity的作用和在系统中的创建方法.md`。
+- `TEMP_ENTITY_CASE_LOG_HANDOFF.md` 是当前 Entity / Case Log 讨论的临时交接。
 
 已完成：
 
@@ -41,6 +42,8 @@
 - 已新增 `SYSTEM_CONTEXT_SUMMARY.md`，提炼当前新系统、旧系统和两者关键差异，供新窗口快速建立上下文。
 - 已将最新标准 spec 模板规则放入 `BK_Copilot/node_specs/`，并拆分为 workflow node 与 memory layer 两份模板规则文件。
 - 已按 workflow node 标准模板新增 `BK_Copilot/node_specs/workflow_nodes/entity_resolution_node/`，目前只覆盖 Stage 1-2，不创建 Stage 3 data contract。
+- 已新增 `entity的作用和在系统中的创建方法.md`，记录当前已确认的 Entity 作用、类型命名、Entity Resolution 判断职责、写入时机未定和后续问题。
+- 已新增 `TEMP_ENTITY_CASE_LOG_HANDOFF.md`，作为 Entity / Case Log 讨论的临时交接。
 
 ## 当前目标
 
@@ -64,16 +67,20 @@
 - `BK_Copilot/node_specs/workflow_node_spec_template_rules.md`：后续最新标准 workflow node spec 的模板规则。
 - `BK_Copilot/node_specs/memory_layer_spec_template_rules.md`：后续最新标准 memory layer spec 的模板规则。
 - `BK_Copilot/node_specs/workflow_nodes/entity_resolution_node/`：Entity Resolution Node 的当前标准草案，覆盖 Functional Intent 与 Logic and Boundaries。
+- `entity的作用和在系统中的创建方法.md`：Entity 讨论的当前临时记录；若内容已在该文档中，不要重复塞进治理文档。
+- `TEMP_ENTITY_CASE_LOG_HANDOFF.md`：Entity / Case Log 讨论交接；新窗口继续相关问题时应读取。
 - `old_system_nodedesign/`：旧系统材料，作为历史意图样本。
 
 ## 下一步
 
 下一轮审计应：
 
-1. 由用户指定一个具体审计问题、节点或流程；如果继续 Phase 1，则整理当前系统材料地图。
-2. 针对用户指定范围，读取对应的 `new system_副本/node_stage_designs/*__design.md` 合并文档。
-3. 如需参考旧系统，先说明读取它是为了理解历史意图，而不是寻找标准答案。
-4. 若用户觉得合并摘要仍然过长，继续压缩 `__design.md`；不要重新生成 45 份 Stage 文档，除非用户明确要求。
+1. 先读取 `entity的作用和在系统中的创建方法.md`、`TEMP_ENTITY_CASE_LOG_HANDOFF.md` 和 `未解决问题暂存清单.md`。
+2. 按照 `未解决问题暂存清单.md` 中的 6 个问题逐个推进讨论。
+3. 优先讨论问题 2（Case Judgment 是否必须依赖已识别 entity）和问题 4（unknown entity 后的处理路径），因为这两个问题影响后续多个节点的设计。
+4. 继续使用一问一答方式推进；形成确认性结论后先复述给用户确认。
+5. 未经用户明确要求，不要改正式 spec；Entity 讨论完成后再统一更新正式文档。
+6. 始终把 Entity 讨论锚定为系统 audit 的一部分，用核心产品目标评估必要性、边界和复杂度。
 
 ## 当前风险
 
@@ -82,6 +89,7 @@
 - `AUDIT_CHARTER.md` 容易滑向解释系统应该如何设计。
 - `DECISIONS.md` 容易记录未被用户明确接受的判断。
 - 合并文档是瘦身摘要，不再逐字保留所有原 Stage 文档解释性文本；如需追溯旧全文，应通过 git 历史查看被删除的 Stage 文件。
+- Entity 讨论仍有未决问题，不能把临时记录当成正式 spec 或冻结 data contract。
 
 ## 禁止事项
 
@@ -91,15 +99,19 @@
 - 不要把当前系统当正确答案。
 - 不要在未获得用户明确要求时编辑 `new system_副本/` 或 `old_system_nodedesign/`。
 - 不要重新生成 45 份 Stage 文档，除非用户明确要求。
+- 不要把未确认的 Entity 判断写入 `DECISIONS.md`。
+- `未解决问题暂存清单.md` 只记录用户明确同意写入的问题，不得自行添加。
+- 不要把 `entity的作用和在系统中的创建方法.md` 中已有内容重复长篇搬进治理文档。
 
 ## 最近交接
-- 本窗口已按 `AGENTS.md` 必读顺序读取 `TASK_STATE.md`、`AUDIT_CHARTER.md`、`PROJECT_BRIEF.md`、`AGENTS.md`，并补读 `PLANS.md`、`DECISIONS.md` 以确认阶段与已接受治理决策。
-- 当前任务理解：先保持 Phase 1 的材料盘点 / 系统地图状态，等待用户指定具体审计问题、节点或流程；在进入具体审计前再读取 `new syste m_副本/new_system.md` 和对应 node 的 `__design.md`。
-- 本轮已按用户要求先读取新项目文档，完成当前系统材料的初步了解。
-- 读过 / 改过的当前系统材料包括：`PROJECT_BRIEF.md`、`new system_副本/new_system.md`、原 `new system_副本/node_stage_designs/` 下全部 Stage 文件结构与样本文档。
-- 当前理解：新系统文档已形成总纲 + 15 个 workflow node + 9 类 logs/memory stores 的材料结构；节点文档已覆盖 Stage 1/2/3，但仍有不少跨节点 contract、routing、authority、review、logging、case memory 和 implementation 边界保持开放。
-- 本轮最新动作：45 份原 Stage 文件已删除，替换为 15 份 `__design.md` 合并摘要。
-- 之后新增 `SYSTEM_CONTEXT_SUMMARY.md`，记录新系统主流程、旧系统主流程、新旧差异、旧系统仍值得保留的约束和后续审计使用方式。
-- 之后将标准 spec 模板规则迁移到 `BK_Copilot/node_specs/`，拆分为 `workflow_node_spec_template_rules.md` 与 `memory_layer_spec_template_rules.md`。
-- 模板规则明确：标准 spec 不是审计记录；workflow node 默认写到 Stage 1-2，memory layer 默认写到 M1-M2；数据契约只在接口、消费者和 authority 足够稳定时创建。
-- 本轮已重构 Entity Resolution Node 标准草案：保留 identity gate 职责；明确本节点只输出 identity result / identity authority annotations / runtime candidate signals；不直接写 durable memory，不保留 `rule_eligibility`、`case_context_eligibility` 或 `downstream_authority_summary` 作为本节点标准字段。
+- 已确认 Entity 类型命名：`stable entity` 和 `unknown entity`。Entity Log 只存 stable entity，没有 durable candidate entity lifecycle state。
+- 已确认 Entity 是业务对象层面的语义身份，不是字段精确匹配。Entity Resolution 使用 LLM 语义理解判断。
+- 已确认 Entity Resolution 可以使用 AI 联网搜索辅助 identity 判断（搜索结果是 evidence 来源，不是 authority）。
+- 已确认 Entity Resolution 可以直接将 `new_stable_entity` 同步写入 Entity Log，不需要 governance approval。写入内容限于 entity 本体。
+- 已确认 Stable entity 写入 Entity Log 不等于拥有 active rule。每一个 rule 必须经过 accountant 审核才可启用。
+- 已确认 Batch 内交易按顺序处理。Entity Resolution 同步写入 stable entity 后，后续交易可自然匹配。
+- 已确认 Accountant confirmation scope 需要结构化：区分当前交易处理指示、明确身份确认、长期归属确认。
+- 已确认 Case Log 允许不绑定 stable entity 的 case 存在（如 bank fee 等由交易类型决定 COA 的场景）。
+- 用户倾向：如果 Entity Resolution 无法识别 stable entity，整笔交易直接 pending，由 Coordinator 问 accountant。但此倾向尚未最终确认，待与 Case Judgment 职责边界一起讨论。
+- `未解决问题暂存清单.md` 已写入 6 个用户同意记录的待讨论问题。
+- 下一窗口应继续讨论：`未解决问题暂存清单.md` 中的 6 个问题。
