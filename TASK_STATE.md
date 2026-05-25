@@ -24,7 +24,7 @@
 
 - 正在围绕 Entity / Entity Resolution / Case Log 边界做第一性原理讨论。
 - Entity 讨论是整个系统 audit 当前聚焦点，不是脱离系统审计的独立产品设计任务。
-- 最新 Entity 讨论记录在 `entity的作用和在系统中的创建方法.md`。
+- 最新 Entity 讨论记录在 `Entity相关的所有问题.md`。
 - `TEMP_ENTITY_CASE_LOG_HANDOFF.md` 是当前 Entity / Case Log 讨论的临时交接。
 
 已完成：
@@ -42,7 +42,7 @@
 - 已新增 `SYSTEM_CONTEXT_SUMMARY.md`，提炼当前新系统、旧系统和两者关键差异，供新窗口快速建立上下文。
 - 已将最新标准 spec 模板规则放入 `BK_Copilot/node_specs/`，并拆分为 workflow node 与 memory layer 两份模板规则文件。
 - 已按 workflow node 标准模板新增 `BK_Copilot/node_specs/workflow_nodes/entity_resolution_node/`，目前只覆盖 Stage 1-2，不创建 Stage 3 data contract。
-- 已新增 `entity的作用和在系统中的创建方法.md`，记录当前已确认的 Entity 作用、类型命名、Entity Resolution 判断职责、写入时机未定和后续问题。
+- 已新增 `Entity相关的所有问题.md`，记录当前已确认的 Entity 作用、类型命名、Entity Resolution 判断职责、写入时机未定和后续问题。
 - 已新增 `TEMP_ENTITY_CASE_LOG_HANDOFF.md`，作为 Entity / Case Log 讨论的临时交接。
 
 ## 当前目标
@@ -67,20 +67,21 @@
 - `BK_Copilot/node_specs/workflow_node_spec_template_rules.md`：后续最新标准 workflow node spec 的模板规则。
 - `BK_Copilot/node_specs/memory_layer_spec_template_rules.md`：后续最新标准 memory layer spec 的模板规则。
 - `BK_Copilot/node_specs/workflow_nodes/entity_resolution_node/`：Entity Resolution Node 的当前标准草案，覆盖 Functional Intent 与 Logic and Boundaries。
-- `entity的作用和在系统中的创建方法.md`：Entity 讨论的当前临时记录；若内容已在该文档中，不要重复塞进治理文档。
-- `TEMP_ENTITY_CASE_LOG_HANDOFF.md`：Entity / Case Log 讨论交接；新窗口继续相关问题时应读取。
+- `Entity相关的所有问题.md`：Entity 讨论的当前临时记录；若内容已在该文档中，不要重复塞进治理文档。
+- `TEMP_ENTITY_CASE_LOG_HANDOFF.md`：已不存在，内容已吸收进 `Entity相关的所有问题.md`。
 - `old_system_nodedesign/`：旧系统材料，作为历史意图样本。
 
 ## 下一步
 
 下一轮审计应：
 
-1. 先读取 `entity的作用和在系统中的创建方法.md`、`TEMP_ENTITY_CASE_LOG_HANDOFF.md` 和 `未解决问题暂存清单.md`。
-2. 按照 `未解决问题暂存清单.md` 中的 6 个问题逐个推进讨论。
-3. 优先讨论问题 2（Case Judgment 是否必须依赖已识别 entity）和问题 4（unknown entity 后的处理路径），因为这两个问题影响后续多个节点的设计。
-4. 继续使用一问一答方式推进；形成确认性结论后先复述给用户确认。
-5. 未经用户明确要求，不要改正式 spec；Entity 讨论完成后再统一更新正式文档。
-6. 始终把 Entity 讨论锚定为系统 audit 的一部分，用核心产品目标评估必要性、边界和复杂度。
+1. 先读取 `Entity相关的所有问题.md` 和 `未解决问题暂存清单.md`。
+2. 按照 `未解决问题暂存清单.md` 中剩余 5 个问题逐个推进讨论。
+3. 优先讨论问题 4（unknown entity 后的完整处理路径），因为它直接承接已解决的问题 2，影响后续多个节点设计。
+4. 问题 4 需要结合 Coordinator / Pending Node 和 Case Judgment Node 的现有设计文档来讨论。关键未决点：accountant 确认 entity 后交易是否重新进入 Entity Resolution、accountant 的回答是否直接创建 stable entity、重触发哪个节点及边界。
+5. 继续使用一问一答方式推进；形成确认性结论后先复述给用户确认。
+6. 已解决的问题 2 结论已更新到正式 spec 中，后续问题解决后同样需要更新相关正式文档。
+7. 始终把 Entity 讨论锚定为系统 audit 的一部分，用核心产品目标评估必要性、边界和复杂度。
 
 ## 当前风险
 
@@ -101,7 +102,7 @@
 - 不要重新生成 45 份 Stage 文档，除非用户明确要求。
 - 不要把未确认的 Entity 判断写入 `DECISIONS.md`。
 - `未解决问题暂存清单.md` 只记录用户明确同意写入的问题，不得自行添加。
-- 不要把 `entity的作用和在系统中的创建方法.md` 中已有内容重复长篇搬进治理文档。
+- 不要把 `Entity相关的所有问题.md` 中已有内容重复长篇搬进治理文档。
 
 ## 最近交接
 - 已确认 Entity 类型命名：`stable entity` 和 `unknown entity`。Entity Log 只存 stable entity，没有 durable candidate entity lifecycle state。
@@ -112,6 +113,7 @@
 - 已确认 Batch 内交易按顺序处理。Entity Resolution 同步写入 stable entity 后，后续交易可自然匹配。
 - 已确认 Accountant confirmation scope 需要结构化：区分当前交易处理指示、明确身份确认、长期归属确认。
 - 已确认 Case Log 允许不绑定 stable entity 的 case 存在（如 bank fee 等由交易类型决定 COA 的场景）。
-- 用户倾向：如果 Entity Resolution 无法识别 stable entity，整笔交易直接 pending，由 Coordinator 问 accountant。但此倾向尚未最终确认，待与 Case Judgment 职责边界一起讨论。
-- `未解决问题暂存清单.md` 已写入 6 个用户同意记录的待讨论问题。
-- 下一窗口应继续讨论：`未解决问题暂存清单.md` 中的 6 个问题。
+- **已解决 问题 2**：Case Judgment 的高置信度自动分类通道必须依赖已识别的 entity。Entity Resolution 输出 unknown_entity 时，Case Judgment 不走高置信度分类通道，但仍然处理这笔交易，输出 pending。Pending 分两种：完全无法判断（直接问 accountant）和有推断但不确定（附带推断性建议让 accountant 选择）。不依赖 entity 的交易（bank fee 等）属于 edge case，大部分由 Profile 上游处理。
+- 问题 2 结论已同步更新至：`Entity相关的所有问题.md`、`BK_Copilot/workflow_nodes/entity_resolution_node/02_logic_and_boundaries.md`、`未解决问题暂存清单.md`。
+- `未解决问题暂存清单.md` 中 6 个问题已解决 1 个（问题 2），剩余 5 个待讨论。
+- 下一窗口应优先讨论问题 4（unknown entity 后的完整处理路径），因为它直接承接问题 2 的结论。

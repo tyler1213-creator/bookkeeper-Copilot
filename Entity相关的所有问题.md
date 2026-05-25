@@ -1,4 +1,4 @@
-# entity的作用和在系统中的创建方法
+# Entity相关的所有问题
 
 ## 文件角色
 
@@ -518,6 +518,95 @@ Receipt items 主要帮助判断这笔交易怎么记。
 - 不稳定 key 不进长期学习层。
 - 明确冲突时不自动放行。
 - 纠正和例外要分开。
+
+## Case Judgment 与 Entity Identity 的依赖关系（已确认）
+
+### 结论
+
+Case Judgment 的高置信度自动分类通道必须依赖已识别的 entity。如果 Entity Resolution 输出 unknown_entity，Case Judgment 不走高置信度分类通道，但仍然需要处理这笔交易。
+
+### Entity 未识别时 Case Judgment 的处理方式
+
+Entity 未识别不等于 Case Judgment 跳过这笔交易。Case Judgment 仍然处理，但输出为 pending，pending 内部分两种情况：
+
+1. **完全无法判断**：除了 entity 未识别外，也没有其他足够的上下文支持推断。Case Judgment 输出 pending，由 Coordinator 直接向 accountant 提问。
+2. **有推断但不确定**：虽然 entity 未识别，但 Case Judgment 可以利用已有的其他上下文（如 receipt items、交易金额模式、bank descriptor 特征等）给出推断性建议。输出仍为 pending，但附带推断结果，由 Coordinator 呈现给 accountant 选择或确认。
+
+核心原则：entity 未识别 → 不自动分类，但尽可能利用已有信息辅助 accountant 决策。
+
+### 推理链
+
+1. 存在不依赖 entity identity 就能判断 COA 的交易类型（bank fee、interest、internal transfer 等），但这些属于 edge case。
+2. 其中大部分可由 Profile / Structural Match Node 在上游处理（internal transfer、known loan repayment 等）。Profile 在 Entity Resolution 之前运行。
+3. 少量未被 Profile 覆盖的 A 类交易（如未配置的 bank fee），在当前阶段不值得为其在 Case Judgment 中增加特殊路径。
+4. 统一规则：entity 未识别 → Case Judgment 不走高置信度自动分类 → 输出 pending（可能附带推断性建议）→ Coordinator 向 accountant 提问或呈现选项。
+5. 这消除了"基于不确定 identity 做高置信度分类 → 后续 entity 确认后需要修正"的系统复杂度。
+
+### 对三个子问题的回答
+
+- 是否存在不需要 entity 就能判断 COA 的交易？ → 存在，但属于 edge case，由 Profile 上游处理或按 pending 处理。
+- unknown_entity 时 Case Judgment 能否用推测辅助分类？ → 不做高置信度分类，但可以给出推断性建议附在 pending 输出中，供 accountant 选择。
+- 基于不确定 identity 的高置信度分类后续如何修正？ → 不存在这个场景，因为不会产生高置信度分类。
+
+### 职责分工
+
+- A/B 分类判断由 Case Judgment 负责，不由 Entity Resolution 负责。Entity Resolution 只管 identity，不判断"这笔交易是否需要 entity identity 才能分类"。
+- Case Judgment 收到 unknown_entity 后不走高置信度自动分类通道，但仍然处理这笔交易，根据已有上下文决定是完全无法判断还是可以给出推断性建议。
+
+## Unknown Entity 后的完整处理路径（已确认）
+
+### 结论
+
+当 Entity Resolution 输出 unknown_entity 时，交易进入 Case Judgment 后输出 pending。Coordinator 根据 pending 子类型设计结构化问题向 accountant 提问。Accountant 的回复在当前 batch 内同步处理。Accountant 明确确认 entity identity 后直接创建 stable entity，不需要 governance approval。交易不重新进入 Entity Resolution，也不重新进入 Case Judgment。
+
+### 路径总览
+
+```
+Entity Resolution → unknown_entity
+    ↓
+Case Judgment → pending（保留两种子类型标记）
+    ↓
+Coordinator 根据 pending 子类型设计问题
+    ↓
+accountant 回复（当前 batch 内同步）
+    ↓
+创建 stable entity + 完成分类（或追问直到充分）
+    ↓
+写入各 log（机制由未解决问题 7 决定）
+```
+
+### 分支 1：有推断但不确定
+
+Case Judgment 有推断性建议时：
+
+1. Case Judgment 输出 pending，附带推断性建议（可能的 COA、HST 处理等）。
+2. Coordinator 构建结构化问题：包含 entity identity 问题 + 推断性建议供 accountant 选择或确认。
+3. Accountant 一次性回复：确认 entity identity + 确认或修改分类。
+4. 系统根据 accountant 确认创建 stable entity，写入 Entity Log。
+5. 以确认后的 stable entity 为交易主体，完成分类。
+6. 写入 Case Log、Transaction Log 等（机制待未解决问题 7 决定）。
+
+### 分支 2：完全无法判断
+
+Case Judgment 无推断性建议时：
+
+1. Case Judgment 输出 pending，无推断性建议。
+2. Coordinator 构建结构化问题：entity identity + 业务用途或分类相关问题（第一轮尽量收集充分信息）。
+3. Accountant 回复。
+4. 若回复充分：创建 stable entity → 确定分类 → 写入各 log。
+5. 若回复不充分：Coordinator 追问（仍在当前 batch 内），重复直到信息充分。
+
+### 关键设计决策
+
+- Batch 时序：accountant 的回复在当前 batch 内同步处理，batch 不跨越等待。
+- Stable entity 创建：accountant 的明确身份确认直接创建 stable entity，不需要 governance approval。Accountant 的确认是最强的身份证据。
+- 不重新进入 Entity Resolution：accountant 确认替代了 Entity Resolution 的身份判断功能，交易不回头。
+- 不重新进入 Case Judgment：无论哪个分支，分类都在 Coordinator 与 accountant 的交互中完成，不回 Case Judgment。
+- Stable entity 创建的执行机制：留待未解决问题 7（统一 Memory Write 机制）解决。
+
+### 与问题 2 结论的关系
+
+问题 2 确认了 unknown_entity 时 Case Judgment 的行为（不走高置信度分类，输出 pending）。问题 4 确认了 pending 之后的完整路径：Coordinator 提问 → accountant 回复 → 创建 stable entity → 完成分类。两者构成从 Entity Resolution 输出 unknown_entity 到交易最终完成的完整链路。
 
 ## 后续必须继续讨论的问题
 

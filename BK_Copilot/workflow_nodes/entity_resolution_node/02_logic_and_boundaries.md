@@ -128,7 +128,7 @@
 | `resolved_entity_with_unconfirmed_role`（已识别实体但角色未确认） | 对象本身可识别，但当前交易所需 role / context（角色 / 上下文）未被 accountant-confirmed（会计师确认） | 下游可把实体作为上下文，但必须尊重 role authority gap（角色权威缺口） | 不代表 confirmed role（已确认角色），不支持需要该角色的 rule match（规则匹配） |
 | `new_entity_candidate`（新实体候选） | 当前 evidence（证据）更像一个尚未稳定存在的新对象 | Case Judgment（案例判断）可在自身 authority boundary（权限边界）内读取；Review / Governance 可后续处理候选 | 不代表 stable entity（稳定实体），不支持 rule match（规则匹配），不支持 rule promotion（规则升级） |
 | `ambiguous_entity_candidates`（多实体歧义候选） | 当前 evidence（证据）可能对应多个 entity / alias / role（实体 / 别名 / 角色），不能安全归属 | 下游应进入 pending / review / governance 相关处理，或保守阻断自动化 | 不代表 LLM 可以选一个 winner（胜出者） |
-| `unresolved`（无法识别身份） | 当前 evidence（证据）不足以判断 counterparty / vendor / payee（交易对手 / 商家 / 收款人） | 下游应看到缺什么、为什么不能识别 | 不代表会计分类失败的总称，不允许伪造 entity（实体） |
+| `unresolved`（无法识别身份） | 当前 evidence（证据）不足以判断 counterparty / vendor / payee（交易对手 / 商家 / 收款人） | 下游应看到缺什么、为什么不能识别。**已确认：Case Judgment 收到此输出后不走高置信度自动分类通道，输出 pending（见下方已确认下游影响）** | 不代表会计分类失败的总称，不允许伪造 entity（实体） |
 | `candidate_signal`（运行时候选信号） | 指出后续可能需要处理的新实体、别名、角色、合并 / 拆分或身份治理问题 | 只供 Coordinator / Review / Case Memory Update / Governance Review 消费 | 不代表 durable approval（长期批准），不写入长期记忆 |
 
 ## 7. 证据不足时的行为
@@ -138,6 +138,17 @@
 - 输出：`unresolved`（无法识别身份）或 `unresolved_identity_issue`（身份无法识别问题）。
 - 下游应：由 Coordinator / Pending Node（协调 / 待确认节点）决定是否向 accountant（会计师）补问，或由 Review Node（审核节点）处理。
 - 本节点不能：为了让 workflow（流程）继续而伪造 entity（实体）。
+
+### 已确认的下游影响（Problem 2 结论）
+
+当本节点输出 `unresolved`（无法识别身份）时：
+
+- Case Judgment Node（案例判断节点）不走高置信度自动分类通道，输出 pending。
+- 但 Case Judgment 仍然处理这笔交易，pending 内部分两种情况：
+  - **完全无法判断**：除 entity 未识别外，也没有其他足够上下文支持推断。由 Coordinator 直接向 accountant 提问。
+  - **有推断但不确定**：Case Judgment 可利用其他已有上下文（如 receipt items、交易金额模式、bank descriptor 特征等）给出推断性建议，附在 pending 输出中，由 Coordinator 呈现给 accountant 选择或确认。
+- 存在不依赖 entity identity 就能判断 COA 的交易类型（bank fee、interest 等），但这些属于 edge case，大部分由上游 Profile / Structural Match Node 处理。到达 Case Judgment 的交易绝大多数需要 entity identity。
+- A/B 分类判断（是否需要 entity 才能分类）的职责在 Case Judgment，不在本节点。本节点只管 identity。
 
 如果缺少 traceable evidence ref（可追溯证据引用）：
 
