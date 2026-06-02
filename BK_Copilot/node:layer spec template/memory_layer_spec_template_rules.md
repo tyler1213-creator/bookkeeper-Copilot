@@ -47,7 +47,7 @@ Stage M3: Data Contract Draft only when stable
 ## 4. 文件夹结构
 
 ```text
-BK_Copilot/node_specs/memory_layers/[memory_layer_name]/
+BK_Copilot/memory_layers/[memory_layer_name]/
   00_index.md
   01_memory_intent.md
   02_authority_lifecycle_and_boundaries.md

@@ -60,7 +60,7 @@ Stage 4-7 只有在用户明确批准进入实现准备时才写。
 重要 workflow node 使用文件夹，不使用超大单文件。
 
 ```text
-BK_Copilot/node_specs/workflow_nodes/[workflow_node_name]/
+BK_Copilot/workflow_nodes/[workflow_node_name]/
   00_index.md
   01_functional_intent.md
   02_logic_and_boundaries.md

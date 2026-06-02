@@ -1,5 +1,13 @@
 # Alias question
 
+## 文件角色
+
+这是 Alias 主题的独立速记。
+
+它用于快速回看 Alias 的当前窄定义、Entity Resolution 使用方式和 Alias 库必要性。
+
+它不是更高 authority。若本文与 `Entity相关的所有问题.md`、`BK_Copilot/workflow_nodes/entity_resolution_node/` 或 `BK_Copilot/memory_layers/entity_log/` 中的正式草案冲突，以后者为准。
+
 ## 当前确认结论
 
 Alias 的核心作用，是辅助 `Entity Resolution` 判断当前交易的主体是谁。
