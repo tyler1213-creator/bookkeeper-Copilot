@@ -19,7 +19,7 @@
 
 `Entity Log`（实体日志）是 identity authority store（身份权威存储）。
 
-- 回答：这个对象是谁，有哪些 approved alias（已批准别名）、rejected alias（已拒绝别名）、confirmed role（已确认角色）、lifecycle state（生命周期状态）和 automation policy（自动化策略）。
+- 回答：这个对象是谁，有哪些已确认 Alias（过去已确认的 transaction surface text 到 stable entity 的对应关系）、confirmed role（已确认角色）、lifecycle state（生命周期状态）和 automation policy（自动化策略）。
 - 不回答：这个对象过去的交易通常如何分类，或本次交易应如何记账。
 
 `Transaction Log`（交易日志）是 audit-facing final transaction record（面向审计的最终交易记录）。
@@ -52,7 +52,7 @@
 
 - `risk_flags`（风险标记）。
 - `automation_policy`（自动化策略）。
-- `approved_alias`（已批准别名）。
+- Alias。
 - `confirmed_role`（已确认角色）。
 - `entity_status`（实体生命周期状态）。
 

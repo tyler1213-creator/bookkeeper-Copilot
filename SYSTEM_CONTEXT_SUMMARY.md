@@ -146,12 +146,3 @@ raw files
 > 这个 node / field / log / memory layer 是否解决了 pattern-centered 系统无法干净解决、但对记忆复用、证据支持、纠错学习、审计性或控制权真实重要的问题？
 
 如果不能回答这个问题，该设计应被视为可疑，进入删除、合并、内联、重命名、收窄职责或暂缓讨论。
-
-## 当前未解决风险
-
-- 新系统通过 entity/case/governance 换掉 pattern/observation/rule，能力更细，但复杂度显著上升。
-- `Entity Resolution Node` 有膨胀风险：它应主要负责 runtime identity + authority boundary，candidate/governance/routing signals 只能附带，不能变成主职责。
-- `Knowledge Summary` 有 authority 混淆风险：可辅助理解，但不能替代 Entity Log、Rule Log 或 Governance Log。
-- `Case Judgment` 有越权风险：它可以做 runtime judgment，但不能把一次判断写成长期 memory 或 rule authority。
-- `Governance Review` 与 `Review Node` 的边界需要继续审计，否则容易重复承担 accountant approval。
-- 输出报告 / report draft 在新系统 15 个 nodes 中没有像旧系统那样作为独立材料显式出现，后续需要确认它属于 Transaction Logging、Review，还是单独输出层。

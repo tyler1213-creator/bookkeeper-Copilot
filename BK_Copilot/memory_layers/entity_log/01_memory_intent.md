@@ -9,9 +9,9 @@
 如果删除它，会失去：
 
 - stable identity authority（稳定身份权威）：`Entity Resolution Node`（实体识别节点）无法判断当前 evidence（证据）是否指向已知稳定实体。
-- alias authority（别名权威）：系统无法区分 `approved_alias`（已批准别名）、`candidate_alias`（候选别名）和 `rejected_alias`（已拒绝别名）。
+- Alias authority（别名权威）：系统无法复用过去已经确认过的 transaction surface text 到 stable entity（稳定实体）的对应关系。
 - role authority（角色权威）：系统无法知道某个 entity（实体）在客户关系中的 confirmed role（已确认角色）。
-- lifecycle control（生命周期控制）：系统无法处理 active（有效）、candidate（候选）、merged（已合并）、archived（已归档）等实体状态。
+- lifecycle control（生命周期控制）：系统无法处理 stable entity（稳定实体）的 active（有效）、merged（已合并）、archived（已归档）等状态。
 - automation boundary（自动化边界）：系统无法在 entity level（实体级）限制 rule match（规则匹配）或 case-based automation（基于案例的自动化）。
 
 这些能力不能由 runtime handoff（运行时交接）或现有 store（现有存储）覆盖，因为：
@@ -26,10 +26,11 @@
 
 这层 memory 保存：
 
+- stable entity record（稳定实体记录）；Entity Log 不保存 durable candidate entity lifecycle state（长期候选实体生命周期状态）。
 - `entity_id`（实体唯一标识）。
 - `display_name`（展示名称）。
 - `entity_type`（实体类型），例如 vendor（商家）、payee（收款人）、counterparty（交易对手）、person（个人）、organization（组织）。
-- `aliases`（别名 / 表面写法）及其 authority status（权威状态）。
+- `aliases`（别名 / 表面写法）：过去已经确认过的 transaction surface text 和 stable entity 的对应关系。
 - `roles`（角色 / 上下文），仅保存 accountant-confirmed role（会计师确认角色）或受控 onboarding accountant-derived role（初始化时从会计历史材料推导的角色）。
 - `entity_status`（实体生命周期状态）。
 - `authority_metadata`（权威来源元数据）。
@@ -41,8 +42,7 @@
 其中可以成为 reusable authority（可复用权威）的是：
 
 - `entity_id`（实体唯一标识）与 active entity identity（有效实体身份）。
-- `approved_alias`（已批准别名）。
-- `rejected_alias`（已拒绝别名），作为 negative authority（负向权威）。
+- Alias：已确认 Alias surface text 到 stable entity 的对应关系。
 - `confirmed_role`（已确认角色）。
 - `entity_status`（实体生命周期状态）。
 - `automation_policy`（自动化策略）。
@@ -56,6 +56,13 @@
 - `risk_flags`（风险标记）的解释文本。
 - historical display text（历史展示文本）。
 - rejected or superseded context（已拒绝或被替代上下文）。
+
+Alias 当前定义：
+
+- Alias 是过去已经确认过的 transaction surface text 和 stable entity 的对应关系。
+- 当前只确认两类信息可能成为 Alias：bank statement 中每笔交易的 description / descriptor / raw bank surface text；以及当 bank description 本身没有明确身份意义时，其他可能重复出现并能指向交易主体的字段，例如 cheque payee。
+- Alias 不是所有历史 description 的集合。只有已经和某个明确 stable entity 建立过确认关系的 surface text，才属于 Alias。
+- 当前确认需要一个可被 Entity Resolution 查询的 Alias 库，用于从当前交易的 surface text 反查过去已经确认过的 entity。Alias 库具体技术形态尚未冻结。
 
 ## 3. 绝不保存什么
 
@@ -97,8 +104,9 @@
 
 具体贡献：
 
-- 让不同来源的 surface text（表面文本）通过 approved alias（已批准别名）会合到同一 entity（实体）。
-- 让 rejected alias（已拒绝别名）阻止模型用相似度绕过过去的人工纠正。
+- 让过去已经确认过的 transaction surface text 可以通过 Alias 复用到同一 stable entity（稳定实体）。
+- 让 Entity Resolution 可以在不完全确定当前交易主体时查询该 entity 是否存在一致 Alias 来辅助确认。
+- 让 Entity Resolution 在完全识别不出主体时，可以通过 Alias 库查询是否存在一致或高度类似的历史 Alias，从而反推出对应 stable entity。
 - 让 confirmed role（已确认角色）限制 rule match（规则匹配）和 case judgment（案例判断）的适用上下文。
 - 让 automation policy（自动化策略）把 entity-level risk（实体级风险）转成明确自动化边界。
 - 让 governance refs（治理引用）保留 authority change（权威变化）的来源，支持审计和纠错。
@@ -106,9 +114,9 @@
 ## 5. 已知约束
 
 - `active`（有效）只表示 entity（实体）可作为稳定身份目标，不等于可以自动分类。
-- `candidate_alias`（候选别名）不能支持 rule match（规则匹配）。
+- `Entity Resolution Node`（实体识别节点）判断为 `new_stable_entity`（新稳定实体）时，可以同步写入 Entity Log，不需要 governance approval（治理批准）；写入内容只限 entity 本体，不包括 Alias（别名）、confirmed role（已确认角色）、automation policy（自动化策略）或 rule（规则）。
+- Alias 只提供 identity reuse（身份复用）能力，不提供 rule authority（规则权威）或会计分类结论。
 - `candidate_role`（候选角色）不能写入 `roles`（角色）作为 confirmed role（已确认角色）。
-- `rejected_alias`（已拒绝别名）是 negative authority（负向权威），不能被 LLM semantic similarity（LLM 语义相似度）绕过。
 - `Case Log`（案例日志）可以提供 risk evidence（风险依据），但不能直接修改 Entity Log（实体日志）。
 - `Transaction Log`（交易日志）不能作为 runtime identity source（运行时身份来源）或 learning source（学习来源）。
 - automation policy upgrade / relaxation（自动化策略升级 / 放宽）必须 accountant approval（会计师批准）。
@@ -117,6 +125,7 @@
 
 - `entity_record`（实体记录）的 exact field schema（精确字段结构）尚未冻结。
 - `alias_record`（别名记录）和 `role_record`（角色记录）是否独立记录尚未冻结。
-- `candidate_entity`（候选实体）是否持久化，以及由哪个 workflow 持久化，尚未冻结。
+- Alias 库具体以什么技术形态呈现尚未冻结。
+- candidate identity signal（候选身份信号）如需持久化，落点和 workflow 尚未冻结；但它不作为 Entity Log 中的 durable candidate entity lifecycle state（长期候选实体生命周期状态）。
 - `automation_policy`（自动化策略）是否直接存储在 Entity Log，还是由 Governance Log 投影生成，尚未字段级冻结。
 - merge / split（合并 / 拆分）后 alias（别名）、role（角色）、rule（规则）和 case（案例）的迁移行为尚未字段级冻结。

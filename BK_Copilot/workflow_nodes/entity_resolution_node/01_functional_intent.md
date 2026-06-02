@@ -9,7 +9,7 @@
 如果删除、合并或内联它，会失去：
 
 - identity gate（身份闸门）：系统会把“这是谁”混入 rule match（规则匹配）或 case judgment（案例判断）。
-- authority separation（权限分离）：candidate alias（候选别名）、approved alias（已批准别名）、rejected alias（已拒绝别名）和 confirmed role（已确认角色）容易被下游误用。
+- authority separation（权限分离）：Alias（别名）、confirmed role（已确认角色）和其他 entity 附属信息容易被下游误用。
 - evidence-grounded identity trace（有证据支撑的身份追溯）：后续 review（审核）、correction（纠正）和 governance（治理）无法清楚知道身份判断来自哪些 evidence（证据）。
 - safe new-entity handling（安全的新实体处理）：第一次出现的对象会被迫在旧 entity（实体）和普通分类判断之间被猜测处理。
 
@@ -28,7 +28,7 @@
 
 本节点可以辅助产生：
 
-- `candidate_signal`（运行时候选信号），例如 new entity（新实体）、alias（别名）、role（角色）、merge / split（合并 / 拆分）相关候选。
+- `candidate_signal`（运行时候选信号），例如 new entity（新实体）、Alias 写入需求、role（角色）、merge / split（合并 / 拆分）相关候选。
 - `identity_risk_flags`（身份识别风险标记），例如名称相似、多对象竞争、历史误认、角色混用。
 - `blocking_reason`（身份层阻断原因），说明为什么当前身份结果不能被当作更高 authority（权威）。
 
@@ -44,13 +44,13 @@
 - journal entry generation（分录生成）。
 - accountant-facing question generation（面向会计师的问题生成）。
 - transaction finalization（交易最终确认）。
-- durable memory mutation（长期记忆变更）。
+- durable memory mutation（长期记忆变更），但 `new_stable_entity` entity 本体同步写入 Entity Log 是已确认例外。
 
 本节点绝不能：
 
-- 把 `new_entity_candidate`（新实体候选）写成 stable entity（稳定实体）。
-- 把 `candidate_alias`（候选别名）当作 `approved_alias`（已批准别名）。
-- 忽略 `rejected_alias`（已拒绝别名）。
+- 把 `new_entity_candidate`（新实体候选）当作 `new_stable_entity`（新稳定实体）写入。
+- 在 `new_stable_entity` 写入时同时写入 Alias（别名）、确认 role（角色）、修改 automation policy（自动化策略）或创建 rule（规则）。
+- 把未确认的 surface text 当作 Alias 使用。
 - 把 `candidate_role`（候选角色）写成 `confirmed_role`（已确认角色）。
 - merge / split entity（合并 / 拆分实体）。
 - 修改 `automation_policy`（自动化策略）。
@@ -95,21 +95,31 @@
 
 - 通过 entity-first identity（实体优先身份识别）让不同表面写法可以汇入同一 stable entity（稳定实体）。
 - 通过 evidence refs（证据引用）让身份判断可审计、可纠正。
-- 通过 alias / role / governance authority（别名 / 角色 / 治理权威）防止模型用语义相似度越权。
-- 通过 candidate-only output（候选型输出）让系统学习有入口，但不污染 durable memory（长期记忆）。
+- 通过 Alias / role / governance authority（别名 / 角色 / 治理权威）防止模型用语义相似度越权。
+- 通过 runtime candidate output（运行时候选输出）让系统学习有入口，但不污染 durable authority（长期权威）。
+- 通过 `new_stable_entity` 的受限同步写入，让清楚、可追溯且无冲突的新对象在同 batch 后续交易中可被自然匹配。
+
+Alias（别名）在本节点中的当前含义：
+
+- Alias 是过去已经确认过的 transaction surface text 和 stable entity（稳定实体）的对应关系。
+- 当前只确认两类信息可能成为 Alias：bank statement 中每笔交易的 description / descriptor / raw bank surface text；以及当 bank description 本身没有明确身份意义时，其他可能重复出现并能指向交易主体的字段，例如 cheque payee。
+- 本节点可以查询 Alias 库：当它大致能判断当前交易主体但不能完全确定时，以该 entity 为目标查询是否存在一致 Alias；当它完全无法识别主体时，用当前 description 或等价 surface text 到 Alias 库中查询是否存在一致或高度类似的历史 Alias。
+- 如果当前 surface text 命中已确认 Alias，可以复用该 Alias 指向的 stable entity。
 
 ## 6. 已知约束
 
 - `transaction_id`（稳定交易 ID）必须来自 `Transaction Identity Node`（交易身份节点）。
 - `evidence_refs`（证据引用）必须可追溯到 Evidence Log（证据日志）或 evidence foundation（证据基础）。
 - `Entity Log`（实体日志）和 `Governance Log`（治理日志）优先于 Knowledge Summary（知识摘要）。
+- 本节点判断为 `new_stable_entity`（新稳定实体）时，可以同步写入 Entity Log，不需要 governance approval（治理批准）；写入内容只限 entity 本体。
 - `candidate_signal`（候选信号）是 runtime-only（仅运行时）handoff，不是 durable authority（长期权威）。
+- 未确认的 surface text 不能作为 Alias 使用。
+- Entity Resolution 输出 unknown_entity 后，如果 accountant 在 Coordinator 交互中明确确认 identity，交易不重新进入本节点；该 accountant confirmation（会计师确认）替代本节点身份判断。
 - `confidence`（身份识别置信度）只表示 identity confidence（身份置信度），不能表示 accounting classification confidence（会计分类置信度）。
 
 ## 7. 未决定问题
 
 - `stable_entity_resolution_threshold`（稳定实体识别所需证据门槛）尚未冻结。
 - `entity_resolution_output`（实体识别运行时输出）的 exact field schema（精确字段结构）尚未冻结。
-- `same_batch_retrigger`（会计师补充确认后是否同批次重跑本节点）尚未冻结。
 - `unconfirmed_role_routing`（角色/上下文未确认时下游路由）尚未冻结。
 - `knowledge_summary_conflict_repair`（Knowledge Summary 与 Entity Log / Governance Log 冲突时的修复流程）尚未冻结。

@@ -36,8 +36,9 @@
 | Evidence Log（证据日志） / evidence foundation（证据基础） | `evidence_refs`（证据引用）、raw bank text（银行原始文本）、receipt vendor（小票商家）、cheque payee（支票收款人）、invoice party（发票主体）、contract party（合同主体）、accountant context refs（会计师上下文引用） | 识别当前 evidence（证据）表面指向谁 | Evidence（证据）不保存业务结论；模型摘要不能替代 evidence ref（证据引用） |
 | Transaction Identity layer（交易身份层） | `transaction_id`（稳定交易 ID）和 identity handoff（身份交接） | 保证本次身份判断绑定到稳定交易对象 | 交易身份不等于 entity identity（实体身份），也不等于 accounting authority（会计权威） |
 | Profile / Structural Match handoff（客户结构匹配交接） | `structural_path_status`（结构性路径状态）、non-structural reason（非结构性原因）、profile context refs（客户结构上下文引用） | 防止结构性交易穿透后被普通实体流程处理 | candidate profile fact（候选客户结构事实）不能当 stable profile truth（稳定客户结构事实） |
-| Entity Log（实体日志） | known entities（已知实体）、aliases（别名）、roles（角色）、`entity_status`（实体生命周期状态）、authority metadata（权威元数据）、risk flags（风险标记） | 判断 evidence（证据）是否安全指向稳定 entity（实体） | Summary（摘要）不能覆盖 Entity Log（实体日志）；candidate entity（候选实体）不能当 stable entity（稳定实体） |
-| Governance Log（治理日志） | approved / applied alias, role, merge / split, lifecycle, policy constraints（已批准 / 已生效的别名、角色、合并 / 拆分、生命周期、策略限制） | 限制或解释当前身份判断 | pending / rejected governance event（待批准 / 已拒绝治理事件）不能当 positive authority（正向权威） |
+| Entity Log（实体日志） | known entities（已知实体）、Alias 记录、roles（角色）、`entity_status`（实体生命周期状态）、authority metadata（权威元数据）、risk flags（风险标记） | 判断 evidence（证据）是否安全指向稳定 entity（实体），或能否通过历史 Alias 复用到 stable entity | Summary（摘要）不能覆盖 Entity Log（实体日志）；candidate entity（候选实体）不能当 stable entity（稳定实体）；未确认 surface text 不能当 Alias |
+| Alias 库 | 已确认 Alias surface text 到 stable entity 的对应关系 | 当前交易 surface text 反查过去已经确认过的 entity | Alias 库具体技术形态未冻结；它不能保存会计分类结论 |
+| Governance Log（治理日志） | applied role, merge / split, lifecycle, policy constraints（已生效的角色、合并 / 拆分、生命周期、策略限制） | 限制或解释当前身份判断 | pending / rejected governance event（待批准 / 已拒绝治理事件）不能当 positive authority（正向权威） |
 | Intervention Log（人工介入日志） | identity correction（身份纠正）、accountant confirmation（会计师确认）、recent dispute（近期争议） | 识别当前身份风险或限制 | 人工介入记录只有明确确认对象时才可作为对应 authority（权威）；不能泛化 |
 | Knowledge Summary（知识摘要） | readable identity notes（可读身份说明）、known ambiguity notes（已知歧义说明） | 辅助理解客户语境 | 不能替代 Entity Log（实体日志）或 Governance Log（治理日志） |
 
@@ -45,23 +46,22 @@
 
 本节点可以直接写入：
 
-- 无。
+- Entity Log（实体日志）中的 `new_stable_entity` entity 本体：`entity_id`、`display_name`、`entity_type`、`entity_status=active`、`evidence_links`、`created_from`。该写入不需要 governance approval（治理批准）。
 
-本节点只能提出 candidate：
+除 `new_stable_entity` entity 本体同步写入外，本节点只能提出 candidate / issue（候选 / 问题）：
 
 - `new_entity_candidate`（新实体候选）。
-- `alias_candidate`（别名候选）。
 - `role_confirmation_candidate`（角色确认候选）。
 - `merge_split_candidate`（实体合并 / 拆分候选）。
 - `identity_ambiguity_issue`（身份歧义问题）。
 - `unresolved_identity_issue`（身份无法识别问题）。
-- `rejected_alias_conflict_issue`（已拒绝别名冲突问题）。
+- `alias_conflict_issue`（Alias 冲突问题）。
 - `identity_governance_issue`（身份相关治理问题）。
 
 本节点绝不能写入或修改：
 
 - `Transaction Log`（交易审计日志）。
-- stable `Entity Log` authority（稳定实体日志权威）。
+- Alias（别名）、confirmed role（已确认角色）、automation policy（自动化策略）、merge / split projection（合并 / 拆分投影）等 Entity Log 高权限字段。
 - `Case Log`（案例日志）。
 - `Rule Log`（规则日志）。
 - `Governance Log`（治理日志）。
@@ -76,23 +76,25 @@
 - 本节点是否应被触发。
 - 输入是否具备 `transaction_id`（稳定交易 ID）、objective transaction basis（客观交易基础）和 traceable `evidence_refs`（可追溯证据引用）。
 - 当前交易是否已经被 structural path（结构性路径）完成；若已完成，本节点不得继续。
-- `alias_status`（别名权威状态）、`entity_status`（实体生命周期状态）、confirmed role（已确认角色）、governance constraint（治理限制）等 authority check（权威检查）是否满足。
+- `entity_status`（实体生命周期状态）、confirmed role（已确认角色）、governance constraint（治理限制）等 authority check（权威检查）是否满足。
+- 当前 surface text 是否命中已确认 Alias，以及是否存在 Alias 冲突或多 entity 竞争。
+- 当本节点输出 `new_stable_entity`（新稳定实体）时，直接写入 Entity Log 的内容是否只限 entity 本体，不夹带 Alias / role / rule / automation authority（别名 / 角色 / 规则 / 自动化权威）。
 - 哪些候选或风险只能作为 runtime handoff（运行时交接），不能成为 durable memory（长期记忆）。
 
 ### LLM 可以判断
 
 - messy evidence（杂乱证据）中的 vendor / payee / counterparty 表面写法是否语义上接近某个已知 entity（实体）。
 - receipt（小票）、cheque（支票）、invoice（发票）、contract（合同）或 accountant note（会计师备注）中有哪些 human-visible identity clues（人类可见身份线索）。
-- 当前 evidence（证据）更像 stable entity（稳定实体）、new entity candidate（新实体候选）、ambiguous candidates（歧义候选）还是 unresolved identity（无法识别身份）。
+- 当前 evidence（证据）更像 matched stable entity（已匹配稳定实体）、new stable entity（新稳定实体）、new entity candidate（新实体候选）、ambiguous candidates（歧义候选）还是 unresolved identity（无法识别身份）。
+- 第一次出现的新对象是否已有直接、清楚、可追溯且无明显冲突的 identity signal（身份信号），足以作为 `new_stable_entity`。
 - identity rationale（身份判断理由）、ambiguity reason（歧义原因）和 missing evidence reason（缺失证据原因）的可读摘要。
 
 ### LLM 不能判断
 
-- 扩大 entity / alias / role authority（实体 / 别名 / 角色权威）。
-- 把 `candidate_alias`（候选别名）当作 `approved_alias`（已批准别名）。
-- 忽略 `rejected_alias`（已拒绝别名）。
+- 扩大 entity / Alias / role authority（实体 / 别名 / 角色权威）。
+- 把未确认的 surface text 当作 Alias 使用。
 - 确认 `candidate_role`（候选角色）。
-- 创建 stable entity（稳定实体）。
+- 在本节点 `new_stable_entity` 边界之外创建 stable entity（稳定实体）。
 - merge / split entity（合并 / 拆分实体）。
 - 修改 `automation_policy`（自动化策略）。
 - 执行 rule match（规则匹配）。
@@ -110,9 +112,8 @@
 
 ### Governance 必须批准
 
-- approve / reject alias（批准 / 拒绝别名）。
 - confirm role（确认角色）。
-- create stable entity authority（创建稳定实体权威）。
+- `new_stable_entity` 同步写入和 accountant 明确 identity confirmation 后的下游创建以外的 stable entity lifecycle mutation（稳定实体生命周期变更）。
 - merge / split entity（合并 / 拆分实体）。
 - archive / reactivate entity（归档 / 重新激活实体）。
 - upgrade or relax `automation_policy`（升级或放宽自动化策略）。
@@ -124,12 +125,19 @@
 
 | Output Category | 含义 | 下游影响 | 不代表什么 |
 | --- | --- | --- | --- |
-| `resolved_entity`（已识别稳定实体） | 当前 evidence（证据）可以安全指向一个 active stable entity（有效稳定实体） | 下游可读取 identity basis（身份基础）；Rule Match（规则匹配）仍需自行检查 alias、role、policy、rule | 不代表 rule match（规则匹配）成功，不代表会计分类，不代表自动化许可 |
+| `resolved_entity`（已识别稳定实体） | 当前 evidence（证据）可以安全指向一个 active stable entity（有效稳定实体） | 下游可读取 identity basis（身份基础） | 不代表 rule match（规则匹配）成功，不代表会计分类，不代表自动化许可 |
 | `resolved_entity_with_unconfirmed_role`（已识别实体但角色未确认） | 对象本身可识别，但当前交易所需 role / context（角色 / 上下文）未被 accountant-confirmed（会计师确认） | 下游可把实体作为上下文，但必须尊重 role authority gap（角色权威缺口） | 不代表 confirmed role（已确认角色），不支持需要该角色的 rule match（规则匹配） |
+| `new_stable_entity`（新稳定实体） | 当前 evidence（证据）能直接、清楚、可追溯地说明一个新对象是谁，且没有明显身份冲突 | 本节点同步写入 Entity Log 的 entity 本体；下游可把它作为当前交易 stable identity basis（稳定身份基础）；同 batch 后续交易可自然匹配 | 不代表 Alias（别名）、confirmed role（已确认角色）、active rule（生效规则）、会计分类或自动化许可 |
 | `new_entity_candidate`（新实体候选） | 当前 evidence（证据）更像一个尚未稳定存在的新对象 | Case Judgment（案例判断）可在自身 authority boundary（权限边界）内读取；Review / Governance 可后续处理候选 | 不代表 stable entity（稳定实体），不支持 rule match（规则匹配），不支持 rule promotion（规则升级） |
-| `ambiguous_entity_candidates`（多实体歧义候选） | 当前 evidence（证据）可能对应多个 entity / alias / role（实体 / 别名 / 角色），不能安全归属 | 下游应进入 pending / review / governance 相关处理，或保守阻断自动化 | 不代表 LLM 可以选一个 winner（胜出者） |
+| `ambiguous_entity_candidates`（多实体歧义候选） | 当前 evidence（证据）可能对应多个 entity / Alias / role（实体 / 别名 / 角色），不能安全归属 | 下游应进入 pending / review / governance 相关处理，或保守阻断自动化 | 不代表 LLM 可以选一个 winner（胜出者） |
 | `unresolved`（无法识别身份） | 当前 evidence（证据）不足以判断 counterparty / vendor / payee（交易对手 / 商家 / 收款人） | 下游应看到缺什么、为什么不能识别。**已确认：Case Judgment 收到此输出后不走高置信度自动分类通道，输出 pending（见下方已确认下游影响）** | 不代表会计分类失败的总称，不允许伪造 entity（实体） |
-| `candidate_signal`（运行时候选信号） | 指出后续可能需要处理的新实体、别名、角色、合并 / 拆分或身份治理问题 | 只供 Coordinator / Review / Case Memory Update / Governance Review 消费 | 不代表 durable approval（长期批准），不写入长期记忆 |
+| `candidate_signal`（运行时候选信号） | 指出后续可能需要处理的新实体、Alias、角色、合并 / 拆分或身份治理问题 | 只供 Coordinator / Review / Case Memory Update / Governance Review 消费 | 不代表 durable approval（长期批准）；本节点不直接写入长期记忆 |
+
+Alias 查询对输出的影响：
+
+- 如果当前 surface text 命中已确认 Alias，可以复用该 Alias 指向的 stable entity。
+- 如果只是高度类似历史 Alias，不能天然等同于确认 identity；它最多增强 Entity Resolution 的判断。
+- 只有在存在受控 normalization / equivalence 规则、没有冲突、没有多 entity 竞争时，高度类似的 Alias 才可以作为更强的匹配依据。
 
 ## 7. 证据不足时的行为
 
@@ -149,6 +157,15 @@
   - **有推断但不确定**：Case Judgment 可利用其他已有上下文（如 receipt items、交易金额模式、bank descriptor 特征等）给出推断性建议，附在 pending 输出中，由 Coordinator 呈现给 accountant 选择或确认。
 - 存在不依赖 entity identity 就能判断 COA 的交易类型（bank fee、interest 等），但这些属于 edge case，大部分由上游 Profile / Structural Match Node 处理。到达 Case Judgment 的交易绝大多数需要 entity identity。
 - A/B 分类判断（是否需要 entity 才能分类）的职责在 Case Judgment，不在本节点。本节点只管 identity。
+
+### 已确认的后续路径（Problem 4 结论）
+
+当本节点输出 `unresolved` / unknown_entity 后：
+
+- Case Judgment 输出 pending。
+- Coordinator 根据 pending 子类型向 accountant 提问。
+- Accountant 明确确认 identity 后，交易不重新进入本节点。
+- Accountant confirmation（会计师确认）替代 Entity Resolution 的身份判断；stable entity 创建和最终分类由后续路径完成。
 
 如果缺少 traceable evidence ref（可追溯证据引用）：
 
@@ -175,10 +192,10 @@
 - 是否生成 review / governance candidate：可以生成 `identity_governance_issue`（身份相关治理问题），但不能批准。
 - 是否阻断自动化：本节点只说明 identity authority problem（身份权威问题）；下游决定 automation path（自动化路径）。
 
-如果 current evidence（当前证据）命中 `rejected_alias`（已拒绝别名）：
+如果 current evidence（当前证据）与 Alias 库冲突，或同一 surface text 可能对应多个 entity：
 
-- authority 顺序：rejection（拒绝记录）优先于相似度。
-- 本节点行为：输出 `rejected_alias_conflict_issue`（已拒绝别名冲突问题）或 blocked identity（被阻断身份）语义。
+- authority 顺序：已确认 stable entity 和可追溯 evidence 优先于 LLM semantic match（LLM 语义匹配）。
+- 本节点行为：输出 conflict / blocked / ambiguous identity（冲突 / 阻断 / 歧义身份）语义。
 - 是否生成 review / governance candidate：可以。
 - 是否阻断自动化：不得输出 stable identity basis（稳定身份基础）来支持 deterministic path（确定性路径）。
 
@@ -195,8 +212,8 @@
 
 - `transaction_id`（稳定交易 ID）。
 - `evidence_used`（用于身份判断的证据）。
-- `matched_alias`（命中的表面写法 / 别名）。
-- `alias_status`（别名权威状态）。
+- `matched_alias_surface_text`（命中的 Alias 表面写法），如果存在。
+- `alias_lookup_basis`（Alias 查询依据），如果存在。
 - `candidate_role`（候选角色），如果存在。
 - `blocking_reason`（身份层阻断原因），如果存在。
 - `identity_risk_flags`（身份识别风险标记），如果存在。
@@ -241,9 +258,8 @@
 
 1. `stable_entity_resolution_threshold`（稳定实体识别所需证据门槛）。
 2. `entity_resolution_output`（实体识别运行时输出）的 exact field schema（精确字段结构）。
-3. `same_batch_retrigger`（会计师补充确认后是否同批次重跑本节点）。
-4. `unconfirmed_role_routing`（角色/上下文未确认时下游路由）。
-5. `knowledge_summary_conflict_repair`（Knowledge Summary 与 Entity Log / Governance Log 冲突时的修复流程）。
+3. `unconfirmed_role_routing`（角色/上下文未确认时下游路由）。
+4. `knowledge_summary_conflict_repair`（Knowledge Summary 与 Entity Log / Governance Log 冲突时的修复流程）。
 
 这些问题解决前，不能进入：
 
