@@ -18,7 +18,9 @@
 - `BK_Copilot/memory_layers/entity_log/02_authority_lifecycle_and_boundaries.md`
 - `BK_Copilot/workflow_nodes/entity_resolution_node/01_functional_intent.md`
 - `BK_Copilot/workflow_nodes/entity_resolution_node/02_logic_and_boundaries.md`
-- 后续可能新增的 `Case Log` 文档
+- `BK_Copilot/memory_layers/case_log/00_index.md`
+- `BK_Copilot/memory_layers/case_log/01_memory_intent.md`
+- `BK_Copilot/memory_layers/case_log/02_authority_lifecycle_and_boundaries.md`
 
 ## 一句话结论
 
@@ -830,5 +832,5 @@ stable entity 不应自动放宽 automation。
 
 - Entity Log M1-M2
 - Entity Resolution Node Stage 1-2
-- Case Log M1-M2
+- Case Log M1-M2（已按当前已确认边界新增；后续 Entity / finalization 问题解决后仍需更新）
 - 可能受影响的 Rule / Review / Governance 边界

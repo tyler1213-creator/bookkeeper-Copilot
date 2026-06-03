@@ -2,9 +2,10 @@
 
 ## 文件状态
 
-- Status: boundary note
+- Status: superseded boundary note
 - Last reviewed: 2026-05-11
-- Scope: 记录已接受的 `Case Log`（案例日志）边界定义，供后续正式 M1-M2 设计使用。
+- Scope: 记录已接受的 `Case Log`（案例日志）边界定义，作为正式 M1-M2 草案的来源之一。
+- Current formal draft: `BK_Copilot/memory_layers/case_log/`
 - Not a full spec: 本文档不是 `Case Log`（案例日志）的完整 memory layer spec，不冻结字段、生命周期、mutation path 或 storage contract。
 
 ## 已接受定义
