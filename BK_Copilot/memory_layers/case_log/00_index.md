@@ -41,7 +41,7 @@
 - `Case Log` 是 entity-indexed completed-case learning memory（按实体索引的已完成案例学习记忆）。
 - `Case Log` 只从 completed transaction（已完成交易）中抽取可学习案例；它必须能引用 `transaction_log_ref`（交易日志引用）或等价 finalization proof（完成证明）。
 - `Case Log` 不替代 `Transaction Log` 的 final audit record（最终审计记录），也不得复制完整 processing path（处理路径）作为学习依据。
-- `Case Log` 不保存 entity identity authority（实体身份权威）、Alias authority（别名权威）、confirmed role（已确认角色）、automation policy（自动化策略）或 active rule（生效规则）。
+- `Case Log` 不保存 entity identity authority（实体身份权威）、Alias authority（别名权威）、automation policy（自动化策略）或 active rule（生效规则）。
 - stable-linked case（稳定实体关联案例）可以作为较强的未来 case context（案例上下文）。
 - candidate-linked case（候选实体关联案例）默认只能作为 weak context（弱上下文）或 governance evidence（治理依据）。
 - unknown entity（未知实体）不是 durable identity handle（长期身份句柄），不能被 Case Log 当作 entity handle 引用。

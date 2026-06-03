@@ -63,7 +63,7 @@ Candidate 或 issue 进入 durable Alias authority 的条件：
 
 | State | 含义 | 谁可以进入 | 谁可以退出 | 下游含义 |
 | --- | --- | --- | --- | --- |
-| 已确认对应关系（不是 Alias 状态枚举） | 过去已经确认过的 transaction surface text 指向某个明确 stable entity | 未冻结 | 未冻结 | Entity Resolution 可以用它辅助识别当前交易主体；不代表 rule、role、classification 或 automation authority |
+| 已确认对应关系（不是 Alias 状态枚举） | 过去已经确认过的 transaction surface text 指向某个明确 stable entity | 未冻结 | 未冻结 | Entity Resolution 可以用它辅助识别当前交易主体；不代表 rule、classification 或 automation authority |
 
 ## 6. Mutation Path
 

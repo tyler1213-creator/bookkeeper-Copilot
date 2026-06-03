@@ -20,7 +20,7 @@
 
 `Entity Log`（实体日志）是 identity authority store（身份权威存储）。
 
-- 回答：这个对象是谁，有哪些已确认 Alias（过去已确认的 transaction surface text 到 stable entity 的对应关系）、confirmed role（已确认角色）、lifecycle state（生命周期状态）和 automation policy（自动化策略）。
+- 回答：这个对象是谁，有哪些已确认 Alias（过去已确认的 transaction surface text 到 stable entity 的对应关系）、lifecycle state（生命周期状态）和 automation policy（自动化策略）。
 - 不回答：这个对象过去的交易通常如何分类，或本次交易应如何记账。
 
 `Transaction Log`（交易日志）是 audit-facing final transaction record（面向审计的最终交易记录）。
@@ -54,7 +54,6 @@
 - `risk_flags`（风险标记）。
 - `automation_policy`（自动化策略）。
 - Alias。
-- `confirmed_role`（已确认角色）。
 - `entity_status`（实体生命周期状态）。
 
 如果历史案例显示某个 entity（实体）存在 mixed-use risk（混用风险）、unstable classification pattern（不稳定分类模式）或 automation risk（自动化风险），正确路径是：

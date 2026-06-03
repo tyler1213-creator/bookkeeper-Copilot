@@ -9,7 +9,7 @@
 如果删除它，会失去：
 
 - entity-indexed case memory（按实体索引的案例记忆）：系统看到同一 stable entity（稳定实体）时，无法读取过去的案例、例外和纠正记录。
-- evidence-conditioned precedent（有证据条件的先例）：系统无法知道某个历史记账判断是在什么 receipt、invoice、bank descriptor、role gap 或 exception context 下成立。
+- evidence-conditioned precedent（有证据条件的先例）：系统无法知道某个历史记账判断是在什么 receipt、invoice、bank descriptor 或 exception context 下成立。
 - correction learning（纠正学习）：accountant correction（会计师纠正）无法沉淀为未来判断时可见的案例约束。
 - rule promotion candidate（规则升级候选）：重复案例只能停留在 isolated transaction history（孤立交易历史），无法形成受控 rule promotion review（规则升级审核）依据。
 - automation risk / entity risk evidence（自动化风险 / 实体风险依据）：历史案例显示的 mixed-use risk（混用风险）、classification instability（分类不稳定）或 automation risk（自动化风险）无法进入治理候选。
@@ -29,7 +29,7 @@
 
 - 从 completed transaction（已完成交易）中抽取的 reusable bookkeeping precedent（可复用记账先例）。
 - 该 precedent 成立所依赖的 evidence condition（证据条件）。
-- exception context（例外上下文），例如 role gap（角色缺口）、mixed-use risk、identity ambiguity（身份歧义）或其他导致不能简单泛化的上下文。
+- exception context（例外上下文），例如 mixed-use risk、identity ambiguity（身份歧义）或其他导致不能简单泛化的上下文。
 - correction reference（纠正引用），用于说明历史案例是否来自 accountant correction 或最终确认。
 - `transaction_log_ref` 或等价 finalization proof，用来证明该案例来自已完成交易。
 - 与 stable entity 或 candidate entity 相关的 case reference；两者 authority 不同。
@@ -60,7 +60,6 @@
 - 完整 processing path（处理路径）作为学习依据。
 - entity identity authority（实体身份权威）。
 - Alias relationship（别名关系）。
-- confirmed role（已确认角色）。
 - `entity_status`（实体生命周期状态）。
 - `automation_policy`（自动化策略）。
 - active rule payload（生效规则内容）。
@@ -72,7 +71,7 @@
 
 - `Evidence Log`（证据日志）：raw evidence 和 evidence refs 的 source of truth。
 - `Transaction Log`（交易日志）：每笔交易 final outcome、review trace 和 audit trail 的 source of truth。
-- `Entity Log`（实体日志）：stable entity identity、Alias、confirmed role、status 和 automation policy 的 authority store。
+- `Entity Log`（实体日志）：stable entity identity、Alias、status 和 automation policy 的 authority store。
 - `Alias Log`（别名日志）：confirmed transaction surface text -> stable entity 的 identity reuse memory。
 - `Rule Log`（规则日志）：approved deterministic rules 的 source of truth。
 - `Governance Log`（治理日志）：长期高权限 mutation、approval、rejection、downgrade、merge / split 的 audit source。

@@ -49,7 +49,6 @@ Candidate 或 weak context 不能直接成为：
 - active rule（生效规则）。
 - Entity Log mutation（实体日志变更）。
 - Alias relationship（别名关系）。
-- confirmed role（已确认角色）。
 - relaxed automation policy（放宽后的自动化策略）。
 - strong precedent（强先例），如果它只 linked to candidate entity。
 - final audit record（最终审计记录）。
@@ -113,7 +112,7 @@ Case Log evidence
 | --- | --- | --- |
 | Evidence Log（证据日志） | Evidence Log 保存 raw evidence 和 evidence refs；Case Log 只保存 evidence refs / evidence condition，不复制原始证据正文 | evidence condition 的 exact field schema 和 sufficiency threshold 未冻结 |
 | Transaction Log（交易日志） | Transaction Log 保存 final transaction audit record；Case Log 保存从已完成交易中抽取的可学习案例，并必须引用 transaction_log_ref 或等价 finalization proof | Case Log 与 Transaction Log 的 exact trigger order、correction / reversal / split 后的 supersession 行为未冻结 |
-| Entity Log（实体日志） | Entity Log 保存 stable entity identity、Alias、confirmed role、status、automation policy；Case Log 按 entity_id 组织案例，但不修改 entity authority | candidate identity handle 的持久化位置、candidate-linked case 升级规则、case-derived risk 进入 Entity Log 的治理路径未冻结 |
+| Entity Log（实体日志） | Entity Log 保存 stable entity identity、Alias、status、automation policy；Case Log 按 entity_id 组织案例，但不修改 entity authority | candidate identity handle 的持久化位置、candidate-linked case 升级规则、case-derived risk 进入 Entity Log 的治理路径未冻结 |
 | Alias Log（别名日志） | Alias Log 保存 confirmed transaction surface text -> stable entity；命中 Alias 后，系统可以以对应 stable entity 为主体查询 Case Log | Alias 命中后的具体 case retrieval contract 未冻结；Case Log 不保存 Alias authority |
 | Rule Log（规则日志） | Rule Log 保存 approved deterministic rules；Case Log 只可提供 rule promotion candidate 的案例依据 | case-derived rule promotion signal 的 exact eligibility 和 approval path 未冻结 |
 | Governance Log（治理日志） | Governance Log 保存高权限变化、批准、拒绝、降级、合并和拆分历史；Case Log 的 risk / policy / rule candidates 必须经过治理或 accountant approval 才能 mutation | Case Log candidate 与 Governance Log event / audit trace 的 exact contract 未冻结 |
@@ -130,7 +129,7 @@ Case Log evidence
 
 如果 Case Log 与 Entity Log / Governance Log 冲突：
 
-- authority 顺序：Entity Log 和已生效 Governance Log 对 entity identity、status、role、automation policy 优先。
+- authority 顺序：Entity Log 和已生效 Governance Log 对 entity identity、status、automation policy 优先。
 - runtime 行为：Case Log 只能提供 risk evidence 或历史上下文，不能覆盖 active entity authority。
 - 是否阻断自动化：除非已有 policy / governance constraint，否则 Case Log 本身不直接修改 automation boundary；但身份或策略冲突应保守处理。
 - 是否生成 review / governance candidate：是。
@@ -146,7 +145,7 @@ Case Log evidence
 
 - authority 顺序：stable entity authority 和 stable-linked completed case precedent 优先于 candidate-linked weak context。
 - runtime 行为：candidate-linked case 只能辅助解释或治理，不应作为强 precedent。
-- 是否阻断自动化：不得用 candidate-linked case 支持 Rule Match、Rule Promotion、Alias、confirmed role 或 automation 放宽。
+- 是否阻断自动化：不得用 candidate-linked case 支持 Rule Match、Rule Promotion、Alias 或 automation 放宽。
 - 是否生成 review / governance candidate：可以。
 
 如果 Case Log 与 Knowledge Summary 冲突：
@@ -179,7 +178,6 @@ Case Log evidence
 
 - entity identity authority。
 - Alias authority。
-- confirmed role。
 - active rule authority。
 - final transaction audit record。
 - accountant approval。

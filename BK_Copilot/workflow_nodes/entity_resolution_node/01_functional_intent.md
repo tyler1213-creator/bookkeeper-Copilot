@@ -9,7 +9,7 @@
 如果删除、合并或内联它，会失去：
 
 - identity gate（身份闸门）：系统会把“这是谁”混入 rule match（规则匹配）或 case judgment（案例判断）。
-- authority separation（权限分离）：Alias（别名）、confirmed role（已确认角色）和其他 entity 附属信息容易被下游误用。
+- authority separation（权限分离）：Alias（别名）和其他 entity 附属信息容易被下游误用。
 - evidence-grounded identity trace（有证据支撑的身份追溯）：后续 review（审核）、correction（纠正）和 governance（治理）无法清楚知道身份判断来自哪些 evidence（证据）。
 - safe new-entity handling（安全的新实体处理）：第一次出现的对象会被迫在旧 entity（实体）和普通分类判断之间被猜测处理。
 
@@ -28,8 +28,8 @@
 
 本节点可以辅助产生：
 
-- `candidate_signal`（运行时候选信号），例如 new entity（新实体）、Alias 写入需求、role（角色）、merge / split（合并 / 拆分）相关候选。
-- `identity_risk_flags`（身份识别风险标记），例如名称相似、多对象竞争、历史误认、角色混用。
+- `candidate_signal`（运行时候选信号），例如 new entity（新实体）、Alias 写入需求、merge / split（合并 / 拆分）相关候选。
+- `identity_risk_flags`（身份识别风险标记），例如名称相似、多对象竞争、历史误认或身份混用。
 - `blocking_reason`（身份层阻断原因），说明为什么当前身份结果不能被当作更高 authority（权威）。
 
 但这些不是主职责。
@@ -49,9 +49,8 @@
 本节点绝不能：
 
 - 把 `new_entity_candidate`（新实体候选）当作 `new_stable_entity`（新稳定实体）写入。
-- 在 `new_stable_entity` 写入时同时写入 Alias（别名）、确认 role（角色）、修改 automation policy（自动化策略）或创建 rule（规则）。
+- 在 `new_stable_entity` 写入时同时写入 Alias（别名）、修改 automation policy（自动化策略）或创建 rule（规则）。
 - 把未确认的 surface text 当作 Alias 使用。
-- 把 `candidate_role`（候选角色）写成 `confirmed_role`（已确认角色）。
 - merge / split entity（合并 / 拆分实体）。
 - 修改 `automation_policy`（自动化策略）。
 - 创建、升级、修改、删除或降级 active rule（生效规则）。
@@ -95,7 +94,7 @@
 
 - 通过 entity-first identity（实体优先身份识别）让不同表面写法可以汇入同一 stable entity（稳定实体）。
 - 通过 evidence refs（证据引用）让身份判断可审计、可纠正。
-- 通过 Alias / role / governance authority（别名 / 角色 / 治理权威）防止模型用语义相似度越权。
+- 通过 Alias / governance authority（别名 / 治理权威）防止模型用语义相似度越权。
 - 通过 runtime candidate output（运行时候选输出）让系统学习有入口，但不污染 durable authority（长期权威）。
 - 通过 `new_stable_entity` 的受限同步写入，让清楚、可追溯且无冲突的新对象在同 batch 后续交易中可被自然匹配。
 
@@ -121,5 +120,4 @@ Alias（别名）在本节点中的当前含义：
 
 - `stable_entity_resolution_threshold`（稳定实体识别所需证据门槛）尚未冻结。
 - `entity_resolution_output`（实体识别运行时输出）的 exact field schema（精确字段结构）尚未冻结。
-- `unconfirmed_role_routing`（角色/上下文未确认时下游路由）尚未冻结。
 - `knowledge_summary_conflict_repair`（Knowledge Summary 与 Entity Log / Governance Log 冲突时的修复流程）尚未冻结。

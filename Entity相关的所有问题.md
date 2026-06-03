@@ -46,7 +46,7 @@ Entity 是业务对象层面的语义身份，不是字段精确匹配。
 
 - `AMZN MKTP CA*2X7Y9Z`、`Amazon.ca`、`AMAZON.CA` 都指向同一个 entity：Amazon。
 - `HOME DEPOT #4521`、`HOME DEPOT #3890` 都指向同一个 entity：Home Depot。
-- `John Smith Plumbing`、`John Smith Consulting` 指向同一个 entity：John Smith。它们的区别是 role，不是 identity。
+- 同一业务对象的不同表面写法可以指向同一个 entity；具体会计处理不由 entity identity 本身决定。
 
 Entity Resolution 使用 LLM 语义理解来判断业务对象身份，而不是做字符串精确匹配。
 
@@ -89,12 +89,11 @@ Case Log 应该围绕 entity 组织历史案例。
 
 这样系统以后看到同一个对象时，可以读取过去的案例、例外和纠正记录。
 
-### 3. 支持 Alias、role、rule 的后续治理
+### 3. 支持 Alias、rule 和 automation 的后续治理
 
 Entity 可以承载或关联：
 
 - Alias
-- role
 - case history
 - rule candidate
 - automation policy
@@ -121,7 +120,7 @@ Stable entity 是身份权威。
 - 系统知道这个对象是谁。
 - 后续交易可以安全归到这个对象下面。
 - 这个对象可以作为 Case Log 的稳定索引。
-- 这个对象可以进入后续 Alias、role、rule、automation 的治理流程。
+- 这个对象可以进入后续 Alias、rule、automation 的治理流程。
 
 它不表示：
 
@@ -130,7 +129,6 @@ Stable entity 是身份权威。
 - 可以自动落账。
 - 已经有 approved rule。
 - 当前交易 surface text 已经进入 Alias 库。
-- 当前 role 已经被确认。
 
 因此不建议使用 `rule entity` 这个说法。
 
@@ -139,7 +137,6 @@ Stable entity 是身份权威。
 - candidate entity
 - stable entity
 - entity with approved rule
-- entity with confirmed role
 - entity with automation policy
 
 ## Alias 当前定义（已确认）
@@ -188,54 +185,6 @@ Alias 库的作用是让系统可以从当前交易的 surface text 反查过去
 
 Alias 库具体以什么技术形态呈现，暂不在本文讨论；可以在后续技术细节设计时再决定。
 
-## Entity 和 Role 的关系
-
-### Role 的含义
-
-Role 是一个 entity 对当前客户而言的身份或业务关系。
-
-通俗地说：这个对象对我来说是什么。
-
-Role 往往和最终会计分类（COA）直接相关。
-
-### Entity → Role 的推断何时成立
-
-对于单一 role 的 vendor，知道 entity 几乎等于知道 role：
-
-- 市政府电力公司 → 缴电费 → Utilities
-- Rogers Wireless → 手机账单 → Telephone / Communications
-- 保险公司 → 保险费 → Insurance
-
-这类 entity 在小企业记账中占较大比例。
-
-### Entity → Role 的推断何时不成立
-
-三种情况下，知道 entity 不等于知道 role：
-
-#### 同一个 entity 有多个 role
-
-- John Smith 可以同时是 plumber（Repairs & Maintenance）、consultant（Professional Fees）、landlord（Rent）。
-- 知道 entity 是 John Smith，不能自动推断当前交易的 role。
-
-#### Role 取决于交易具体内容而非 entity 本身
-
-- Amazon 可以是 Office Supplies、Computer Equipment、Packaging Materials、Books。
-- Costco、Canadian Tire、Home Depot 同理。
-- 这类综合零售商 / 平台类 entity 的 role 取决于 receipt items，不取决于 entity identity。
-
-#### Entity stable 但 role 的证据来源不同
-
-- Entity stable 的证据：bank descriptor、receipt vendor name、invoice party name。
-- Role 判断的证据：receipt items、invoice line items、交易金额模式、历史分类、accountant context。
-- 这两种证据可以独立存在。
-
-### 结论
-
-- Entity 和 role 在部分场景下高度相关，在另一部分场景下是独立判断。
-- Role 判断不应被视为 entity identity 的附属品。
-- 对于多 role entity 和综合零售商，role 判断属于 Case Judgment 的职责，需要依赖 receipt items 或其他交易上下文。
-- 当前系统设计中 `resolved_entity_with_unconfirmed_role` 这个输出类别是有必要的，不是边缘情况。
-
 ## Entity 类型命名
 
 当前统一使用三类命名：
@@ -272,7 +221,6 @@ Candidate entity 可以被 Case Log 引用。
 - rule match
 - rule promotion
 - Alias
-- confirmed role
 - automation 放宽
 - 强 precedent
 
@@ -367,7 +315,7 @@ Unknown entity 表示：
 - Entity Log 只存 stable entity，没有 durable candidate entity lifecycle state。
 - Entity Resolution 可以直接将 `new_stable_entity` 同步写入 Entity Log，不需要 governance approval。
 - 写入内容限于 entity 本体（entity_id、display_name、entity_type、entity_status=active、evidence_links、created_from）。
-- Alias、confirmed role、automation policy 等 entity 附属信息不由 Entity Resolution 在创建 stable entity 本体时一并写入，由后续流程处理。
+- Alias、automation policy 等 entity 附属信息不由 Entity Resolution 在创建 stable entity 本体时一并写入，由后续流程处理。
 - Stable entity 写入 Entity Log 不等于该 entity 拥有 active rule。每一个 rule 必须经过 accountant 审核才可以启用。
 - Batch 内交易按顺序处理。Entity Resolution 同步写入 stable entity 后，同 batch 后续交易可以自然匹配。
 
@@ -461,8 +409,7 @@ Entity Resolution 判断：
 仍未决定：
 
 - 写入 stable entity 时，当前 surface text 是否进入 Alias 库。
-- 写入 stable entity 时，role 的处理方式。
-- Alias、confirmed role、automation policy 的写入时机和责任归属。
+- Alias、automation policy 的写入时机和责任归属。
 
 ### 4. Rule Match 关系
 
@@ -781,17 +728,11 @@ Case Judgment 无推断性建议时：
 
 - 创建 stable entity 时，当前 surface text 是否自动进入 Alias 库。
 - Alias 库具体以什么技术形态呈现。
-- Alias、role、automation policy 的写入责任和审批路径。
+- Alias、automation policy 的写入责任和审批路径。
 
-### 3. Role 的确认规则
+### 3. 独立关系字段是否应该存在
 
-能识别“是谁”，是否等于知道它在客户业务里的 role？
-
-当前倾向：
-
-不是。
-
-Stable identity 和 confirmed role 应该分开。
+已转入 `未解决问题暂存清单.md` 的问题 8。当前不在本文保留字段定义或确认规则。
 
 ### 4. Candidate entity 的最小字段
 
