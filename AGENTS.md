@@ -9,8 +9,8 @@
 - 新窗口读档路线
 - 每份规则 / 上下文文档负责什么
 - 不同任务类型的必读材料
-- 如何对待当前系统材料与旧系统材料
-- 可编辑范围与只读参考范围
+- 如何对待 New system / Old system 被审计材料
+- 可编辑范围与只读审计对象范围
 - 审计方法与停止条件
 - 必要的交接 / 总结纪律
 
@@ -42,8 +42,13 @@
 7. `系统上下文地图.md`
 8. 用户后续创建或指定的长期结论文档
 9. `BK_Copilot/` 下已经重写的正式草案
-10. `new system/` 下的当前系统设计材料
-11. `old_system_nodedesign/` 下的旧系统参考材料
+
+以下材料不进入权威顺序，也不提供权威性参考：
+
+- `new system/` 下的任何文档
+- `old_system_nodedesign/` 下的任何文档
+
+它们都是被审计对象。它们只能说明对应设计材料曾经怎样表述自己，不能证明某个设计正确、必要、应保留、应回归或应作为 baseline。
 
 每份文档只在自己的职责范围内拥有权威：
 
@@ -55,8 +60,8 @@
 - `系统上下文地图.md` 负责系统材料入口和结构导航，不替代原始系统材料或正式草案。
 - 用户后续创建或指定的长期结论文档负责承载长期性设计结论。
 - `BK_Copilot/` 下的正式草案负责其对应 node / memory layer 的当前标准边界。
-- `new system/` 包含正在被审计的当前系统。它描述当前设计说了什么，但不能证明该设计是正确的。
-- `old_system_nodedesign/` 包含旧系统的设计意图样本。它不是评判标准、目标架构或默认 baseline。
+- `new system/` 包含正在被审计的当前系统材料；其内容不是权威依据，只是审计对象。
+- `old_system_nodedesign/` 包含正在被审计的旧系统材料；其内容不是历史意图权威、评判标准、目标架构或默认 baseline。
 
 ## 文档地图
 
@@ -66,42 +71,25 @@
 - `审计目标与原则.md`：这个审计为什么存在、长期目标和稳定审计原则是什么。
 - `项目背景速读.md`：这个项目大概是什么业务背景。
 - `审计阶段路线图.md`：当前审计处于哪个阶段、阶段目标是什么。
-- `系统上下文地图.md`：快速理解新旧系统流程、关键差异，以及去哪里看更权威的系统材料。
+- `系统上下文地图.md`：快速理解材料结构、有效来源边界，以及哪些目录只是审计对象。
 - `BK_Copilot/`：已经开始重写的正式 node / memory layer 草案。
 - `Entity相关的所有问题.md`、`Alias question.md`、`未解决问题暂存清单.md`：当前 Entity / Alias 讨论的主题记录和待处理问题。
-- `new system/`：当前系统设计材料，作为审计对象，不是正确性证明。
-- `old_system_nodedesign/`：旧系统材料，作为历史意图参考，不是 baseline。
+- `new system/`：当前系统设计材料，只作为审计对象，不具有权威参考意义。
+- `old_system_nodedesign/`：旧系统材料，只作为审计对象，不具有权威参考意义。
 
 长期性的设计结论不写进规则文档；应写入用户后续创建的长期结论文档、对应主题记录，或正式 `BK_Copilot/` 文档。
 
 ## 材料角色
 
-### 当前系统
+### 被审计材料
 
-`new system/new_system.md` 是当前系统的主要总览，也是主要审计对象。
+`new system/new_system.md` 是当前系统材料的主要总览，也是被审计对象。
 
-`new system/node_stage_designs/` 包含当前 node 设计材料。这些是审计输入，默认不是 implementation-ready contracts。
+`new system/node_stage_designs/` 包含当前 node 设计材料。这些文档只说明当前设计材料如何表达自己，不是 authority、baseline、正确性证明或 implementation-ready contract。
 
-审计某个 node 时，读取对应的合并后 `*_node__design.md` 文件，并读取评估边界所需的相关上游 / 下游 node 文件。如需追溯旧 Stage 全文，通过 git 历史查看。
+`old_system_nodedesign/` 包含旧系统材料。这些文档同样只作为被审计对象；它们不是历史意图权威、标准答案、回归目标、可复用约束来源或评判当前系统的依据。
 
-### 旧系统
-
-`old_system_nodedesign/` 下的旧系统文件可以用于推断：
-
-- 原始设计意图
-- 系统运行时心智模型
-- 用户当初真正关心的问题
-- 用户重视的能力
-- 仍可能值得保留的可复用约束
-
-不要把旧系统用作：
-
-- 标准答案
-- 回归目标
-- 证明新系统错误的依据，除非只是因为它和旧系统不同
-- 证明新系统正确的依据，除非只是因为它更新或更模块化
-
-如果复用了旧系统中的某个想法，必须明确说明：保留下来的约束是什么，以及为什么它仍然服务于核心产品目标。
+审计某个 node 时，如需读取 `new system/` 或 `old_system_nodedesign/`，只能把它们当作待检查的 source text。任何从这些材料中看似有用的想法，都必须脱离来源重新按核心产品目标、当前已确认规则和正式 `BK_Copilot/` 草案论证，不能因为它出现在 New system 或 Old system 中就获得 authority。
 
 ## 必读材料
 
@@ -114,16 +102,16 @@
 - 不熟悉项目背景：读 `项目背景速读.md`。
 - 需要稳定审计目标或原则：读 `审计目标与原则.md`。
 - 需要阶段位置、gate 或路线图：读 `审计阶段路线图.md`。
-- 需要快速理解新旧系统结构：读 `系统上下文地图.md`。
+- 需要快速理解材料结构和来源边界：读 `系统上下文地图.md`。
 - 需要当前正式草案：读 `BK_Copilot/` 下对应 node / memory layer 文档。
-- 需要审计当前系统原始材料：读 `new system/new_system.md` 和相关 `new system/node_stage_designs/*.md`。
+- 需要审计 New system 原始材料：读 `new system/new_system.md` 和相关 `new system/node_stage_designs/*.md`，但只把它们当作审计对象。
 
 进行 node-level audit 前，还要读：
 
-- `new system/node_stage_designs/` 下该 node 的相关文件
+- `new system/node_stage_designs/` 下该 node 的相关文件，作为被审计文本
 - 评估边界所需的上游和下游 node 文件
 - 如果 `BK_Copilot/` 下已有该 node 或 memory layer 的正式草案，优先读正式草案，再回到 `new system/` 对照审计对象。
-- 只有在理解当前系统行为之后，才读取相关旧系统文件来推断原始意图或可复用约束，除非用户明确要求先做 legacy comparison
+- 只有在用户明确要求审计、比较或追溯 Old system 材料时，才读取 `old_system_nodedesign/`；读取后仍不得把其中任何信息当成权威参考、baseline 或可复用约束来源。
 
 修改治理文档前，先读：
 
@@ -175,7 +163,7 @@
 - `系统上下文地图.md`，仅当系统材料入口、结构导航或来源关系变化时
 - 用户要求创建的新审计报告或聚焦审计笔记
 
-默认只读参考的设计文档，除非用户明确要求编辑：
+默认只读的被审计材料，除非用户明确要求编辑：
 
 - `new system/new_system.md`
 - `new system/node_stage_designs/*.md`
@@ -191,7 +179,7 @@
 - 把审计性和会计师控制权视为产品要求，而不是装饰。
 - 清楚区分 evidence、memory、judgment、governance 和 audit records。
 - 不要仅仅为了对称性、完整性或未来可选性而新增组件。
-- 不要在没有翻译出仍然成立的约束前，把旧系统结构推广进新系统。
+- 不要把 New system 或 Old system 中的结构、字段、流程或能力推广成当前结论；任何保留建议都必须脱离来源重新按核心产品目标论证。
 - 不要把第一版 Stage 3 data contracts 当成冻结的实现文档。
 - 不要把 AI reasoning 文本变成可复用 authority。可复用 authority 必须来自已批准的 memory、rules、cases、profile 或 governance state。
 
@@ -202,14 +190,14 @@
 - 任务需要改变产品设计合同，而不只是审计它们
 - 某个审计发现依赖用户尚未决定的业务优先级
 - 两个权威来源冲突，且无法通过权威顺序解决
-- 当前工作会把旧系统 spec 当成当前有效 baseline
-- 当前工作会模糊当前系统材料与历史参考材料的边界
+- 当前工作会把 `new system/` 或 `old_system_nodedesign/` 当成权威参考、当前有效 baseline 或正确性证明
+- 当前工作会模糊被审计材料与当前有效规则 / 正式草案的边界
 - 任务需要大范围重写 `new system/`，而不是一次聚焦的已请求编辑
 
 遇到以下情况，宁可暂缓，也不要强行闭环：
 
 - 当前 baseline 需要真实设计决策，而不是措辞清理
-- 某个旧系统能力无法干净翻译进当前系统
+- 某个被审计材料中的能力是否应保留需要真实产品决策
 - 某个简化会改变审计性、会计师控制权或自动化 authority，而用户尚未批准
 
 ## 文档更新纪律
@@ -223,7 +211,7 @@
 - `当前任务状态.md` 只保留必要交接和指针，不沉淀长期结论全文。
 - 保持 `审计目标与原则.md` 稳定、低 churn。
 - 保持 `AGENTS.md` 聚焦 agent operation，不要把临时交接细节塞进去。
-- 保留有用历史意图时，要把它标为 intent 或 constraint，不要静默当成当前设计规则。
+- 从被审计材料中发现看似有用的想法时，只能标为待论证假设；不要静默当成当前设计规则、intent 或 constraint。
 
 ## 输出要求
 
