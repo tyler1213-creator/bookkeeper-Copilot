@@ -752,21 +752,6 @@ Case Judgment 无推断性建议时：
 - Memory Update 是否负责写入。
 - Governance Intake 是否负责高风险场景。
 - 是否存在自动 stable 的同步路径。
-
-### 6. Stable entity 默认 automation policy
-
-当前确认：
-
-stable entity 不应自动放宽 automation。
-
-但默认 policy 名称还没定。
-
-可能方向：
-
-- identity_only
-- case_allowed_but_no_promotion
-- review_required
-
 ### 7. 正式文档更新范围
 
 完成 Entity 讨论后，需要更新：

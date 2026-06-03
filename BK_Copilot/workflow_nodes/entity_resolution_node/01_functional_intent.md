@@ -97,6 +97,7 @@
 - 通过 Alias / governance authority（别名 / 治理权威）防止模型用语义相似度越权。
 - 通过 runtime candidate output（运行时候选输出）让系统学习有入口，但不污染 durable authority（长期权威）。
 - 通过 `new_stable_entity` 的受限同步写入，让清楚、可追溯且无冲突的新对象在同 batch 后续交易中可被自然匹配。
+- 通过受控 AI 联网搜索减少不必要的 accountant pending 问题；搜索只辅助判断“这是谁”，不能产生 accounting outcome（会计处理结果）或 authority（权威）。
 
 Alias（别名）在本节点中的当前含义：
 
@@ -110,14 +111,23 @@ Alias（别名）在本节点中的当前含义：
 - `transaction_id`（稳定交易 ID）必须来自 `Transaction Identity Node`（交易身份节点）。
 - `evidence_refs`（证据引用）必须可追溯到 Evidence Log（证据日志）或 evidence foundation（证据基础）。
 - `Entity Log`（实体日志）和 `Governance Log`（治理日志）优先于 Knowledge Summary（知识摘要）。
-- 本节点判断为 `new_stable_entity`（新稳定实体）时，可以同步写入 Entity Log，不需要 governance approval（治理批准）；写入内容只限 entity 本体。
+- 本节点判断为 `new_stable_entity`（新稳定实体）时，可以同步写入 Entity Log，不需要 governance approval（治理批准）；写入内容只限 entity 本体和最小创建 provenance。
 - `candidate_signal`（候选信号）是 runtime-only（仅运行时）handoff，不是 durable authority（长期权威）。
 - 未确认的 surface text 不能作为 Alias 使用。
 - Entity Resolution 输出 unknown_entity 后，如果 accountant 在 Coordinator 交互中明确确认 identity，交易不重新进入本节点；该 accountant confirmation（会计师确认）替代本节点身份判断。
 - `confidence`（身份识别置信度）只表示 identity confidence（身份置信度），不能表示 accounting classification confidence（会计分类置信度）。
+- 本节点传给下游的 unknown / unresolved identity context 只能作为 runtime clue（运行时线索）和 pending 诊断材料，不能被 Case Judgment、Coordinator 或其他节点包装成已确认 identity authority。
+
+Rule Match（规则匹配）在本节点下游的当前边界：
+
+- Rule Match 接收本节点已经确认的 stable entity（稳定实体）结果，再判断当前交易是否满足 rule scope（规则适用范围）。
+- Alias lookup（别名查询）发生在 Entity Resolution 阶段；Rule 的核心不是 Alias。
+- Entity-level rule（实体级规则）围绕 stable entity 建立；pattern-level rule（模式级规则）围绕 stable entity 下更窄的稳定交易模式建立。
+- 如果一个 entity 下存在多种最终会计分类结果，该 entity 本身不应升级成 entity-level rule，需要进入更窄 scope 选择。
 
 ## 7. 未决定问题
 
 - `stable_entity_resolution_threshold`（稳定实体识别所需证据门槛）尚未冻结。
 - `entity_resolution_output`（实体识别运行时输出）的 exact field schema（精确字段结构）尚未冻结。
+- `new_stable_entity` 最小创建 provenance 的 exact field schema（精确字段结构）尚未冻结。
 - `knowledge_summary_conflict_repair`（Knowledge Summary 与 Entity Log / Governance Log 冲突时的修复流程）尚未冻结。

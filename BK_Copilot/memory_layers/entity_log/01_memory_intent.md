@@ -33,6 +33,7 @@
 - `entity_status`（实体生命周期状态）。
 - `authority_metadata`（权威来源元数据）。
 - `evidence_links`（证据链接），指向支持身份、别名或状态的 evidence（证据）。
+- minimal creation provenance（最小创建来源记录），例如 `created_from`、matched surface text、created time 和是否自动创建；字段名尚未冻结。
 - `risk_flags`（身份或自动化风险标记）。
 - `automation_policy`（自动化策略）。
 - `governance_refs`（治理引用），指向批准、拒绝、降级、合并、拆分或策略变更的治理事件。
@@ -49,6 +50,7 @@
 
 - `evidence_links`（证据链接）。
 - `authority_metadata`（权威来源元数据）。
+- minimal creation provenance（最小创建来源记录）。
 - `governance_notes`（治理备注）。
 - `risk_flags`（风险标记）的解释文本。
 - historical display text（历史展示文本）。
@@ -109,7 +111,7 @@ Alias 当前定义：
 ## 5. 已知约束
 
 - `active`（有效）只表示 entity（实体）可作为稳定身份目标，不等于可以自动分类。
-- `Entity Resolution Node`（实体识别节点）判断为 `new_stable_entity`（新稳定实体）时，可以同步写入 Entity Log，不需要 governance approval（治理批准）；写入内容只限 entity 本体，不包括 Alias（别名）、automation policy（自动化策略）或 rule（规则）。
+- `Entity Resolution Node`（实体识别节点）判断为 `new_stable_entity`（新稳定实体）时，可以同步写入 Entity Log，不需要 governance approval（治理批准）；写入内容只限 entity 本体和最小创建 provenance，不包括 Alias（别名）、automation policy（自动化策略）或 rule（规则）。
 - Alias 只提供 identity reuse（身份复用）能力，不提供 rule authority（规则权威）或会计分类结论。
 - `Case Log`（案例日志）可以提供 risk evidence（风险依据），但不能直接修改 Entity Log（实体日志）。
 - `Transaction Log`（交易日志）不能作为 runtime identity source（运行时身份来源）或 learning source（学习来源）。
@@ -118,6 +120,7 @@ Alias 当前定义：
 ## 6. 未决定问题
 
 - `entity_record`（实体记录）的 exact field schema（精确字段结构）尚未冻结。
+- `new_stable_entity` 最小创建 provenance 的 exact field schema 尚未冻结。
 - `alias_record`（别名记录）是否独立记录尚未冻结。
 - Alias 库具体以什么技术形态呈现尚未冻结。
 - candidate identity signal（候选身份信号）如需持久化，落点和 workflow 尚未冻结；但它不作为 Entity Log 中的 durable candidate entity lifecycle state（长期候选实体生命周期状态）。

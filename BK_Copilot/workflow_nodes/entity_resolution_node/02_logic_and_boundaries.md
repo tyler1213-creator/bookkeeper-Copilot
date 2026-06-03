@@ -34,6 +34,7 @@
 | Source | 读取内容 | 用途 | Authority 限制 |
 | --- | --- | --- | --- |
 | Evidence Log（证据日志） / evidence foundation（证据基础） | `evidence_refs`（证据引用）、raw bank text（银行原始文本）、receipt vendor（小票商家）、cheque payee（支票收款人）、invoice party（发票主体）、contract party（合同主体）、accountant context refs（会计师上下文引用） | 识别当前 evidence（证据）表面指向谁 | Evidence（证据）不保存业务结论；模型摘要不能替代 evidence ref（证据引用） |
+| AI 联网搜索 / external lookup（外部查询） | 针对 vendor / payee / counterparty 身份的搜索线索、相似对象、公开身份解释 | 当 bank descriptor 只显示支付平台、缩写或不完整名称时，辅助判断当前交易主体是谁 | 搜索结果只是 evidence 来源，不是 authority；只用于 identity，不用于 COA / HST / GST / JE 判断 |
 | Transaction Identity layer（交易身份层） | `transaction_id`（稳定交易 ID）和 identity handoff（身份交接） | 保证本次身份判断绑定到稳定交易对象 | 交易身份不等于 entity identity（实体身份），也不等于 accounting authority（会计权威） |
 | Profile / Structural Match handoff（客户结构匹配交接） | `structural_path_status`（结构性路径状态）、non-structural reason（非结构性原因）、profile context refs（客户结构上下文引用） | 防止结构性交易穿透后被普通实体流程处理 | candidate profile fact（候选客户结构事实）不能当 stable profile truth（稳定客户结构事实） |
 | Entity Log（实体日志） | known entities（已知实体）、Alias 记录、`entity_status`（实体生命周期状态）、authority metadata（权威元数据）、risk flags（风险标记） | 判断 evidence（证据）是否安全指向稳定 entity（实体），或能否通过历史 Alias 复用到 stable entity | Summary（摘要）不能覆盖 Entity Log（实体日志）；candidate entity（候选实体）不能当 stable entity（稳定实体）；未确认 surface text 不能当 Alias |
@@ -46,7 +47,7 @@
 
 本节点可以直接写入：
 
-- Entity Log（实体日志）中的 `new_stable_entity` entity 本体：`entity_id`、`display_name`、`entity_type`、`entity_status=active`、`evidence_links`、`created_from`。该写入不需要 governance approval（治理批准）。
+- Entity Log（实体日志）中的 `new_stable_entity` entity 本体和最小创建 provenance：`entity_id`、`display_name`、`entity_type`、`entity_status=active`、`evidence_links`、`created_from`，以及 `matched_surface_text`、`created_at`、是否自动创建等字段名未冻结的 provenance trace。该写入不需要 governance approval（治理批准）。
 
 除 `new_stable_entity` entity 本体同步写入外，本节点只能提出 candidate / issue（候选 / 问题）：
 
@@ -77,13 +78,14 @@
 - 当前交易是否已经被 structural path（结构性路径）完成；若已完成，本节点不得继续。
 - `entity_status`（实体生命周期状态）、governance constraint（治理限制）等 authority check（权威检查）是否满足。
 - 当前 surface text 是否命中已确认 Alias，以及是否存在 Alias 冲突或多 entity 竞争。
-- 当本节点输出 `new_stable_entity`（新稳定实体）时，直接写入 Entity Log 的内容是否只限 entity 本体，不夹带 Alias / rule / automation authority（别名 / 规则 / 自动化权威）。
+- 当本节点输出 `new_stable_entity`（新稳定实体）时，直接写入 Entity Log 的内容是否只限 entity 本体和最小创建 provenance，不夹带 Alias / rule / automation authority（别名 / 规则 / 自动化权威）。
 - 哪些候选或风险只能作为 runtime handoff（运行时交接），不能成为 durable memory（长期记忆）。
 
 ### LLM 可以判断
 
 - messy evidence（杂乱证据）中的 vendor / payee / counterparty 表面写法是否语义上接近某个已知 entity（实体）。
 - receipt（小票）、cheque（支票）、invoice（发票）、contract（合同）或 accountant note（会计师备注）中有哪些 human-visible identity clues（人类可见身份线索）。
+- 目标明确的 AI 联网搜索结果是否提供了 identity clue（身份线索），例如支付平台背后的真实 vendor、缩写名称或不完整商户名。
 - 当前 evidence（证据）更像 matched stable entity（已匹配稳定实体）、new stable entity（新稳定实体）、new entity candidate（新实体候选）、ambiguous candidates（歧义候选）还是 unresolved identity（无法识别身份）。
 - 第一次出现的新对象是否已有直接、清楚、可追溯且无明显冲突的 identity signal（身份信号），足以作为 `new_stable_entity`。
 - identity rationale（身份判断理由）、ambiguity reason（歧义原因）和 missing evidence reason（缺失证据原因）的可读摘要。
@@ -134,6 +136,13 @@ Alias 查询对输出的影响：
 - 如果只是高度类似历史 Alias，不能天然等同于确认 identity；它最多增强 Entity Resolution 的判断。
 - 只有在存在受控 normalization / equivalence 规则、没有冲突、没有多 entity 竞争时，高度类似的 Alias 才可以作为更强的匹配依据。
 
+Rule Match 对输出的读取边界：
+
+- Rule Match 接收本节点已经确认的 stable entity 结果，再判断当前交易是否满足 rule scope。
+- Rule 的核心不是 Alias；Alias lookup 发生在 Entity Resolution 阶段。
+- Entity-level rule 围绕 stable entity 建立；pattern-level rule 围绕 stable entity 下更窄的稳定交易模式建立。
+- 如果一个 entity 下存在多种最终会计分类结果，该 entity 本身不应升级成 entity-level rule，需要进入更窄 scope 选择。
+
 ## 7. 证据不足时的行为
 
 如果缺少 identity signal（身份信号）：
@@ -147,6 +156,8 @@ Alias 查询对输出的影响：
 当本节点输出 `unresolved`（无法识别身份）时：
 
 - Case Judgment Node（案例判断节点）不走高置信度自动分类通道，输出 pending。
+- 本节点可以把 identity 判断相关的 runtime context 传给 Case Judgment：当前 evidence 中的人类可见身份线索、搜索线索、可能的身份解释、相似对象、ambiguity reason、missing evidence reason、Alias 冲突和相关 evidence refs。
+- 这些 runtime context 不是 stable entity、candidate entity 或 identity authority，不能支持 Rule Match、Case Log authority 或 durable memory mutation。
 - 但 Case Judgment 仍然处理这笔交易，pending 内部分两种情况：
   - **完全无法判断**：除 entity 未识别外，也没有其他足够上下文支持推断。由 Coordinator 直接向 accountant 提问。
   - **有推断但不确定**：Case Judgment 可利用其他已有上下文（如 receipt items、交易金额模式、bank descriptor 特征等）给出推断性建议，附在 pending 输出中，由 Coordinator 呈现给 accountant 选择或确认。
@@ -161,6 +172,8 @@ Alias 查询对输出的影响：
 - Coordinator 根据 pending 子类型向 accountant 提问。
 - Accountant 明确确认 identity 后，交易不重新进入本节点。
 - Accountant confirmation（会计师确认）替代 Entity Resolution 的身份判断；stable entity 创建和最终分类由后续路径完成。
+- 已确认交易不重新进入 Case Judgment；分类在 Coordinator 与 accountant 的交互中完成。
+- Coordinator 追问结构、问题模板和 finalization / memory write 机制仍属于下游未冻结问题，不由本文冻结。
 
 如果缺少 traceable evidence ref（可追溯证据引用）：
 
@@ -207,8 +220,10 @@ Alias 查询对输出的影响：
 
 - `transaction_id`（稳定交易 ID）。
 - `evidence_used`（用于身份判断的证据）。
+- `matched_surface_text`（用于创建或匹配 stable entity 的当前表面文本），如果存在。
 - `matched_alias_surface_text`（命中的 Alias 表面写法），如果存在。
 - `alias_lookup_basis`（Alias 查询依据），如果存在。
+- `created_at` / auto-created marker（自动创建标记）等最小创建 provenance，字段名未冻结。
 - `blocking_reason`（身份层阻断原因），如果存在。
 - `identity_risk_flags`（身份识别风险标记），如果存在。
 - `governance_constraint_refs`（治理限制引用），如果存在。
@@ -252,7 +267,8 @@ Alias 查询对输出的影响：
 
 1. `stable_entity_resolution_threshold`（稳定实体识别所需证据门槛）。
 2. `entity_resolution_output`（实体识别运行时输出）的 exact field schema（精确字段结构）。
-3. `knowledge_summary_conflict_repair`（Knowledge Summary 与 Entity Log / Governance Log 冲突时的修复流程）。
+3. `new_stable_entity` 最小创建 provenance 的 exact field schema（精确字段结构）。
+4. `knowledge_summary_conflict_repair`（Knowledge Summary 与 Entity Log / Governance Log 冲突时的修复流程）。
 
 这些问题解决前，不能进入：
 

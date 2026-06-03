@@ -24,6 +24,7 @@
 
 - `stable_entity_resolution_threshold`（稳定实体识别所需证据门槛）尚未冻结。
 - `entity_resolution_output`（实体识别运行时输出）的 exact field schema（精确字段结构）尚未冻结。
+- `new_stable_entity` 最小创建 provenance 的 exact field schema（精确字段结构）尚未冻结。
 - `knowledge_summary_conflict_repair`（Knowledge Summary 与 Entity Log / Governance Log 冲突时的修复流程）尚未冻结。
 
 ## 当前已确认边界
@@ -31,8 +32,10 @@
 - Alias（别名）是过去已经确认过的 transaction surface text 和 stable entity（稳定实体）的对应关系。
 - 当前只确认两类信息可能成为 Alias：bank statement 中每笔交易的 description / descriptor / raw bank surface text；以及当 bank description 本身没有明确身份意义时，其他可能重复出现并能指向交易主体的字段，例如 cheque payee。
 - 当前确认需要一个可被 Entity Resolution 查询的 Alias 库，用于从当前交易的 surface text 反查过去已经确认过的 entity；Alias 库具体技术形态尚未冻结。
-- Entity Resolution 判断为 `new_stable_entity`（新稳定实体）时，可以同步写入 Entity Log，不需要 governance approval（治理批准）；写入内容限于 entity 本体，不写 Alias（别名）、automation policy（自动化策略）或 rule（规则）。
+- Entity Resolution 可以使用 AI 联网搜索辅助 identity 判断；搜索结果只是 evidence 来源，不是 authority，也不用于会计分类判断。
+- Entity Resolution 判断为 `new_stable_entity`（新稳定实体）时，可以同步写入 Entity Log，不需要 governance approval（治理批准）；写入内容限于 entity 本体和最小创建 provenance，不写 Alias（别名）、automation policy（自动化策略）或 rule（规则）。
 - unknown entity 后由 accountant 明确确认 identity 时，交易不重新进入 Entity Resolution；accountant confirmation（会计师确认）替代本节点的身份判断，后续创建 stable entity 和分类完成由下游路径处理。
+- unknown / unresolved identity 输出可以携带 identity clues、ambiguity reason、missing evidence reason、搜索线索和 evidence refs 作为 runtime context，但这些信息不是 stable entity、candidate entity 或 identity authority。
 
 ## 进入下一阶段前必须解决
 

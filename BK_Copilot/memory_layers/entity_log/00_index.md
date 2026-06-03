@@ -28,7 +28,7 @@
 - `Entity Log`（实体日志）独立于 `Case Log`（案例日志）和 `Transaction Log`（交易日志）。
 - `Entity Log`（实体日志）回答“这是谁”和“身份权威是什么”，不回答“怎么记账”。
 - `Entity Log`（实体日志）只保存 stable entity（稳定实体）记录；没有 durable candidate entity lifecycle state（长期候选实体生命周期状态）。
-- `Entity Resolution Node`（实体识别节点）判断为 `new_stable_entity`（新稳定实体）时，可以同步写入 Entity Log，不需要 governance approval（治理批准）；写入内容限于 entity 本体：`entity_id`、`display_name`、`entity_type`、`entity_status=active`、`evidence_links`、`created_from`。
+- `Entity Resolution Node`（实体识别节点）判断为 `new_stable_entity`（新稳定实体）时，可以同步写入 Entity Log，不需要 governance approval（治理批准）；写入内容限于 entity 本体和最小创建 provenance：`entity_id`、`display_name`、`entity_type`、`entity_status=active`、`evidence_links`、`created_from`，以及 `matched_surface_text`、`created_at`、是否自动创建等字段名未冻结的 provenance trace。
 - `new_stable_entity`（新稳定实体）写入不等于写入 Alias（别名）、放宽 automation policy（自动化策略）或创建 active rule（生效规则）。
 - `Case Log`（案例日志）可以为 entity-level risk（实体级风险）或 automation policy candidate（自动化策略候选）提供依据，但不能直接修改 `Entity Log`（实体日志）。
 - `Transaction Log`（交易日志）不能作为 runtime entity authority（运行时实体权威）或 learning source（学习来源）。

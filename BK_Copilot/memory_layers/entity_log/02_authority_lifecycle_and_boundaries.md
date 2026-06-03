@@ -17,7 +17,7 @@
 | Reader | 读取目的 | 可读内容 | 限制 |
 | --- | --- | --- | --- |
 | Entity Resolution Node（实体识别节点） | 判断当前 evidence（证据）是否指向 stable entity（稳定实体） | entity identity（实体身份）、Alias 库、status（状态）、risk flags（风险标记）、automation policy（自动化策略） | 只有 `new_stable_entity` entity 本体可同步写入；Alias / automation policy / rule 不随 entity 本体同步写入 |
-| Rule Match Node（规则匹配节点） | 判断 rule eligibility（规则匹配资格）的 identity prerequisites（身份前置条件） | active entity（有效实体）、automation policy（自动化策略） | 必须自行读取 Rule Log（规则日志）；Entity Log 不提供 rule condition（规则条件）；Alias 对 Rule Match 的支持不在本文冻结 |
+| Rule Match Node（规则匹配节点） | 判断 rule eligibility（规则匹配资格）的 identity prerequisites（身份前置条件） | active entity（有效实体）、automation policy（自动化策略） | 必须自行读取 Rule Log（规则日志）；Entity Log 不提供 rule condition（规则条件）；Alias lookup 发生在上游 Entity Resolution，Rule Match 接收已确认 stable entity 结果 |
 | Case Judgment Node（案例判断节点） | 使用 entity context（实体上下文）和 automation boundary（自动化边界） | identity basis（身份基础）、risk flags（风险标记）、automation policy（自动化策略） | 不能把 Entity Log 当 Case Log（案例日志）或 classification memory（分类记忆） |
 | Coordinator / Pending Node（协调 / 待确认节点） | 将 Alias / identity gap（别名 / 身份缺口）转成人工问题 | blocking context（阻断上下文）、risk flags（风险标记）、candidate refs（候选引用） | accountant answer（会计师回答）不能由本节点直接写入 Entity Log |
 | Review Node（审核节点） | 向 accountant（会计师）展示当前 entity authority（实体权威）和候选风险 | active state（有效状态）、authority refs（权威引用）、candidate context（候选上下文） | Review 本身不批准 durable entity mutation（长期实体变更） |
@@ -34,7 +34,7 @@
 | Post-Batch Lint Node（批后体检节点） | automation policy downgrade candidate（自动化策略降级候选）或受控 auto-applied downgrade（自动生效降级） | candidate / restrictive mutation（候选 / 收紧变更） | 放宽或升级必须 approval；自动降级必须 governance visibility（治理可见） |
 | Review Node（审核节点） | entity / policy candidate（实体 / 策略候选） | candidate（候选） | 是；Review 不直接写 stable authority（稳定权威） |
 | Case Memory Update Node（案例记忆更新节点） | entity risk / policy candidate（实体风险 / 策略候选） | candidate（候选） | 是；不能直接写 Entity Log |
-| Entity Resolution Node（实体识别节点） | `new_stable_entity` entity 本体（`entity_id`、`display_name`、`entity_type`、`entity_status=active`、`evidence_links`、`created_from`）以及 identity issue / candidate signal（身份问题 / 候选信号） | direct stable entity body / runtime candidate（直接稳定实体本体 / 运行时候选） | `new_stable_entity` 本体写入不需要 governance approval；Alias 不随 entity 本体写入 |
+| Entity Resolution Node（实体识别节点） | `new_stable_entity` entity 本体（`entity_id`、`display_name`、`entity_type`、`entity_status=active`、`evidence_links`、`created_from`）和最小创建 provenance（如 matched surface text、created time、是否自动创建；字段名未冻结），以及 identity issue / candidate signal（身份问题 / 候选信号） | direct stable entity body plus creation trace / runtime candidate（直接稳定实体本体加创建追溯 / 运行时候选） | `new_stable_entity` 本体和创建追溯写入不需要 governance approval；Alias 不随 entity 本体写入 |
 
 ## 4. Candidate 边界
 
@@ -83,8 +83,8 @@ Alias（别名）的当前定义已确认：
 
 ```text
 Entity Resolution judges new_stable_entity
--> synchronous Entity Log mutation limited to entity body
--> trace with evidence_refs / created_from
+-> synchronous Entity Log mutation limited to entity body and minimal creation provenance
+-> trace with evidence_refs / created_from / matched surface text / created time / auto-created marker
 -> downstream reads stable identity, but no Alias / rule / automation approval is implied
 ```
 
@@ -166,6 +166,8 @@ candidate / review / lint / onboarding signal
 - `evidence_refs`（证据引用）。
 - `governance_refs`（治理引用）。
 - `created_from`（创建来源）。
+- matched surface text（用于创建或匹配 stable entity 的当前表面文本），字段名未冻结。
+- created time / auto-created marker（创建时间 / 是否自动创建），字段名未冻结。
 - `updated_by`（更新者 / 更新来源），字段名未冻结。
 - `superseded_by`（被替代引用），字段名未冻结。
 - merge / split refs（合并 / 拆分引用）。
@@ -191,11 +193,12 @@ candidate / review / lint / onboarding signal
 以下问题未冻结：
 
 1. `entity_record`（实体记录）的 exact field schema（精确字段结构）。
-2. `alias_record`（别名记录）和 Alias 库的技术形态。
-3. candidate identity signal（候选身份信号）的持久化位置；它不作为 Entity Log durable lifecycle state（长期生命周期状态）。
-4. `automation_policy`（自动化策略）与 Governance Log（治理日志）的 projection boundary（投影边界）。
-5. merge / split（合并 / 拆分）对 aliases（别名）、rules（规则）和 cases（案例）的迁移或阻断规则。
-6. person entity（个人实体）与 Profile employee / owner facts（客户结构中的员工 / owner 事实）的边界。
+2. `new_stable_entity` 最小创建 provenance 的 exact field schema。
+3. `alias_record`（别名记录）和 Alias 库的技术形态。
+4. candidate identity signal（候选身份信号）的持久化位置；它不作为 Entity Log durable lifecycle state（长期生命周期状态）。
+5. `automation_policy`（自动化策略）与 Governance Log（治理日志）的 projection boundary（投影边界）。
+6. merge / split（合并 / 拆分）对 aliases（别名）、rules（规则）和 cases（案例）的迁移或阻断规则。
+7. person entity（个人实体）与 Profile employee / owner facts（客户结构中的员工 / owner 事实）的边界。
 
 这些问题解决前，不能进入：
 
