@@ -93,6 +93,5 @@ Case Log evidence
 
 - 哪些 completed transaction（已完成交易）具备 case write eligibility（案例写入资格）。
 - duplicate / corrected / reversed / split transaction（重复 / 纠正 / 冲销 / 拆分交易）如何影响 case supersession（案例替代关系）。
-- `new_entity_candidate`（新实体候选）相关交易如何表达 identity authority gap（身份权威缺口）。
 - `Case Log`（案例日志）与 `Transaction Log`（交易日志）的 exact trigger order（精确触发顺序）。
 - 哪些 case-derived signals（案例衍生信号）可以进入 governance candidate（治理候选）。

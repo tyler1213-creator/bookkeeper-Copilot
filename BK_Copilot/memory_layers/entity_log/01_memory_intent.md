@@ -25,7 +25,7 @@
 
 这层 memory 保存：
 
-- stable entity record（稳定实体记录）；Entity Log 不保存 durable candidate entity lifecycle state（长期候选实体生命周期状态）。
+- stable entity record（稳定实体记录）。
 - `entity_id`（实体唯一标识）。
 - `display_name`（展示名称）。
 - `entity_type`（实体类型），例如 vendor（商家）、payee（收款人）、counterparty（交易对手）、person（个人）、organization（组织）。
@@ -116,6 +116,7 @@ Alias 当前定义：
 - `Case Log`（案例日志）可以提供 risk evidence（风险依据），但不能直接修改 Entity Log（实体日志）。
 - `Transaction Log`（交易日志）不能作为 runtime identity source（运行时身份来源）或 learning source（学习来源）。
 - automation policy upgrade / relaxation（自动化策略升级 / 放宽）必须 accountant approval（会计师批准）。
+- accountant 只确认会计分类、未确认 identity 时，不创建 entity record；该交易以 unknown entity 终态 finalize（具体记录边界见 `BK_Copilot/memory_layers/case_log/` 和 `Coordinator Question.md`）。
 
 ## 6. 未决定问题
 
@@ -123,6 +124,5 @@ Alias 当前定义：
 - `new_stable_entity` 最小创建 provenance 的 exact field schema 尚未冻结。
 - `alias_record`（别名记录）是否独立记录尚未冻结。
 - Alias 库具体以什么技术形态呈现尚未冻结。
-- candidate identity signal（候选身份信号）如需持久化，落点和 workflow 尚未冻结；但它不作为 Entity Log 中的 durable candidate entity lifecycle state（长期候选实体生命周期状态）。
 - `automation_policy`（自动化策略）是否直接存储在 Entity Log，还是由 Governance Log 投影生成，尚未字段级冻结。
 - merge / split（合并 / 拆分）后 alias（别名）、rule（规则）和 case（案例）的迁移行为尚未字段级冻结。

@@ -27,7 +27,7 @@
 
 - `Entity Log`（实体日志）独立于 `Case Log`（案例日志）和 `Transaction Log`（交易日志）。
 - `Entity Log`（实体日志）回答“这是谁”和“身份权威是什么”，不回答“怎么记账”。
-- `Entity Log`（实体日志）只保存 stable entity（稳定实体）记录；没有 durable candidate entity lifecycle state（长期候选实体生命周期状态）。
+- `Entity Log`（实体日志）只保存 stable entity（稳定实体）记录。
 - `Entity Resolution Node`（实体识别节点）判断为 `new_stable_entity`（新稳定实体）时，可以同步写入 Entity Log，不需要 governance approval（治理批准）；写入内容限于 entity 本体和最小创建 provenance：`entity_id`、`display_name`、`entity_type`、`entity_status=active`、`evidence_links`、`created_from`，以及 `matched_surface_text`、`created_at`、是否自动创建等字段名未冻结的 provenance trace。
 - `new_stable_entity`（新稳定实体）写入不等于写入 Alias（别名）、放宽 automation policy（自动化策略）或创建 active rule（生效规则）。
 - `Case Log`（案例日志）可以为 entity-level risk（实体级风险）或 automation policy candidate（自动化策略候选）提供依据，但不能直接修改 `Entity Log`（实体日志）。
@@ -35,7 +35,6 @@
 - Alias（别名）是过去已经确认过的 transaction surface text 和 stable entity（稳定实体）的对应关系。
 - 当前只确认两类信息可能成为 Alias：bank statement 中每笔交易的 description / descriptor / raw bank surface text；以及当 bank description 本身没有明确身份意义时，其他可能重复出现并能指向交易主体的字段，例如 cheque payee。
 - 当前确认需要一个可被 Entity Resolution（实体识别）查询的 Alias 库；Alias 库具体技术形态尚未冻结。
-- `new_entity_candidate`（新实体候选）不能成为 reusable authority（可复用权威），除非经过 accountant / governance approval（会计师 / 治理批准）。
 - `automation_policy`（自动化策略）属于 entity-level authority（实体级权威），升级或放宽必须经 accountant approval（会计师批准）；系统自动降级可以在受控边界内生效，但必须保留治理可见性。
 
 ## 当前未冻结边界
@@ -43,7 +42,6 @@
 - `entity_record`（实体记录）的 exact field schema（精确字段结构）尚未冻结。
 - Alias 库具体以什么技术形态呈现尚未冻结。
 - `alias_record`（别名记录）是否作为嵌套字段、独立记录或由查询库投影呈现尚未冻结。
-- candidate identity signal（候选身份信号）如需持久化，落点尚未冻结；但它不作为 Entity Log 中的 durable candidate entity lifecycle state（长期候选实体生命周期状态）。
 - `automation_policy_downgrade_path`（自动化策略自动降级路径）的 exact mutation contract（精确变更契约）尚未冻结。
 - `merge_split_supersession_behavior`（实体合并 / 拆分后的替代关系行为）尚未冻结到字段级。
 

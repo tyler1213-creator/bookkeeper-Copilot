@@ -40,7 +40,6 @@
 
 以下内容可以作为 candidate（候选）：
 
-- `new_entity_candidate`（新实体候选）。
 - `merge_split_candidate`（合并 / 拆分候选）。
 - `automation_policy_candidate`（自动化策略候选）。
 - `entity_risk_candidate`（实体风险候选）。
@@ -68,8 +67,6 @@ Alias（别名）的当前定义已确认：
 ## 5. Lifecycle / States
 
 只写已经必要且稳定的 state（状态）。
-
-`candidate`（候选）不是当前 Entity Log 的 durable lifecycle state（长期生命周期状态）。候选身份线索只能作为 runtime / review / governance context（运行时 / 审核 / 治理上下文），其持久化落点尚未冻结。
 
 | State | 含义 | 谁可以进入 | 谁可以退出 | 下游含义 |
 | --- | --- | --- | --- | --- |
@@ -105,7 +102,6 @@ candidate / review / lint / onboarding signal
 
 未冻结 mutation path：
 
-- candidate identity signal（候选身份信号）如需持久化，存放在何处以及如何进入 governance queue（治理队列）。
 - accountant confirmation（会计师确认）后的 stable entity 创建由哪个 finalization / memory write mechanism（完成 / 记忆写入机制）执行，留待多 log 统一写入问题处理。
 - Alias（别名）是否作为 nested records（嵌套记录）、independent records（独立记录）或查询库投影呈现，尚未冻结。
 - Alias 的写入责任和审批路径尚未冻结。
@@ -195,10 +191,9 @@ candidate / review / lint / onboarding signal
 1. `entity_record`（实体记录）的 exact field schema（精确字段结构）。
 2. `new_stable_entity` 最小创建 provenance 的 exact field schema。
 3. `alias_record`（别名记录）和 Alias 库的技术形态。
-4. candidate identity signal（候选身份信号）的持久化位置；它不作为 Entity Log durable lifecycle state（长期生命周期状态）。
-5. `automation_policy`（自动化策略）与 Governance Log（治理日志）的 projection boundary（投影边界）。
-6. merge / split（合并 / 拆分）对 aliases（别名）、rules（规则）和 cases（案例）的迁移或阻断规则。
-7. person entity（个人实体）与 Profile employee / owner facts（客户结构中的员工 / owner 事实）的边界。
+4. `automation_policy`（自动化策略）与 Governance Log（治理日志）的 projection boundary（投影边界）。
+5. merge / split（合并 / 拆分）对 aliases（别名）、rules（规则）和 cases（案例）的迁移或阻断规则。
+6. person entity（个人实体）与 Profile employee / owner facts（客户结构中的员工 / owner 事实）的边界。
 
 这些问题解决前，不能进入：
 

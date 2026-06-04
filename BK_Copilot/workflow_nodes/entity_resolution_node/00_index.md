@@ -35,7 +35,7 @@
 - Entity Resolution 可以使用 AI 联网搜索辅助 identity 判断；搜索结果只是 evidence 来源，不是 authority，也不用于会计分类判断。
 - Entity Resolution 判断为 `new_stable_entity`（新稳定实体）时，可以同步写入 Entity Log，不需要 governance approval（治理批准）；写入内容限于 entity 本体和最小创建 provenance，不写 Alias（别名）、automation policy（自动化策略）或 rule（规则）。
 - unknown entity 后由 accountant 明确确认 identity 时，交易不重新进入 Entity Resolution；accountant confirmation（会计师确认）替代本节点的身份判断，后续创建 stable entity 和分类完成由下游路径处理。
-- unknown / unresolved identity 输出可以携带 identity clues、ambiguity reason、missing evidence reason、搜索线索和 evidence refs 作为 runtime context，但这些信息不是 stable entity、candidate entity 或 identity authority。
+- unknown / unresolved identity 输出可以携带 identity clues、ambiguity reason、missing evidence reason、搜索线索和 evidence refs 作为 runtime context，但这些信息不是 stable entity 或 identity authority。
 
 ## 进入下一阶段前必须解决
 

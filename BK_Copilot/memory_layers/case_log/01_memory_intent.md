@@ -32,7 +32,7 @@
 - exception context（例外上下文），例如 mixed-use risk、identity ambiguity（身份歧义）或其他导致不能简单泛化的上下文。
 - correction reference（纠正引用），用于说明历史案例是否来自 accountant correction 或最终确认。
 - `transaction_log_ref` 或等价 finalization proof，用来证明该案例来自已完成交易。
-- 与 stable entity 或 candidate entity 相关的 case reference；两者 authority 不同。
+- 与 stable entity 相关的 case reference。
 - case-derived candidate signal（案例衍生候选信号），例如 rule promotion candidate、automation risk review candidate、entity risk update candidate。
 
 其中可以成为 reusable authority（可复用权威）的是：
@@ -47,7 +47,6 @@
 - evidence refs（证据引用）和 evidence condition 的可追溯说明。
 - exception explanation（例外说明）。
 - correction explanation（纠正说明）。
-- candidate-linked case（候选实体关联案例）：默认只能作为 weak context 或 governance evidence。
 - case-derived risk / policy / rule promotion signal：只能作为 candidate，不是 durable mutation（长期变更）本身。
 - readable summary（可读摘要）或 Knowledge Compilation 输出。
 
@@ -66,6 +65,7 @@
 - raw evidence blob（原始证据正文）。
 - unapproved AI reasoning（未经批准的 AI 推理）作为 future authority。
 - unknown entity（未知实体）作为 durable identity handle。
+- 以 description / 类别（而非 entity）为索引的学习记录。
 
 它也不能替代：
 
@@ -95,7 +95,7 @@
 - 让 accountant correction 进入未来判断上下文，但不自动污染 Rule Log 或 Entity Log。
 - 让 Post-Batch Lint、Review 和 Governance Review 可以用案例历史识别 rule promotion、automation risk 或 entity risk candidate。
 - 通过要求 finalization proof 和 traceable evidence，避免未完成交易、模型推理或非权威摘要进入长期案例记忆。
-- 通过区分 stable-linked case、candidate-linked case 和 unknown entity，防止身份不稳定时产生强学习记忆。
+- 通过区分 stable-linked case 和 unknown entity，防止身份不稳定时产生强学习记忆。
 
 ## 5. 已知约束
 
@@ -103,8 +103,9 @@
 - Case Log 只保存 completed-case learning memory，不保存 transaction process log 或 final audit record。
 - Case Log 必须能引用 `transaction_log_ref` 或等价 finalization proof；它不能替代或重写 Transaction Log。
 - Stable entity 是强 case reuse 的正常身份基础。
-- Candidate entity 可以被 Case Log 引用，但 candidate-linked case 默认只能作为 weak context 或 governance evidence。
 - Unknown entity 不写入 Entity Log，也不能被 Case Log 当作 identity handle 引用。
+- 一笔交易可以在 entity 未解析的情况下被 accountant 完成分类并 finalize；这类交易只 finalize 到 Transaction Log，不进入 Case Log（无 entity_id 索引键），也不创建 Entity Log 记录。
+- 这类交易不得催生以 description / 类别为索引的学习记录；其身份缺口（情况 Y）是挂在 Transaction Log 上的不阻塞复查线索（标记落点初步倾向 Transaction Log，未冻结），不是 candidate entity，也不是 Case Log 可引用的 durable identity handle。情况 X / 情况 Y 的区分见 `Coordinator Question.md`。
 - Case Log 可以提供 entity-level risk 或 automation policy candidate 的依据，但不能直接修改 Entity Log。
 - Case Log 可以提供 rule promotion candidate 的依据，但不能直接创建、升级、修改、删除或降级 active rule。
 - Repeated outcome 不能自动升级为 approved rule。
@@ -114,8 +115,6 @@
 
 - 哪些 completed transaction 具备 case write eligibility。
 - duplicate / corrected / reversed / split transaction 如何影响 case supersession。
-- candidate-linked case 在 candidate 后来升级为 stable entity 后是否自动变成 strong precedent。
-- `new_entity_candidate` 或 candidate identity signal 的持久化位置、namespace 和 Case Log 引用方式。
 - `Case Log` 与 `Transaction Log` 的 exact trigger order。
 - 交易完成分类后的多 log 统一写入机制。
 - 哪些 case-derived signals 可以进入 governance candidate，以及具体审批路径。

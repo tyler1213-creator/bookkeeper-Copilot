@@ -43,8 +43,8 @@
 - `Case Log` 不替代 `Transaction Log` 的 final audit record（最终审计记录），也不得复制完整 processing path（处理路径）作为学习依据。
 - `Case Log` 不保存 entity identity authority（实体身份权威）、Alias authority（别名权威）、automation policy（自动化策略）或 active rule（生效规则）。
 - stable-linked case（稳定实体关联案例）可以作为较强的未来 case context（案例上下文）。
-- candidate-linked case（候选实体关联案例）默认只能作为 weak context（弱上下文）或 governance evidence（治理依据）。
 - unknown entity（未知实体）不是 durable identity handle（长期身份句柄），不能被 Case Log 当作 entity handle 引用。
+- 一笔交易可以在没有 resolved entity 的情况下被 accountant 完成分类并 finalize；这类交易只进 `Transaction Log`，不写 `Case Log`（无 entity 索引键），也不写 `Entity Log`，且不得为它创建以 description / 类别为索引的学习记录。
 - `Case Log` 可以为 entity-level risk（实体级风险）、automation policy candidate（自动化策略候选）或 rule promotion candidate（规则升级候选）提供依据，但不能直接修改 `Entity Log`、`Rule Log` 或 `Governance Log`。
 - repeated outcome（重复结果）不能自动升级为 approved rule（已批准规则）。
 
@@ -52,8 +52,6 @@
 
 - 哪些 completed transaction 具备 case write eligibility（案例写入资格）尚未冻结。
 - duplicate / corrected / reversed / split transaction（重复 / 纠正 / 冲销 / 拆分交易）如何影响 case supersession（案例替代关系）尚未冻结。
-- candidate-linked case 在 candidate 后来升级为 stable entity 后是否自动变强，尚未冻结。
-- `new_entity_candidate` 或 candidate identity signal（候选身份信号）的持久化位置、namespace 和 Case Log 引用方式尚未冻结。
 - `Case Log` 与 `Transaction Log` 的 exact trigger order（精确触发顺序）尚未冻结。
 - 交易完成分类后的多 log 统一写入机制尚未冻结。
 - 哪些 case-derived signals（案例衍生信号）可以进入 governance candidate（治理候选），以及具体审批路径尚未冻结。
@@ -61,8 +59,7 @@
 ## 进入下一阶段前必须解决
 
 - 确定 Case Log 的最小 write eligibility（写入资格）规则。
-- 确定 completed case、corrected case、superseded case 和 candidate-linked case 的最小 lifecycle / supersession 语义。
+- 确定 completed case、corrected case、superseded case 的最小 lifecycle / supersession 语义。
 - 确定 Case Log 写入者：Case Memory Update Node、统一 finalization / memory write mechanism，或其他机制。
 - 确定 `Transaction Log` finalization proof 与 Case Log 写入的触发顺序。
-- 确定 candidate-linked case 是否、何时、如何转为 strong precedent（强先例）。
 - 在字段、消费者、mutation authority 稳定前，不得创建 `03_data_contract.md`。

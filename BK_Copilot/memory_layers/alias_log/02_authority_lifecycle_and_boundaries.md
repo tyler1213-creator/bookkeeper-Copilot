@@ -8,7 +8,7 @@
 | --- | --- | --- | --- |
 | Alias relationship（别名关系） | `Alias Log`（别名日志）或其后续冻结的等价 Alias 库 / 投影 | 过去已经确认过的 transaction surface text 可以指向对应 stable entity（稳定实体），用于辅助 Entity Resolution 判断当前交易主体 | 所有历史 description、未确认 surface text、LLM semantic similarity（模型语义相似）、normalized display text（标准化展示文本） |
 | Alias source surface text（Alias 来源表面文本） | traceable transaction evidence（可追溯交易证据）加已确认 identity relationship（身份对应关系） | 当前只确认 bank statement description / descriptor / raw bank surface text；以及在 bank description 无明确身份意义时，可重复且能指向主体的字段，例如 cheque payee | raw evidence blob 本身、任意历史字段、不可追溯摘要 |
-| Alias target（Alias 指向对象） | `Entity Log`（实体日志）中的 stable entity authority | Alias 只能指向明确 stable entity；Alias 不创建 stable entity identity | candidate entity、unknown entity、runtime guess（运行时猜测）、classification outcome（分类结果） |
+| Alias target（Alias 指向对象） | `Entity Log`（实体日志）中的 stable entity authority | Alias 只能指向明确 stable entity；Alias 不创建 stable entity identity | unknown entity、runtime guess（运行时猜测）、classification outcome（分类结果） |
 | Alias lookup result（Alias 查询结果） | Alias Log / Alias 库查询结果加 Entity Log authority check（实体日志权威检查） | 命中已确认 Alias 时，可复用该 Alias 指向的 stable entity | 高度类似但未受控确认的 surface text、单次模型判断、下游规则结果 |
 | Alias trace（Alias 追溯） | evidence refs、confirmation refs、lookup basis；字段名未冻结 | 用于 review、correction、governance 和 audit | accounting classification、rule authority、accountant approval、governance approval |
 

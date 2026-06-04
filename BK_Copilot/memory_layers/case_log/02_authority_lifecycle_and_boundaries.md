@@ -7,7 +7,7 @@
 | Concept | Source of Truth | Authority Rule | Not Authority |
 | --- | --- | --- | --- |
 | completed case precedent（已完成案例先例） | `Case Log`（案例日志）加 `transaction_log_ref` 或等价 finalization proof | 在记录的 evidence condition 和 exception context 范围内，可支持 future case-based judgment | deterministic rule（确定性规则）、final audit record（最终审计记录）、完整 processing path、unapproved AI reasoning |
-| case identity index（案例身份索引） | stable entity authority 来自 `Entity Log`；candidate identity handle 的持久化位置未冻结 | stable-linked case 可作为较强案例上下文；candidate-linked case 默认只能作为 weak context / governance evidence | unknown entity、runtime guess、Alias surface text、classification outcome |
+| case identity index（案例身份索引） | stable entity authority 来自 `Entity Log` | stable-linked case 可作为较强案例上下文 | unknown entity、runtime guess、Alias surface text、classification outcome |
 | finalization proof（完成证明） | `Transaction Log` 或等价 transaction finalization source | Case Log 必须引用完成证明，证明案例来自 completed transaction | Case Log 自己不能替代 Transaction Log，也不能重写 final outcome |
 | evidence condition（证据条件） | Evidence refs / evidence foundation 加 Case Log 记录的适用条件 | 限制 precedent 何时可被未来复用 | raw evidence blob、不可追溯摘要、LLM rationale |
 | correction reference（纠正引用） | accountant correction / final confirmation refs，具体 finalization path 未冻结 | 可作为未来避免重复错误或解释例外的案例依据 | governance approval、rule authority、entity authority |
@@ -17,9 +17,9 @@
 
 | Reader | 读取目的 | 可读内容 | 限制 |
 | --- | --- | --- | --- |
-| Case Judgment Node（案例判断节点） | 读取 relevant case precedent，辅助判断当前交易是否可走 case-based judgment | stable-linked case history、candidate-linked weak context、evidence condition、exception context、correction refs | 不能把 Case Log 当 deterministic rule source；不能用 unknown entity 作为 case identity handle |
+| Case Judgment Node（案例判断节点） | 读取 relevant case precedent，辅助判断当前交易是否可走 case-based judgment | stable-linked case history、evidence condition、exception context、correction refs | 不能把 Case Log 当 deterministic rule source；不能用 unknown entity 作为 case identity handle |
 | Post-Batch Lint Node（批后体检节点） | 读取 entity-linked case history，发现 rule promotion、automation risk 或 entity risk candidate | case pattern、exception / correction history、case-derived risk hints | 只能提出候选；不能直接修改 Entity Log、Rule Log 或 automation policy |
-| Review Node（审核节点） | 帮助 accountant 理解当前 review item 的历史案例上下文 | relevant precedent、exception context、correction refs、weak candidate-linked context | Review 本身不把案例变成 rule、entity authority 或 governance approval |
+| Review Node（审核节点） | 帮助 accountant 理解当前 review item 的历史案例上下文 | relevant precedent、exception context、correction refs | Review 本身不把案例变成 rule、entity authority 或 governance approval |
 | Governance Review Node（治理审核节点） | 评估 rule change、automation policy change 或 entity risk update | case evidence、case-derived candidate signal、supporting refs | 必须通过 governance / accountant approval；Case Log 只提供依据 |
 | Knowledge Compilation Node（知识编译节点） | 生成 readable summary（可读摘要） | case history summary material and refs | summary 不能替代 Case Log source authority，也不能替代 Transaction Log / Entity Log / Rule Log |
 
@@ -41,7 +41,6 @@
 - automation risk review candidate（自动化风险审核候选）。
 - entity risk update candidate（实体风险更新候选）。
 - policy review candidate（策略审核候选）。
-- candidate-linked case history（候选实体关联案例历史）。
 - exception / correction pattern（例外 / 纠正模式）。
 
 Candidate 或 weak context 不能直接成为：
@@ -50,14 +49,12 @@ Candidate 或 weak context 不能直接成为：
 - Entity Log mutation（实体日志变更）。
 - Alias relationship（别名关系）。
 - relaxed automation policy（放宽后的自动化策略）。
-- strong precedent（强先例），如果它只 linked to candidate entity。
 - final audit record（最终审计记录）。
 
 Candidate 进入 durable authority 或 governance path 的条件：
 
 - 作为 Case Log precedent：必须来自 completed transaction，并具备 transaction finalization proof。
 - 作为 Rule Log / Entity Log / automation policy mutation：必须经过 Post-Batch Lint / Review / Governance Review 路径，并获得 accountant / governance approval；具体路径未完全冻结。
-- Candidate-linked case 是否在 candidate 升级为 stable entity 后自动变强：未冻结。
 
 ## 5. Lifecycle / States
 
@@ -66,7 +63,6 @@ Candidate 进入 durable authority 或 governance path 的条件：
 | State | 含义 | 谁可以进入 | 谁可以退出 | 下游含义 |
 | --- | --- | --- | --- | --- |
 | completed stable-linked case（已完成稳定实体案例，不是 enum） | completed transaction 已形成可学习案例，并 linked to stable entity | Case Log 写入机制未冻结；必须有 finalization proof | supersession / correction path 未冻结 | 可作为较强 future case-based judgment context；不等于 rule authority |
-| completed candidate-linked case（已完成候选实体案例，不是 enum） | completed transaction linked to candidate identity handle 或候选身份语境 | Case Log 写入机制未冻结；candidate handle 存储位置未冻结 | candidate -> stable 后是否升级未冻结 | 默认只能作为 weak context 或 governance evidence；不支持 Rule Match / Rule Promotion / Alias / automation 放宽 |
 | corrected / superseded case（纠正 / 替代案例，未冻结） | 原案例因 correction、reversal、duplicate、split 或其他 finalization change 需要被限制或替代 | 未冻结 | 未冻结 | 下游不能静默使用过期案例；具体行为未冻结 |
 
 ## 6. Mutation Path
@@ -98,7 +94,6 @@ Case Log evidence
 - completed transaction 的 case write eligibility。
 - corrected / reversed / duplicate / split transaction 的 supersession 行为。
 - accountant correction 如何进入 Case Log 的 exact write mechanism。
-- candidate-linked case 在 candidate 升级为 stable entity 后是否自动变强。
 - case-derived signals 进入 governance candidate 的 exact contract。
 - 多 log 统一写入机制如何同时处理 Entity Log、Case Log、Transaction Log、Intervention Log 等写入。
 
@@ -111,8 +106,8 @@ Case Log evidence
 | Other Store | 已确认边界 | 未冻结边界 |
 | --- | --- | --- |
 | Evidence Log（证据日志） | Evidence Log 保存 raw evidence 和 evidence refs；Case Log 只保存 evidence refs / evidence condition，不复制原始证据正文 | evidence condition 的 exact field schema 和 sufficiency threshold 未冻结 |
-| Transaction Log（交易日志） | Transaction Log 保存 final transaction audit record；Case Log 保存从已完成交易中抽取的可学习案例，并必须引用 transaction_log_ref 或等价 finalization proof | Case Log 与 Transaction Log 的 exact trigger order、correction / reversal / split 后的 supersession 行为未冻结 |
-| Entity Log（实体日志） | Entity Log 保存 stable entity identity、Alias、status、automation policy；Case Log 按 entity_id 组织案例，但不修改 entity authority | candidate identity handle 的持久化位置、candidate-linked case 升级规则、case-derived risk 进入 Entity Log 的治理路径未冻结 |
+| Transaction Log（交易日志） | Transaction Log 保存 final transaction audit record；Case Log 保存从已完成交易中抽取的可学习案例，并必须引用 transaction_log_ref 或等价 finalization proof；entity 未解析即完成分类的交易只 finalize 到 Transaction Log，不进入 Case Log | Case Log 与 Transaction Log 的 exact trigger order、correction / reversal / split 后的 supersession 行为，以及身份缺口标记落点（初步倾向 Transaction Log）未冻结 |
+| Entity Log（实体日志） | Entity Log 保存 stable entity identity、Alias、status、automation policy；Case Log 按 entity_id 组织案例，但不修改 entity authority | case-derived risk 进入 Entity Log 的治理路径未冻结 |
 | Alias Log（别名日志） | Alias Log 保存 confirmed transaction surface text -> stable entity；命中 Alias 后，系统可以以对应 stable entity 为主体查询 Case Log | Alias 命中后的具体 case retrieval contract 未冻结；Case Log 不保存 Alias authority |
 | Rule Log（规则日志） | Rule Log 保存 approved deterministic rules；Case Log 只可提供 rule promotion candidate 的案例依据 | case-derived rule promotion signal 的 exact eligibility 和 approval path 未冻结 |
 | Governance Log（治理日志） | Governance Log 保存高权限变化、批准、拒绝、降级、合并和拆分历史；Case Log 的 risk / policy / rule candidates 必须经过治理或 accountant approval 才能 mutation | Case Log candidate 与 Governance Log event / audit trace 的 exact contract 未冻结 |
@@ -141,13 +136,6 @@ Case Log evidence
 - 是否阻断自动化：如果没有 approved rule 或 automation policy 支持，不得把 repeated case 当 rule 自动放行。
 - 是否生成 review / governance candidate：可以生成 rule promotion candidate。
 
-如果 candidate-linked case 与 stable-linked case 的适用性冲突：
-
-- authority 顺序：stable entity authority 和 stable-linked completed case precedent 优先于 candidate-linked weak context。
-- runtime 行为：candidate-linked case 只能辅助解释或治理，不应作为强 precedent。
-- 是否阻断自动化：不得用 candidate-linked case 支持 Rule Match、Rule Promotion、Alias 或 automation 放宽。
-- 是否生成 review / governance candidate：可以。
-
 如果 Case Log 与 Knowledge Summary 冲突：
 
 - authority 顺序：Case Log source records 优先于 readable summary。
@@ -159,7 +147,7 @@ Case Log evidence
 
 这层 memory 必须留下的 trace：
 
-- entity ref（stable entity 或 candidate identity handle；字段名未冻结）。
+- entity ref（stable entity；字段名未冻结）。
 - `transaction_log_ref` 或等价 finalization proof。
 - evidence refs / evidence condition refs。
 - correction refs / accountant confirmation refs。
@@ -191,12 +179,10 @@ Case Log evidence
 2. Case Log exact writer / finalization mechanism。
 3. Case Log 与 Transaction Log 的 exact trigger order。
 4. completed / corrected / reversed / duplicate / split case 的 supersession behavior。
-5. candidate identity handle 的持久化位置、namespace 和 Case Log 引用方式。
-6. candidate-linked case 在 candidate 升级为 stable entity 后是否、何时、如何变强。
-7. case-derived rule promotion、automation risk 和 entity risk candidate 的 exact governance contract。
-8. Case Log record schema、field names、enum 和 validation rules。
-9. 多 log 统一写入机制如何处理 Entity Log、Case Log、Transaction Log、Intervention Log 等写入。
-10. Knowledge Summary 与 Case Log 冲突时的 repair path。
+5. case-derived rule promotion、automation risk 和 entity risk candidate 的 exact governance contract。
+6. Case Log record schema、field names、enum 和 validation rules。
+7. 多 log 统一写入机制如何处理 Entity Log、Case Log、Transaction Log、Intervention Log 等写入。
+8. Knowledge Summary 与 Case Log 冲突时的 repair path。
 
 这些问题解决前，不能进入：
 

@@ -28,7 +28,7 @@
 
 本节点可以辅助产生：
 
-- `candidate_signal`（运行时候选信号），例如 new entity（新实体）、Alias 写入需求、merge / split（合并 / 拆分）相关候选。
+- `candidate_signal`（运行时候选信号），例如 Alias 写入需求、merge / split（合并 / 拆分）相关候选。
 - `identity_risk_flags`（身份识别风险标记），例如名称相似、多对象竞争、历史误认或身份混用。
 - `blocking_reason`（身份层阻断原因），说明为什么当前身份结果不能被当作更高 authority（权威）。
 
@@ -48,7 +48,7 @@
 
 本节点绝不能：
 
-- 把 `new_entity_candidate`（新实体候选）当作 `new_stable_entity`（新稳定实体）写入。
+- 在未满足 stable 判断标准时把对象当作 `new_stable_entity`（新稳定实体）写入。
 - 在 `new_stable_entity` 写入时同时写入 Alias（别名）、修改 automation policy（自动化策略）或创建 rule（规则）。
 - 把未确认的 surface text 当作 Alias 使用。
 - merge / split entity（合并 / 拆分实体）。
