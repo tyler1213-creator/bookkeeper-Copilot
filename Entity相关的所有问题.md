@@ -210,11 +210,11 @@ Unknown entity 表示：
 
 ## Stable entity 的判断标准
 
-核心标准只有一个：
+核心标准已收口：
 
-> 当前证据能不能直接、清楚、可追溯地说明这个对象是谁？
+> 只要当前所有可追溯证据能够直接、清晰且无歧义地说明交易主体是谁，Entity Resolution 就可以将其判定为 stable；否则输出 unknown。
 
-如果能，并且没有明显身份冲突，就可以考虑 stable。
+这个判断只回答“这是谁”，不回答会计分类、税务处理、业务用途、Rule 或自动化权限。
 
 ### 可以支持 stable 的身份信号
 
@@ -253,29 +253,19 @@ Unknown entity 表示：
 
 这些属于 Case Judgment、Rule 或 Review 的问题。
 
-### 不能自动 stable 的情况
+### Stable 输出 reason
 
-如果出现明显身份冲突，不应自动 stable。
+Entity Resolution 输出 stable 时，必须同时输出一条可审计 reason，说明依据哪些 evidence points 判定主体明确。
 
-例子：
+reason 是凝练后的 evidence-based rationale，不是完整思维链，也不是会计分类理由。
 
-- 同一 surface text 可能对应多个已有 entity。
-- 当前 surface text 与历史 Alias 关系存在冲突，或同一 surface text 可能对应多个已有 entity。
-- 描述太泛，例如 `TRANSFER`、`PAYMENT`、`DEPOSIT`。
-- 看起来是内部转账，但账户关系不清楚。
-- 看起来涉及 payroll、loan、tax、owner、employee、related party，但身份关系未确认。
+### Exact Alias match
 
-这些情况应进入候选、人工审核或更保守的治理路径。
+当前 transaction surface text 与 Alias Log 中既有 Alias 完全一致时，Entity Resolution 可以直接输出该 Alias 指向的 stable entity，不再要求 LLM 独立重新判断主体是谁。
 
-### 仍需继续讨论的细节
+Alias exact match 是确定性身份复用路径，不是分类路径。
 
-还没有完全决定：
-
-- 清晰 bank descriptor 是否单独足够。
-- 第一次出现的普通 vendor 是否默认可以自动 stable。
-- 哪些 entity type 必须人工 review。
-- 什么程度算“明显身份冲突”。
-- Alias 冲突或相似匹配遇到新证据时怎么处理。
+Alias 写入资格、normalization / equivalence、冲突修正和 supersession 归 Alias Log L2 继续处理。
 
 ## Entity 在系统中的创建方法
 
