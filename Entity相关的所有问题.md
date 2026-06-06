@@ -2,15 +2,19 @@
 
 ## 文件角色
 
-这是临时设计记录。
+这是历史 Entity 讨论归档。
 
-它只记录当前已经讨论到的 Entity 相关判断。
+本文档不再更新。
+
+后续所有当前 Entity 讨论问题，写入 `L2_proposals/[对象]__L2提案.md`。
+
+正式文档的最新信息仍以 `BK_Copilot/` 下对应 node / memory layer 草案为准。
 
 它不是正式 spec。
 
 它不是已冻结决策。
 
-等 Entity 相关讨论完成后，需要把这里的内容更新到对应正式文档，并修改所有受影响的文档。
+如果需要使用本文中的历史内容，必须回到当前 `L2_proposals/`、对应正式 `BK_Copilot/` 草案或用户明确指令确认。
 
 可能受影响的文档包括：
 
@@ -648,19 +652,17 @@ Case Judgment 无推断性建议时：
 
 ## 后续必须继续讨论的问题
 
-### 1. 自动 stable 的边界
+### 1. 自动 stable 的边界（已收口）
 
-第一次出现的新交易，如果身份信号清楚，系统是否可以自动创建 stable entity？
+本问题已收口，讨论结果已保存进 `L2_proposals/Entity Resolution__L2提案.md` 的 “Stable / unknown 分界”。
 
-尤其要讨论：
+结论摘要：
 
-- 普通 vendor
-- 清晰 bank descriptor
-- receipt vendor
-- cheque payee
-- invoice vendor
-- person / owner / employee
-- tax / payroll / loan / transfer
+> 只要当前所有可追溯证据能够直接、清晰且无歧义地说明交易主体是谁，Entity Resolution 就可以将其判定为 stable；否则输出 unknown。
+
+该判断只回答“这是谁”，不要求证明 COA、HST / GST、业务用途、Rule 或自动化权限。
+
+原先列出的普通 vendor、清晰 bank descriptor、receipt vendor、cheque payee、invoice vendor、person / owner / employee、tax / payroll / loan / transfer 等子场景，不再作为单独 stable 阈值 open point 重新提出；如其中涉及 Profile / Governance / 结构性交易边界，后续按对应圈外对象处理。
 
 ### 2. Alias 写入与 Alias 库技术形态
 

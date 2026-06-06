@@ -27,7 +27,7 @@
 - `项目背景速读.md`
 - `系统上下文地图.md`
 
-`Entity相关的所有问题.md`、`Alias question.md`、`未解决问题暂存清单.md` 是临时 / 主题记录，不属于规则文档改名范围。
+`Entity相关的所有问题.md` 已归档，不再更新；后续 Entity 圈讨论问题写入 `L2_proposals/[对象]__L2提案.md`。正式文档的最新信息仍以 `BK_Copilot/` 下对应 node / memory layer 草案为准。`Alias question.md`、`未解决问题暂存清单.md` 仍是临时 / 主题记录，不属于规则文档改名范围。
 
 ## 权威顺序
 
@@ -73,7 +73,9 @@
 - `审计阶段路线图.md`：当前审计处于哪个阶段、阶段目标是什么。
 - `系统上下文地图.md`：快速理解材料结构、有效来源边界，以及哪些目录只是审计对象。
 - `BK_Copilot/`：已经开始重写的正式 node / memory layer 草案。
-- `Entity相关的所有问题.md`、`Alias question.md`、`未解决问题暂存清单.md`：当前 Entity / Alias 讨论的主题记录和待处理问题。
+- `L2_proposals/`：Entity 圈当前讨论问题和 L2 提案入口；不替代 `BK_Copilot/` 下正式草案的最新文档状态。后续不要再更新 `Entity相关的所有问题.md`。
+- `Entity相关的所有问题.md`：历史 Entity 讨论归档，只读参考。
+- `Alias question.md`、`未解决问题暂存清单.md`：Alias / 待处理问题的临时记录。
 - `new system/`：当前系统设计材料，只作为审计对象，不具有权威参考意义。
 - `old_system_nodedesign/`：旧系统材料，只作为审计对象，不具有权威参考意义。
 
@@ -208,6 +210,7 @@
 - 系统材料入口、结构导航或来源关系变化后，更新 `系统上下文地图.md`。
 - 不再维护单独的决策文档。
 - 长期性结论不写进规则文档；应写入用户后续创建的长期结论文档、对应主题记录或正式 `BK_Copilot/` 文档。
+- Entity 圈后续讨论问题统一写入 `L2_proposals/[对象]__L2提案.md`；正式文档最新信息仍看 `BK_Copilot/`；`Entity相关的所有问题.md` 只读，不再更新。
 - `当前任务状态.md` 只保留必要交接和指针，不沉淀长期结论全文。
 - 保持 `审计目标与原则.md` 稳定、低 churn。
 - 保持 `AGENTS.md` 聚焦 agent operation，不要把临时交接细节塞进去。
