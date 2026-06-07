@@ -27,7 +27,7 @@
 - `项目背景速读.md`
 - `系统上下文地图.md`
 
-`Entity相关的所有问题.md` 已归档，不再更新；后续 Entity 圈讨论问题写入 `L2_proposals/[对象]__L2提案.md`。正式文档的最新信息仍以 `BK_Copilot/` 下对应 node / memory layer 草案为准。`Alias question.md`、`未解决问题暂存清单.md` 仍是临时 / 主题记录，不属于规则文档改名范围。
+`Entity相关的所有问题.md` 已归档，不再更新；后续 Entity 圈讨论问题写入 `L2_proposals/[对象]__L2提案.md`。正式文档的最新信息仍以 `BK_Copilot/` 下对应 node / memory layer 草案为准。`Alias question.md` 仍是主题记录，不属于规则文档改名范围。`未解决问题暂存清单.md` 已废弃，只能作为历史参考，不再作为当前问题入口或规则文档。
 
 ## 权威顺序
 
@@ -75,7 +75,8 @@
 - `BK_Copilot/`：已经开始重写的正式 node / memory layer 草案。
 - `L2_proposals/`：Entity 圈当前讨论问题和 L2 提案入口；不替代 `BK_Copilot/` 下正式草案的最新文档状态。后续不要再更新 `Entity相关的所有问题.md`。
 - `Entity相关的所有问题.md`：历史 Entity 讨论归档，只读参考。
-- `Alias question.md`、`未解决问题暂存清单.md`：Alias / 待处理问题的临时记录。
+- `Alias question.md`：Alias 主题速记。
+- `未解决问题暂存清单.md`：已废弃历史参考；不要作为当前待办入口，不要继续更新。
 - `new system/`：当前系统设计材料，只作为审计对象，不具有权威参考意义。
 - `old_system_nodedesign/`：旧系统材料，只作为审计对象，不具有权威参考意义。
 
