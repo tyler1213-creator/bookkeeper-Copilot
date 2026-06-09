@@ -76,6 +76,37 @@
 - 排除的替代 + 理由:
   排除“把 RuleLog 作为 EntityLog 子字段保存全部 rule payload”。理由是 rule condition、accounting treatment、rule lifecycle 与 promotion / modification / deletion authority 不属于 identity 主档案；混入 EntityLog 会制造双重职责。
 
+### RuleMatch 输入 handoff 契约面与 RuleLog 查询定位
+
+- 结论:
+  RuleMatchNode 由上游 handoff（ER 或 ER 后 assembler 输出）获得运行所需的全部输入。该 handoff 的契约面在 L2 锁三类语义（exact 字段 schema 留 L3；assembler 谁组装留 L4）：
+
+  - 桶 A — 身份基础（来自 ER 身份判断）：`stable_entity_ref`（= entity_id，必填，durable 身份句柄）；entity lifecycle 必须为 active（merged 由上游按 supersession 跳到 surviving entity 后再给，archived / unknown 不组装此 handoff）。不携带 stable reason / identity provenance / alias payload——RuleMatch 不重判身份，这些是审计 trace，不进匹配。
+  - 桶 B — 放行 / 控制基础（投影自 EntityLog `automation_policy`）：`automation_control_state`，必填，表达该 entity 是否放行 rule-based automation 的控制语义；authority 仍在 EntityLog，handoff 只投影当前状态，ER 不拥有不决定它。可选携带会 block rule automation 的身份级 risk / governance 限制指针，使 RuleMatch 能 fail-closed。
+  - 桶 C — 客观交易事实（来自 evidence intake / transaction identity，沿流程携带）：`transaction_ref`（= transaction_id）、`direction`、`amount_abs`、`transaction_date` 等必填客观维度，以及 `evidence_condition` / `evidence_refs`、`transaction_type` / `objective_tags`、`currency` 等。raw description / surface text 只随 trace 携带，不作匹配条件（scope key 是 stable entity，不是 description）。
+
+  最终会计分类的来源拆分：最终输出给 JE Generator 的 = 命中 rule 的 approved accounting treatment（"答案"，来自 RuleLog payload）+ 桶 C 的交易事实（金额 / 方向 / 日期 / 币种 / evidence refs 等过账输入）。桶 C 是必要但不充分——分类"答案"不在桶 C 里，必须由命中的 rule 提供；让桶 C 自己产出分类等于让 RuleMatch 做会计判断，已被禁止。
+
+  RuleLog 查询定位：全系统只以 entity_id 作为定位坐标。RuleLog 按 entity_id 索引；RuleMatch 凭 handoff 中的 entity_id 向 RuleLog 取该 entity 的候选 active approved 规则集，再用桶 C 逐条比对 rule 已批准条件，找出至多一条命中。rule payload 不在 handoff 里，来自 RuleLog（reader 是 L4 seam）。不采用"在 EntityLog 存 rule_id 成员列表并经 handoff 传 rule_id"的方案：rule 成员关系的权威单一归 RuleLog，EntityLog 存列表会制造双 source of truth 与漂移；且上游无法预知本笔命中哪条 rule（命中取决于桶 C，到 RuleMatch 才完整），传具体 rule_id 在语义上不成立。
+
+  EntityLog 不为此存 rule_id 列表；"是否值得调 RuleMatch"的便宜卡点已由桶 B 的 automation_policy 承担，至多再加一个可由 RuleLog 派生的布尔 hint（"has active rules"，可派生、不必 durable 存）。
+
+- 为什么(锚定核心产品目标的哪条):
+  支持契约面最小化、审计性、单一 source of truth 与自动化安全。三桶契约面让 RuleMatch 只依赖显式、最小的输入（身份 + 放行 + 客观事实），不依赖任何上游内部状态；entity_id 单坐标与"成员关系单一归 RuleLog"延续 EntityLog L2 已锁的 entity_id 全系统索引键设计（Case Log 主索引、Alias Log 指向、Rule 索引键都指向 entity_id），避免反规范化造成的双真值与漂移。
+
+- 拟改:文件:章节 → [具体文字]
+  `BK_Copilot/workflow_nodes/rule_match_node/02_logic_and_boundaries.md:上游前置条件` →
+  `RuleMatchNode 从上游 handoff 获得三类输入：身份基础（active stable entity 的 entity_id）、放行 / 控制基础（投影自 EntityLog automation_policy 的 control state）、客观交易事实（transaction_id、direction、amount、date、evidence condition 等）。exact 字段 schema 留 Stage 3；handoff 由谁组装留 Stage 4 / seam。`
+
+  `BK_Copilot/workflow_nodes/rule_match_node/02_logic_and_boundaries.md:读取对象` →
+  `RuleMatchNode 凭 handoff 中的 entity_id 向 RuleLog（按 entity_id 索引）取该 entity 的候选 active approved 规则集，用客观交易事实逐条比对，找出至多一条命中。rule payload 来自 RuleLog，不来自 handoff。最终输出给 JE Generator 的分类 = 命中 rule 的 approved accounting treatment + 当前交易客观事实。`
+
+- 排除的替代 + 理由:
+  排除"在 EntityLog 存该 entity 的 rule_id 成员列表，由上游把 rule_id 传给 RuleMatch"（方案一）。理由：rule 成员关系的权威单一归 RuleLog，在 EntityLog 再存一份等于制造第二 source of truth，需要跨 log 原子同步、易漂移；该列表不提供任何 authority（仍须回 RuleLog 校验 active / approved 与 payload），是过早反规范化；且上游无法预知本笔命中哪条 rule，传具体 rule_id 语义不成立。
+
+- 浮现的新 open boundary / 对 RuleLog 的前置约束:
+  RuleLog 必须支持按 entity_id 索引、并在每条 rule 上承载 applicability（entity_id 及 pattern-level 客观条件）。entity_id 索引的具体存储 / 检索机制留 L4；automation_policy 的取值集合与"哪种取值 = 放行 rule-based automation"的语义留 RuleLog / EntityLog 联合 L3；rule payload（approved accounting treatment 的 judgment-free 完整形态）留 L3 / JE Generator。
+
 ### Rule scope：entity-level rule 与 pattern-level rule
 
 - 结论:
@@ -309,6 +340,7 @@
 - 按模板 L1-L2 / Stage 1-2 清单自检: RuleMatchNode 自身的 L1-L2 面已基本收口（存在理由、trigger / routing、读取 / authority、写入 / runtime-only、决策权限、scope 与资格判据、rule 集合结构、hit / miss / invalid handoff、JE Generator 边界、rule-hit handoff、governance 排除、运行时不重算资格）。未过项不在节点内部，而在与 RuleLog / JE Generator / EntityLog automation_policy 的接口语义（见下）。
 - 本对象 L2 可否判定完成: RuleMatchNode 节点侧 L2 已实质完成。剩余须继续讨论的不是节点内部，而是圈外 / 接口 seam：
   1. 资格判据最终的"家"：内容判据已在本提案收口，但其归档归属（写在 RuleMatchNode 文档作为被消费语义，还是写在尚未设计的 RuleLog memory layer 并由 RuleMatchNode 引用）取决于 RuleLog M1-M2，RuleLog 这层 memory 目前完全未设计。
-  2. automation_policy → RuleMatch 的放行语义：哪种 entity 级 control state 表示"允许 rule-based automation"，其语义（非 exact enum）需与 EntityLog / Governance 对齐；目前提案只说"control state 支持 RuleMatch"，未锁该语义。
-  3. eligibility / control handoff 的契约面：RuleMatch 必须收到哪些 eligibility / control context（assembler 属 L4），其契约面语义需在写正式文档时定面。
+  2. automation_policy → RuleMatch 的放行语义：已确认"是否放行 RuleMatch"由 EntityLog 的 automation_policy 承载，不单设 supports_rule_match 字段，"放行 RuleMatch"是 automation_policy 的一种取值语义；剩"哪种取值 = 允许 rule-based automation"的 exact 取值集合 / 语义 → L3（RuleLog / EntityLog 联合），并需与 Governance 对齐。
+  3. eligibility / control handoff 的契约面：已在本提案"RuleMatch 输入 handoff 契约面"锁三桶语义（身份 / 放行 / 客观事实）；剩 exact 字段 schema → L3、assembler 谁组装 → L4。
   4. JE Generator 接口：treatment"judgment-free 完整"的判据依赖 JE Generator 需要什么，属跨节点 seam，留 JE Generator 讨论。
+  5. RuleLog 查询定位已锁为 entity_id 单坐标（RuleLog 按 entity_id 索引、EntityLog 不存 rule_id 列表），作为对 RuleLog 设计的前置约束；entity_id 索引的存储 / 检索机制 → L4。
