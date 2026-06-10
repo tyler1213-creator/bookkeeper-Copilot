@@ -54,7 +54,7 @@
 ## 当前未冻结边界
 
 - Case Log record 的 exact 字段名、enum、schema、validation 尚未冻结。
-- `use_level` / `confirm_by` 的 exact enum 取值尚未冻结。
+- `use_level` / `confirmed_by` 的 exact enum 取值尚未冻结。
 - 共享 accounting outcome（COA / HST / split / allocation）的全局字段结构尚未冻结。
 - Case Judgment 读取时的 per-entity 固定化聚合、rollup、轻量展示层、检索工具或 subagent 属于 L4 / seam-park，尚未冻结。
 - Case Log 的 exact writer、与 Transaction Log 的 trigger order、多 log 统一 finalization 机制尚未冻结。
@@ -66,7 +66,7 @@
 ## 进入下一阶段前必须解决
 
 - 冻结 record schema、字段名、enum 和 validation。
-- 冻结 `use_level` / `confirm_by` enum。
+- 冻结 `use_level` / `confirmed_by` enum。
 - 与 Rule Match / Case Judgment / Transaction Log / JE 相关对象对齐共享 accounting outcome 结构。
 - 冻结 Case Log 写入者、与 Transaction Log 的 trigger order，以及多 log 统一 finalization 机制。
 - 冻结 Case Judgment 读取 Case Log 时的 rollup / retrieval 机制。

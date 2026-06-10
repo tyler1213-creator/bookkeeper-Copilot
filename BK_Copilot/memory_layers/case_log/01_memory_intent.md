@@ -32,7 +32,7 @@
 | 1 | `case_id` | 案例唯一标识。用于 dedup（防同笔重复写入）与被引用的锚点。 |
 | 2 | `entity_id` | 主索引：这是谁的案例。Case Log 按 entity 组织的前提。 |
 | 3 | `transaction_log_ref` | finalization proof / 审计锚点。证明案例来自已完成交易；也作为通往修改历史、完整 JE、原文等审计留痕的桥。 |
-| 4 | `alias` | 本案例交易的 Alias 表面引用 / 快照。用于区分同一 entity 下不同交易模式；Alias authority 仍在 Alias Log，Case Log 不持有、不创建 Alias authority。 |
+| 4 | `alias` | 本笔交易自身 raw surface text 的快照，写入路径 finalize 时携带；命名一致；不读 Alias Log、不持有 Alias authority。 |
 | 5 | `direction` | 资金方向。改变会计含义，是模式区分的必要维度。 |
 | 6 | `amount` | 交易金额绝对值。判断是否落在同一模式区间的基础。 |
 | 7 | `date` | 交易日期。用于 recency 和读取层聚合的时间维度；period 可由它派生。 |
@@ -40,7 +40,7 @@
 | 9 | `hst_gst_treatment` | 税务处理方式快照。答案的一部分；最终权威仍在 Transaction Log。 |
 | 10 | `evidence_refs` | 证据引用，指向 Evidence Log，不存原文。用于回溯与下钻。 |
 | 11 | `evidence_condition` | 当时有哪类证据支撑，例如有小票、invoice、支票或仅银行流水。决定该先例何时可被复用。 |
-| 12 | `confirm_by` | 结论的权威来源类型，例如 accountant 确认、accountant 纠正、rule 命中、structural、system 高置信。决定复用强度；具体人员和完整审计留痕归 Transaction Log。 |
+| 12 | `confirmed_by` | 记录结论的权威来源类型，用于决定该 case 的复用强度；exact enum 留 M3。若来源类型为 system 高置信度，只表示强辅助先例证据，不自动授予未来自动化放行；具体人员和完整审计留痕归 Transaction Log。 |
 | 13 | `use_level` | 复用权限。表达这条案例未来允许被怎么用，并以失效取值承载最小 supersession 复用安全。 |
 | 14 | `context_note` | 例外说明 + 针对这一笔的人工批注。解释为什么这笔不能简单泛化；entity / 类别级通则批注 / 快捷经验归 entity_level Knowledge Summary，Case Log 不存该批注基础层。 |
 
@@ -107,7 +107,7 @@ Case Log 不保存独立 pattern rollup（模式聚合）作为真值。某 enti
 具体贡献：
 
 - 让同一 stable entity 下的历史案例可以被未来交易复用，而不是每笔交易从零判断。
-- 让 case-based judgment 读取的不是孤立结论，而是带 evidence condition、context note、confirm_by 和 use_level 的先例。
+- 让 case-based judgment 读取的不是孤立结论，而是带 evidence condition、context note、confirmed_by 和 use_level 的先例。
 - 让 accountant correction 进入未来判断上下文，但不自动污染 Rule Log 或 Entity Log。
 - 让 rule / automation / entity risk review 可以使用案例历史作为依据，但候选生成与审批归治理路径。
 - 通过要求 finalization proof 和 traceable evidence，避免未完成交易、模型推理或非权威摘要进入长期案例记忆。
@@ -126,6 +126,7 @@ Case Log 不保存独立 pattern rollup（模式聚合）作为真值。某 enti
 - 一笔交易可以在 entity 未解析的情况下被 accountant 完成分类并 finalize；这类交易只 finalize 到 Transaction Log，不进入 Case Log（无 entity_id 索引键），也不创建 Entity Log 记录。
 - 这类交易不得催生以 description / 类别为索引的学习记录；其身份缺口（情况 Y）是挂在 Transaction Log 上的不阻塞复查线索（标记落点初步倾向 Transaction Log，未冻结），不是 candidate entity，也不是 Case Log 可引用的 durable identity handle。情况 X / 情况 Y 的区分见 `Coordinator Question.md`。
 - 每条 case 必须具备 `use_level` 复用权限语义；exact enum 留 M3。
+- `confirmed_by` = system 高置信度的 case 只是强辅助先例证据，不自动授予未来同类交易自动化放行；真正自动化仍需 accountant 深度参与；系统高置信度判断的限制由 Case Judgment 节点界定，Case Log 只引用、不重定义。
 - 被纠正 / 冲销 / 治理限制后失效的旧 case 不得被未来节点静默当作有效正面先例复用；supersession 血缘链接和执行机制留后续。
 - Case Log 可以提供 entity-level risk、automation policy review 或 rule promotion 的历史依据，但不能直接修改 Entity Log。
 - Case Log 可以提供 rule promotion 评估依据，但不能直接创建、升级、修改、删除或降级 active rule。
@@ -136,7 +137,7 @@ Case Log 不保存独立 pattern rollup（模式聚合）作为真值。某 enti
 ## 6. 未决定问题
 
 - Case Log record 的 exact 字段名 / enum / schema / validation。
-- `use_level` 与 `confirm_by` 的 exact enum 取值。
+- `use_level` 与 `confirmed_by` 的 exact enum 取值。
 - 共享 accounting outcome（COA / HST / split / allocation）的全局字段结构。
 - Case Judgment 读取 Case Log 时的 rollup / retrieval 机制。
 - `Case Log` 与 `Transaction Log` 的 exact trigger order、exact writer 和多 log 统一 finalization 机制。

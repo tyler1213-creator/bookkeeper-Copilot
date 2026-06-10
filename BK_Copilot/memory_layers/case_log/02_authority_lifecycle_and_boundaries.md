@@ -17,7 +17,7 @@
 
 | Reader | 读取目的 | 可读内容 | 限制 |
 | --- | --- | --- | --- |
-| Case Judgment Node（案例判断节点） | 读取 relevant case precedent，辅助判断当前交易是否可走 case-based judgment | stable-linked case history、evidence condition、context note、`confirm_by`、`use_level` | 不能把 Case Log 当 deterministic rule source；不能用 unknown entity 作为 case identity handle；读取聚合机制留 L4 |
+| Case Judgment Node（案例判断节点） | 读取 relevant case precedent，辅助判断当前交易是否可走 case-based judgment | stable-linked case history、evidence condition、context note、`confirmed_by`、`use_level` | 不能把 Case Log 当 deterministic rule source；不能用 unknown entity 作为 case identity handle；读取聚合机制留 L4 |
 | Rule / automation / entity risk review flow（规则 / 自动化 / 实体风险审核流程，具体节点未冻结） | 读取 entity-linked case history，评估 rule promotion、automation risk 或 entity risk | case pattern、exception / correction history、`use_level`、case history distribution 派生视图 | 只能作为治理依据；不能直接修改 Entity Log、Rule Log、Governance Log 或 automation policy |
 | Review Node（审核节点） | 帮助 accountant 理解当前 review item 的历史案例上下文 | relevant precedent、exception context、`use_level` | Review 本身不把案例变成 rule、entity authority 或 governance approval |
 | Governance Review Node（治理审核节点） | 评估 rule change、automation policy change 或 entity risk update | case evidence、supporting refs、读取层派生聚合 | 必须通过 governance / accountant approval；Case Log 只提供依据 |
@@ -29,7 +29,7 @@
 
 | Writer | 可以写什么 | 写入类型 | 需要 approval 吗 |
 | --- | --- | --- | --- |
-| Case Memory Update Node / unified finalization mechanism（候选写入机制，未冻结） | completed-case learning record、evidence condition、context note、`confirm_by`、`use_level`、transaction finalization refs | direct case write，具体 writer / trigger order 未冻结 | 必须基于 stable-linked finalized transaction 和 finalization proof；是否需要额外 approval 未冻结 |
+| Case Memory Update Node / unified finalization mechanism（候选写入机制，未冻结） | completed-case learning record、evidence condition、context note、`confirmed_by`、`use_level`、transaction finalization refs | direct case write，具体 writer / trigger order 未冻结 | 必须基于 stable-linked finalized transaction 和 finalization proof；是否需要额外 approval 未冻结 |
 | Review / Coordinator / accountant interaction finalization path（未冻结） | accountant-confirmed outcome 或 correction context 进入 Case Log 的来源上下文 | finalization input / correction context，具体写入机制未冻结 | accountant final confirmation 是当前交易完成依据；是否由本路径直接写 Case Log 未冻结 |
 | Rule / automation / entity risk review flow（未冻结） | 读取 Case Log 生成治理候选 | temporary handoff / candidate outside Case Log storage | 是；不能直接把 candidate 变成 Entity Log / Rule Log / Governance Log mutation；candidate_signal_refs 不作为 Case Log 存储字段 |
 
@@ -75,7 +75,7 @@ Candidate 进入 durable authority 或 governance path 的条件：
 completed transaction
 -> final transaction outcome / finalization proof
 -> Case Log write eligibility check
--> completed-case learning record with entity ref, transaction_log_ref, accounting outcome snapshot, evidence condition, context note, confirm_by, and use_level
+-> completed-case learning record with entity ref, transaction_log_ref, accounting outcome snapshot, evidence condition, context note, confirmed_by, and use_level
 -> future readers use case only within recorded authority limits
 ```
 
@@ -109,7 +109,7 @@ Case Log evidence
 | Evidence Log（证据日志） | Evidence Log 保存 raw evidence 和 evidence refs；Case Log 只保存 evidence refs / evidence condition，不复制原始证据正文 | evidence condition 的 exact field schema 和 sufficiency threshold 未冻结 |
 | Transaction Log（交易日志） | Transaction Log 保存 final 交易事实、完整 processing path、修改历史与 audit trail，是审计 source of truth。Case Log 只引用 transaction_log_ref / finalization proof，只保存最新可学习状态，不存修改历史、不存完整 processing path、不替代审计记录。entity 未解析即完成分类的交易只 finalize 到 Transaction Log，不进入 Case Log | Case Log 与 Transaction Log 的 exact trigger order、writer、多 log finalization、correction / reversal / split 后的执行机制，以及身份缺口标记落点（初步倾向 Transaction Log）未冻结 |
 | Entity Log（实体日志） | Entity Log 保存 stable entity identity、Alias、status、automation policy；Case Log 按 entity_id 组织案例，但不修改 entity authority。merge / split / archive 后旧 case 归属由治理层裁定，Case Log 不裁判但服从结果 | case-derived risk 进入 Entity Log 的治理路径、merge / split / archive 后重新归属执行机制未冻结 |
-| Alias Log（别名日志） | Alias Log 保存 confirmed transaction surface text -> stable entity；Case Log 可保存本案例交易的 Alias 表面引用 / 快照用于模式区分，但不持有 Alias authority | Alias 命中后的具体 case retrieval contract 未冻结；Alias correction 如何影响 Case Log alias 快照属于后续机制 |
+| Alias Log（别名日志） | Alias Log 保存 confirmed transaction surface text -> stable entity；Case Log 可保存本笔交易自身 raw surface text 的 alias 快照用于模式区分，由写入路径 finalize 时携带。Case Log 对 Alias Log 零读取权限；该 alias 不通过查询 / 匹配 Alias Log 得到，不构成第二个 Alias Log reader，也不持有 Alias authority | 基于交易 raw surface text 快照的 case retrieval contract 未冻结；Alias correction 如何影响 Case Log alias 快照属于后续机制 |
 | Rule Log（规则日志） | Rule Log 保存 approved deterministic rules；Case Log 只提供 rule promotion 评估所需历史案例依据 | case-derived rule promotion evidence 的 exact eligibility 和 approval path 未冻结 |
 | Governance Log（治理日志） | Governance Log 保存高权限变化、批准、拒绝、降级、合并和拆分历史；Case Log 的 risk / policy / rule 相关变化必须经过治理或 accountant approval 才能 mutation | Case Log evidence 与 Governance Log event / audit trace 的 exact contract 未冻结 |
 | Knowledge Summary（知识摘要） | Knowledge Summary 是可读摘要，不能替代 Case Log source authority；Case Log 也不替代 readable summary。entity 级通则批注 / 快捷经验归 entity_level Knowledge Summary，Case Log 不存该批注基础层 | summary conflict repair 未冻结 |
@@ -151,7 +151,7 @@ Case Log evidence
 - entity ref（stable entity；字段名未冻结）。
 - `transaction_log_ref` 或等价 finalization proof。
 - evidence refs / evidence condition refs。
-- `confirm_by` / accountant confirmation type。
+- `confirmed_by` / 结论权威来源类型。
 - `use_level`。
 - context note / exception context refs。
 - created_from / updated_by refs，字段名未冻结。
@@ -177,7 +177,7 @@ Case Log evidence
 以下问题未冻结：
 
 1. Case Log record schema、field names、enum 和 validation rules。
-2. `use_level` 与 `confirm_by` 的 exact enum 取值。
+2. `use_level` 与 `confirmed_by` 的 exact enum 取值。
 3. 共享 accounting outcome（COA / HST / split / allocation）的全局字段结构。
 4. Case Log exact writer / finalization mechanism。
 5. Case Log 与 Transaction Log 的 exact trigger order。
