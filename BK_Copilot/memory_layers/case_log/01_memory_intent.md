@@ -19,7 +19,7 @@
 - runtime handoff 只描述当前交易，不能保存未来可复用的 completed-case learning memory。
 - `Transaction Log`（交易日志）是 audit-facing final transaction record；它可以通过索引支持审计 / 报表查询，但不作为主 workflow 的 entity-indexed learning layer。
 - `Entity Log`（实体日志）保存 identity authority，不保存 classification memory、case precedent 或 accounting treatment pattern。
-- `Alias Log`（别名日志）只保存 confirmed transaction surface text -> stable entity 的身份复用关系，不保存 case precedent。
+- `Alias Log`（别名日志）是面向 Entity Resolution 的 alias→entity 反查 projection / index，不保存 case precedent，也不持有 Alias authority。
 - `Rule Log`（规则日志）保存 approved deterministic rules（已批准确定性规则），不保存尚未升级为规则的案例判断。
 - `Knowledge Summary`（知识摘要）是 readable context（可读上下文），不能替代 source authority（来源权威）。
 
@@ -32,7 +32,7 @@
 | 1 | `case_id` | 案例唯一标识。用于 dedup（防同笔重复写入）与被引用的锚点。 |
 | 2 | `entity_id` | 主索引：这是谁的案例。Case Log 按 entity 组织的前提。 |
 | 3 | `transaction_log_ref` | finalization proof / 审计锚点。证明案例来自已完成交易；也作为通往修改历史、完整 JE、原文等审计留痕的桥。 |
-| 4 | `alias` | 本笔交易自身 raw surface text 的快照，写入路径 finalize 时携带；命名一致；不读 Alias Log、不持有 Alias authority。 |
+| 4 | `alias` | Alias 的 authority 在 Entity Log；Alias Log 是 alias→entity 反查 projection / index，不持有 authority；本字段只是该交易的 alias 表面快照 / 引用，Case Log 不持有、不立 Alias authority。 |
 | 5 | `direction` | 资金方向。改变会计含义，是模式区分的必要维度。 |
 | 6 | `amount` | 交易金额绝对值。判断是否落在同一模式区间的基础。 |
 | 7 | `date` | 交易日期。用于 recency 和读取层聚合的时间维度；period 可由它派生。 |
@@ -88,7 +88,7 @@ Case Log 不保存独立 pattern rollup（模式聚合）作为真值。某 enti
 - `Evidence Log`（证据日志）：raw evidence 和 evidence refs 的 source of truth。
 - `Transaction Log`（交易日志）：每笔交易 final outcome、review trace 和 audit trail 的 source of truth。
 - `Entity Log`（实体日志）：stable entity identity、Alias、status 和 automation policy 的 authority store。
-- `Alias Log`（别名日志）：confirmed transaction surface text -> stable entity 的 identity reuse memory。
+- `Alias Log`（别名日志）：alias→entity 反查 projection / index；不持有 Alias authority。
 - `Rule Log`（规则日志）：approved deterministic rules 的 source of truth。
 - `Governance Log`（治理日志）：长期高权限 mutation、approval、rejection、downgrade、merge / split 的 audit source。
 - `Knowledge Summary`（知识摘要）：可读摘要不能替代 Case Log source authority；反过来，Case Log 也不替代摘要层。
