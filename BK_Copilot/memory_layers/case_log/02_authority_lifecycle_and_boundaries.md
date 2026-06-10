@@ -112,7 +112,7 @@ Case Log evidence
 | Alias Log（别名日志） | Alias Log 保存 confirmed transaction surface text -> stable entity；Case Log 可保存本案例交易的 Alias 表面引用 / 快照用于模式区分，但不持有 Alias authority | Alias 命中后的具体 case retrieval contract 未冻结；Alias correction 如何影响 Case Log alias 快照属于后续机制 |
 | Rule Log（规则日志） | Rule Log 保存 approved deterministic rules；Case Log 只提供 rule promotion 评估所需历史案例依据 | case-derived rule promotion evidence 的 exact eligibility 和 approval path 未冻结 |
 | Governance Log（治理日志） | Governance Log 保存高权限变化、批准、拒绝、降级、合并和拆分历史；Case Log 的 risk / policy / rule 相关变化必须经过治理或 accountant approval 才能 mutation | Case Log evidence 与 Governance Log event / audit trace 的 exact contract 未冻结 |
-| Knowledge Summary（知识摘要） | Knowledge Summary 是可读摘要，不能替代 Case Log source authority；Case Log 也不替代 readable summary | summary conflict repair 未冻结 |
+| Knowledge Summary（知识摘要） | Knowledge Summary 是可读摘要，不能替代 Case Log source authority；Case Log 也不替代 readable summary。entity 级通则批注 / 快捷经验归 entity_level Knowledge Summary，Case Log 不存该批注基础层 | summary conflict repair 未冻结 |
 
 ## 8. 冲突处理
 
@@ -185,7 +185,7 @@ Case Log evidence
 7. supersession 的血缘链接字段与 corrected / reversed / duplicate / split 后的重判执行机制。
 8. 多 log 统一写入机制如何处理 Entity Log、Case Log、Transaction Log、Intervention Log 等写入。
 9. case-derived rule promotion、automation risk 和 entity risk candidate 的 exact governance contract。
-10. entity / 类别级通则批注的归属。
+10. entity / 类别级通则批注 / 快捷经验（会计师留给某 entity 的一般会计经验，供下次判断参考）的 Case Log 边界：不在 Case Log 落成存储型基础背景层；归属已定为 entity_level Knowledge Summary。否决进入 Case Log 的理由：一是撞写入资格（Case Log 决策 2），写入资格 = stable-linked 且已 finalized 的交易，常驻批注没有 `transaction_log_ref`，过不了入口；二是撞真值单位（决策 4），Case Log 真值是逐笔 case，聚合归读取期派生视图，不存聚合 / 基础层；三是已推出（决策 8 / 缺口地图），entity / 类别级通则批注已明文推给 Knowledge Summary / Governance。读取方向已定：按 `entity_id` 锁定后按需加载该 entity 的 entity_level Knowledge Summary，注入给 Case Judgment 作为上下文；KS 记录自带 `authority_labels` / `downstream_usage_limits`，作为“建议不被当规则”的护栏。仅“具体同步 co-read 哪些 source memory”留 L2·外阻 / seam。
 11. Knowledge Summary 与 Case Log 冲突时的 repair path。
 
 这些问题解决前，不能进入：

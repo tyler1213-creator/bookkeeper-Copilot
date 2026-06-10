@@ -42,7 +42,7 @@
 | 11 | `evidence_condition` | 当时有哪类证据支撑，例如有小票、invoice、支票或仅银行流水。决定该先例何时可被复用。 |
 | 12 | `confirm_by` | 结论的权威来源类型，例如 accountant 确认、accountant 纠正、rule 命中、structural、system 高置信。决定复用强度；具体人员和完整审计留痕归 Transaction Log。 |
 | 13 | `use_level` | 复用权限。表达这条案例未来允许被怎么用，并以失效取值承载最小 supersession 复用安全。 |
-| 14 | `context_note` | 例外说明 + 针对这一笔的人工批注。解释为什么这笔不能简单泛化；entity / 类别级通则批注不在本层冻结。 |
+| 14 | `context_note` | 例外说明 + 针对这一笔的人工批注。解释为什么这笔不能简单泛化；entity / 类别级通则批注 / 快捷经验归 entity_level Knowledge Summary，Case Log 不存该批注基础层。 |
 
 Case Log 不保存独立 pattern rollup（模式聚合）作为真值。某 entity 下的分布、次数、一致性、最近出现等聚合信息全部由逐笔 case 派生，由读取层聚合机制在需要时产出。
 
@@ -80,7 +80,7 @@ Case Log 不保存独立 pattern rollup（模式聚合）作为真值。某 enti
 - unknown entity（未知实体）作为 durable identity handle。
 - 以 description / 类别（而非 entity）为索引的学习记录。
 - case-derived candidate signal refs（案例衍生候选信号引用）作为 durable storage 字段。
-- entity / 类别级通则批注；其归属依赖 Knowledge Summary / Governance。
+- entity / 类别级通则批注 / 快捷经验；归 entity_level Knowledge Summary，Case Log 不存该批注基础层。
 - 独立 pattern rollup 或 pattern_ref 作为存储真值。
 
 它也不能替代：
@@ -129,6 +129,7 @@ Case Log 不保存独立 pattern rollup（模式聚合）作为真值。某 enti
 - 被纠正 / 冲销 / 治理限制后失效的旧 case 不得被未来节点静默当作有效正面先例复用；supersession 血缘链接和执行机制留后续。
 - Case Log 可以提供 entity-level risk、automation policy review 或 rule promotion 的历史依据，但不能直接修改 Entity Log。
 - Case Log 可以提供 rule promotion 评估依据，但不能直接创建、升级、修改、删除或降级 active rule。
+- entity / 类别级通则批注 / 快捷经验的读取方向已定：按 `entity_id` 锁定后，按需加载该 entity 的 entity_level Knowledge Summary 注入给 Case Judgment；KS 记录自带 `authority_labels` / `downstream_usage_limits`，作为“建议不被当规则”的护栏。具体同步 co-read 哪些 source memory 仍留 KS / Case Judgment L2 seam。
 - Repeated outcome 不能自动升级为 approved rule。
 - Case Log 不保存 unapproved AI reasoning 作为 future authority。
 
@@ -142,4 +143,4 @@ Case Log 不保存独立 pattern rollup（模式聚合）作为真值。某 enti
 - supersession 的血缘链接字段与 corrected / reversed / split 后的重判执行机制。
 - merge / split / archive 后旧 case 重新归属的治理执行机制。
 - case-derived rule / automation / entity risk candidate 进入治理的 exact contract。
-- entity / 类别级通则批注的归属。
+- entity_level Knowledge Summary 注入 Case Judgment 时具体同步 co-read 哪些 source memory 的 exact contract。

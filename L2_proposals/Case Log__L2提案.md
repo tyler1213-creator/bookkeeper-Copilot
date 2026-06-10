@@ -147,7 +147,7 @@
 | 11 | `evidence_condition` | 当时有哪类证据支撑（有小票 / invoice / 支票 / 仅银行流水）。**决定该先例何时可被复用**——学习层区别于傻瓜历史的关键。 |
 | 12 | `confirm_by` | 结论的权威来源类型（accountant 确认 / accountant 纠正 / rule 命中 / structural / system 高置信）。**决定复用强度**（继承老系统 confirmed_by）。只存「类型」；具体由哪个人确认属审计留痕，归 Transaction Log。 |
 | 13 | `use_level` | 复用权限——这条案例未来允许被怎么用（正面先例 / 仅例外 / 反面或冲突 / 不可升级），并以失效取值承载最小 supersession 复用安全。**让「全写」安全的核心字段。** |
-| 14 | `context_note` | 例外说明 + 针对「这一笔」的人工批注（合并字段）。解释为什么这笔不能简单泛化。针对整个 entity / 类别的通则批注不在此（属 Knowledge Summary / 治理候选，圈外）。 |
+| 14 | `context_note` | 例外说明 + 针对「这一笔」的人工批注（合并字段）。解释为什么这笔不能简单泛化。针对整个 entity / 类别的通则批注 / 快捷经验不在此；归 entity_level Knowledge Summary，Case Log 不存该批注基础层。 |
 
   已砍除并记录理由：`bank_account_ref`（对学习判断弱相关，已确认砍）、`period`（可由 date 派生）、`je_summary`（可由 account+hst+amount+direction 推出，且属 Transaction Log / JE 节点产物）、`authority_refs`（纯留痕，顺 transaction_log_ref 回查）、`entity_identity_snapshot` 的 alias_status / role / display（身份权威在 Entity Log，快照会过期冗余）、`correction_ref` 与 `supersedes/superseded_by`（血缘留痕，与 supersession 链接一并延后）、`candidate_signal_refs`（临时 handoff，非存储内容）、`pattern_ref` 及整层模式 rollup（派生，归 L4）。
 
@@ -170,7 +170,7 @@
 - merge / split / archive 后旧 case 重新归属的治理执行机制 → L4 / seam-park(推给记录层)
 - 与 Knowledge Summary 冲突的修复流程 → L4 / seam-park(推给记录层)
 - case-derived rule / automation / entity risk candidate 进入治理的 exact governance contract → L2·外阻(依赖 Governance / Rule Log,挂起)
-- entity / 类别级「通则批注」的归属（Knowledge Summary / 治理候选）→ L2·外阻(依赖 Knowledge Summary / Governance,挂起)
+- entity / 类别级「通则批注 / 快捷经验」归属 → 已审定(归 entity_level Knowledge Summary；Case Log 不存该批注基础层；读取方向已定为按 `entity_id` 锁定后按需注入给 Case Judgment；KS `authority_labels` / `downstream_usage_limits` 作为“建议不被当规则”的护栏；仅具体同步 co-read 哪些 source memory 留 L2·外阻 / seam，依赖 KS / Case Judgment L2)
 
 ---
 

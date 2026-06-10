@@ -61,7 +61,7 @@
 - supersession 的血缘链接字段与 corrected / reversed / split 后的重判执行机制尚未冻结。
 - merge / split / archive 后旧 case 重新归属的治理执行机制尚未冻结。
 - case-derived rule / automation / entity risk candidate 进入治理的 exact contract 依赖 Governance / Rule Log，未在本层冻结。
-- entity / 类别级通则批注的归属依赖 Knowledge Summary / Governance，未在本层冻结。
+- entity / 类别级通则批注 / 快捷经验（会计师留给某 entity 的一般会计经验，供下次判断参考）不在 Case Log 落成存储型基础背景层；归属已定为 entity_level Knowledge Summary。否决进入 Case Log 的理由：一是撞写入资格（Case Log 决策 2），写入资格 = stable-linked 且已 finalized 的交易，常驻批注没有 `transaction_log_ref`，过不了入口；二是撞真值单位（决策 4），Case Log 真值是逐笔 case，聚合归读取期派生视图，不存聚合 / 基础层；三是已推出（决策 8 / 缺口地图），entity / 类别级通则批注已明文推给 Knowledge Summary / Governance。读取方向已定：按 `entity_id` 锁定后按需加载该 entity 的 entity_level Knowledge Summary，注入给 Case Judgment 作为上下文；KS 记录自带 `authority_labels` / `downstream_usage_limits`，作为“建议不被当规则”的护栏。仅“具体同步 co-read 哪些 source memory”留 L2·外阻 / seam。
 
 ## 进入下一阶段前必须解决
 

@@ -85,7 +85,7 @@
 - 排除的替代 + 理由:
   排除“Rule Log 同时保存候选 rule”。理由是 candidate 还不是 executable authority；把它放入 Rule Log 会迫使 reader 区分未批准内容与可执行内容，扩大误用风险。
 
-  排除“Rule Log 保存人工提醒规则 / 会计师备注”。理由是这些内容可能有业务价值，但不是 RuleMatch 可以确定性执行的 rule，应归 Knowledge Summary / Governance / review context 等其他对象。
+  排除“Rule Log 保存人工提醒规则 / 会计师备注”。理由是这些内容可能有业务价值，但不是 RuleMatch 可以确定性执行的 rule；其中 entity / 类别级通则批注 / 快捷经验归 entity_level Knowledge Summary，其他治理或 review-only 事项走 Governance / review context。
 
 ### 决策点 3：Rule 资格内容判据最终归 Rule Log authority 语义
 
