@@ -9,9 +9,9 @@
 如果删除它，会失去：
 
 - Alias-based identity reuse（基于 Alias 的身份复用）：当前交易 surface text 命中过去已确认 Alias 时，系统无法反查对应 stable entity。
-- fallback identity lookup（兜底身份反查）：当 Entity Resolution 完全无法从当前 evidence 识别主体时，无法用当前 description 或等价 surface text 查询历史已确认 Alias。
+- fallback identity lookup（兜底身份反查）：当 Entity Resolution 完全无法从当前 evidence 识别主体时，无法用当前 raw description / surface text 查询历史已确认 Alias。
 - accountant question reduction（减少会计师提问）：重复出现但表面文本不直观的交易更容易反复进入 pending。
-- downstream memory access（下游记忆入口）：系统无法先通过 Alias 找到 stable entity，再以该 entity 为主体查询 Case Log 等长期记忆。
+- ER identity handoff（ER 身份交接入口）：系统无法先通过 Alias 帮助 Entity Resolution 找到 stable entity，再让下游通过 ER 输出的 stable entity 查询各自有 authority 的长期记忆。
 
 这些能力不能由 runtime handoff 或现有 store 覆盖，因为：
 
@@ -25,7 +25,8 @@
 
 这层 memory 保存：
 
-- 过去已经确认过的 transaction surface text 和 stable entity 的对应关系。
+- 已确认交易中的 raw transaction description / descriptor / raw bank surface text 到 stable entity 的对应关系。
+- 只要该交易最终被确认指向明确 stable entity，该 raw surface text 就具备进入 Alias Log 的资格；不要求该 surface text 是本次 stable identity 判断的决定性证据。
 - 可被 Entity Resolution 查询的 Alias 集合。
 - 支持该对应关系可追溯的 evidence / confirmation trace；字段名和结构尚未冻结。
 
@@ -58,6 +59,7 @@
 - journal entry（分录）。
 - rule condition（规则条件）。
 - active rule payload（生效规则内容）。
+- 面向 Rule Match、Case Judgment、Case Log 或其他下游节点的直接业务检索能力。
 - final transaction outcome（交易最终结果）。
 - raw evidence blob（原始证据正文）。
 - unapproved AI reasoning（未经批准的 AI 推理）。
@@ -88,15 +90,16 @@
 - 让过去已经确认过的 transaction surface text 可以在未来交易中复用到同一 stable entity。
 - 让 Entity Resolution 在大致判断当前交易主体但不能完全确定时，可以查询该 entity 是否存在一致 Alias。
 - 让 Entity Resolution 在完全无法从当前 evidence 识别主体时，可以用当前 surface text 查询历史已确认 Alias。
-- 让命中 Alias 后的系统可以以 stable entity 为主体读取 Case Log 等长期记忆。
+- 让 Entity Resolution 命中 Alias 后输出 stable entity，使下游可以通过该 stable entity 读取各自有 authority 的长期记忆。
 - 通过只保存已确认对应关系，防止系统把所有历史 description、未确认相似文本或模型推理误当成身份权威。
 
 ## 5. 已知约束
 
-- Alias 的核心来源是 `Alias question.md`。
+- Alias Log 当前 L2 authority 来源是 `L2_proposals/Alias Log__L2提案.md`；`Alias question.md` 是历史主题速记。
 - Alias 只辅助判断当前交易主体是谁。
 - Alias 只保存已确认 transaction surface text 和 stable entity 的对应关系。
 - Alias 不是 Rule Match 的规则库。
+- Entity Resolution 是 Alias Log 唯一已冻结的直接 reader；其他节点只能通过 ER 输出的 stable entity 间接受益。
 - Alias 不是所有历史 description 的垃圾桶。
 - 未确认 surface text 不能作为 Alias 使用。
 - 高度类似历史 Alias 不能天然等同于确认 identity；它最多增强 Entity Resolution 的判断，除非后续冻结受控 normalization / equivalence 规则。
@@ -104,11 +107,12 @@
 
 ## 6. 未决定问题
 
-- 创建 stable entity 时，当前 surface text 是否默认进入 Alias 库。
-- Alias 的写入责任、审批路径和具体 memory write 机制。
+- Alias 的写入执行者、确切写入时机 / 顺序和具体 memory write / finalization 机制；倾向是在创建 stable entity 成立时同步写入 Alias，但需待 seam 阶段确认。
 - Alias 库具体以什么技术形态呈现。
 - Alias Log 与 Entity Log 是独立 store、嵌套记录、查询投影，还是其他形态。
 - `alias_record` 的 exact field schema。
 - 受控 normalization / equivalence 规则。
-- Alias 冲突、多 entity 竞争、merge / split 后迁移或阻断规则。
-- Alias 对其他下游节点的支持范围；当前不讨论、不冻结。
+- 非 exact / 高度类似历史 Alias 何时可以支持更强 identity match。
+- historical Alias conflict 的 correction / governance path。
+- Entity split 后逐条 Alias 重新归属的执行机制、batch 操作和 audit trace。
+- Alias mutation 与 Governance Log / audit trace 的边界。
