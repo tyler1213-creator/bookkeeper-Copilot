@@ -5,7 +5,7 @@
 本节点在以下条件同时满足时触发：
 
 - Evidence Intake / Preprocessing（证据接收 / 预处理）已经形成 traceable evidence foundation（可追溯证据基础）。
-- Transaction Identity（交易身份）已经分配或复用稳定 `transaction_id`（稳定交易 ID）。
+- Evidence Intake / Preprocessing（证据接收 / 预处理）已经为当前交易分配稳定 `transaction_id`（稳定交易 ID）。
 - Profile / Structural Match（客户结构匹配）已经确认当前交易没有被 structural path（结构性路径）完成。
 - 当前非结构性交易需要知道 evidence（证据）指向哪个 counterparty / vendor / payee（交易对手 / 商家 / 收款人），或为什么不能安全确认。
 
@@ -20,8 +20,7 @@
 
 上游必须已经完成：
 
-- Evidence Intake / Preprocessing Node（证据接收 / 预处理节点）：提供 objective transaction basis（客观交易基础）和 evidence refs（证据引用）。
-- Transaction Identity Node（交易身份节点）：提供 `transaction_id`（稳定交易 ID）。
+- Evidence Intake / Preprocessing Node（证据接收 / 预处理节点）：提供 objective transaction basis（客观交易基础）和 evidence refs（证据引用），并为当前交易分配 `transaction_id`（稳定交易 ID）。
 - Profile / Structural Match Node（客户结构匹配节点）：提供 non-structural handoff（非结构性交易交接）。
 
 如果前置条件缺失：
@@ -35,7 +34,7 @@
 | --- | --- | --- | --- |
 | Evidence Log（证据日志） / evidence foundation（证据基础） | `evidence_refs`（证据引用）、raw bank text（银行原始文本）、receipt vendor（小票商家）、cheque payee（支票收款人）、invoice party（发票主体）、contract party（合同主体）、accountant context refs（会计师上下文引用） | 识别当前 evidence（证据）表面指向谁 | Evidence（证据）不保存业务结论；模型摘要不能替代 evidence ref（证据引用） |
 | AI 联网搜索 / external lookup（外部查询） | 针对 vendor / payee / counterparty 身份的搜索线索、相似对象、公开身份解释、由搜索打开并可追溯的外部来源 | 当 bank descriptor 只显示支付平台、缩写或不完整名称时，辅助判断当前交易主体是谁；搜索结果列表和搜索摘要只能作为 clue；可追溯外部来源在与当前交易 evidence 共同指向清晰、唯一、无实质竞争的业务对象时，可作为 stable reason 的 evidence point | 搜索行为本身不是 authority；外部来源 evidence point 只支持 identity，不支持 COA / HST / GST / 业务用途 / Rule / automation permission |
-| Transaction Identity layer（交易身份层） | `transaction_id`（稳定交易 ID）和 identity handoff（身份交接） | 保证本次身份判断绑定到稳定交易对象 | 交易身份不等于 entity identity（实体身份），也不等于 accounting authority（会计权威） |
+| Evidence Intake（证据接收 / 预处理）分配的 transaction_id | `transaction_id`（稳定交易 ID） | 保证本次身份判断绑定到稳定交易对象 | 交易身份不等于 entity identity（实体身份），也不等于 accounting authority（会计权威） |
 | Profile / Structural Match handoff（客户结构匹配交接） | `structural_path_status`（结构性路径状态）、non-structural reason（非结构性原因）、profile context refs（客户结构上下文引用） | 防止结构性交易穿透后被普通实体流程处理 | candidate profile fact（候选客户结构事实）不能当 stable profile truth（稳定客户结构事实） |
 | Entity Log（实体日志） | known entities（已知实体）、`entity_status`（实体生命周期状态）、authority metadata（权威元数据）、risk flags（风险标记） | 判断 evidence（证据）是否安全指向稳定 entity（实体），或新建 stable entity 是否与既有 entity 竞争 | Summary（摘要）不能覆盖 Entity Log（实体日志）；Entity Log identity authority 不携带会计分类、Rule 或 automation permission 判断 |
 | Alias Log / Alias 查询接口 | 已确认 Alias surface text 到 stable entity 的对应关系 | exact Alias lookup（完全命中查询）；完全命中时可直接复用 Alias 指向的 stable entity | Alias Log / Alias 库具体技术形态未冻结；Alias exact match 是身份复用路径，不是分类路径；未确认 surface text 不能当 Alias |

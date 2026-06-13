@@ -61,8 +61,7 @@
 
 上游：
 
-- `Evidence Intake / Preprocessing Node`（证据接收 / 预处理节点）：提供 traceable evidence foundation（可追溯证据基础）和 objective transaction basis（客观交易基础）。
-- `Transaction Identity Node`（交易身份节点）：提供 `transaction_id`（稳定交易 ID）。
+- `Evidence Intake / Preprocessing Node`（证据接收 / 预处理节点）：提供 traceable evidence foundation（可追溯证据基础）和 objective transaction basis（客观交易基础），并为当前交易分配 `transaction_id`（稳定交易 ID）。
 - `Profile / Structural Match Node`（客户结构匹配节点）：确认当前交易未被 structural path（结构性路径）完成。
 
 下游：
@@ -108,7 +107,7 @@ Alias（别名）在本节点中的当前含义：
 
 ## 6. 已知约束
 
-- `transaction_id`（稳定交易 ID）必须来自 `Transaction Identity Node`（交易身份节点）。
+- `transaction_id`（稳定交易 ID）必须来自 `Evidence Intake / Preprocessing Node`（证据接收 / 预处理节点）。
 - `evidence_refs`（证据引用）必须可追溯到 Evidence Log（证据日志）或 evidence foundation（证据基础）。
 - `Entity Log`（实体日志）和 `Governance Log`（治理日志）优先于 Knowledge Summary（知识摘要）。
 - 本节点判断为新建 stable entity 时，state 仍为 `stable`；ER 自主决定、无需 governance approval，并必须在下游继续前发起同步 Entity Log publication。实际由 ER 直接写入还是同步调用专门写入 / 存储机制属于 L4 / seam。
