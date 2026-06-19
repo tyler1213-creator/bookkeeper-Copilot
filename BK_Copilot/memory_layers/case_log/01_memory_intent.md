@@ -124,7 +124,7 @@ Case Log 不保存独立 pattern rollup（模式聚合）作为真值。某 enti
 - Stable entity 是强 case reuse 的正常身份基础。
 - Unknown entity 不写入 Entity Log，也不能被 Case Log 当作 identity handle 引用。
 - 一笔交易可以在 entity 未解析的情况下被 accountant 完成分类并 finalize；这类交易只 finalize 到 Transaction Log，不进入 Case Log（无 entity_id 索引键），也不创建 Entity Log 记录。
-- 这类交易不得催生以 description / 类别为索引的学习记录；其身份缺口（情况 Y）是挂在 Transaction Log 上的不阻塞复查线索（标记落点初步倾向 Transaction Log，未冻结），不是 candidate entity，也不是 Case Log 可引用的 durable identity handle。情况 X / 情况 Y 的区分见 `Coordinator Question.md`。
+- 这类交易不得催生以 description / 类别为索引的学习记录；其身份缺口（情况 Y）是挂在 Transaction Log 上的不阻塞复查线索（标记落点已定为 Transaction Log，由 Transaction Log L2 用户拍板锁定；字段形态留 L3），不是 candidate entity，也不是 Case Log 可引用的 durable identity handle。情况 X / 情况 Y 的区分见 `Coordinator Question.md`。
 - 每条 case 必须具备 `use_level` 复用权限语义；exact enum 留 M3。
 - `confirmed_by` = system 高置信度的 case 只是强辅助先例证据，不自动授予未来同类交易自动化放行；真正自动化仍需 accountant 深度参与；系统高置信度判断的限制由 Case Judgment 节点界定，Case Log 只引用、不重定义。
 - 被纠正 / 冲销 / 治理限制后失效的旧 case 不得被未来节点静默当作有效正面先例复用；supersession 血缘链接和执行机制留后续。
