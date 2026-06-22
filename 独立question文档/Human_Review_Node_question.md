@@ -1,16 +1,16 @@
-# Review Node Question
+# Human Review Node Question
 
 ## 文件角色
 
-本文件记录 **Review 节点**当前已确认的临时设计结论，聚焦"交易已 finalized 之后、人类会计师事后主动发现一条过去已完成的分类是错的"这一整套纠错机制。
+本文件记录 **Human Review Node**（旧称 Review Node，本轮改名）当前已确认的临时设计结论，聚焦"交易已 finalized 之后、人类会计师事后主动发现一条过去已完成的分类是错的"这一整套纠错机制。
 
-它不是正式 spec，不冻结 question 模板、字段或 data contract。Review 节点尚未正式审计。
+它不是正式 spec，不冻结 question 模板、字段或 data contract。Human Review Node 尚未正式审计。
 
 后续处理流程（owner 已定）：
 
 1. 本文先送新窗口做审计；
 2. 写入 `L2_proposals/` 并对 L2 提案审计；
-3. 通过后才重写为 `BK_Copilot/workflow_nodes/review_node/` 正式 spec。
+3. 通过后才重写为 `BK_Copilot/workflow_nodes/human_review_node/` 正式 spec。
 
 本节点为多个旧划分项合并而成：
 
@@ -24,7 +24,7 @@
 
 系统对已完成交易有两条自动路径：High-Confidence 自动完成、Rule 命中产出。这些交易 finalize 后写入 Transaction Log（append-only 权威结果层）。会计师需要一个事后入口去查看并纠正其中的错误。
 
-Coordinator 不承担此职责，分界已确定（来源：`BK_Copilot/workflow_nodes/coordinator_node/`）：Coordinator 只处理**运行中**交易、只消费 Case Judgment 的 Pending、**不得在交易已 finalized 时触发**。纠错是"已 finalized 交易 + 人发起"这一条独立轴，因此 Review 是独立节点，不能内联进 Coordinator。
+Coordinator 不承担此职责，分界已确定（来源：`BK_Copilot/workflow_nodes/coordinator_node/`）：Coordinator 只处理**运行中**交易、只消费 Case Judgment 的 Pending、**不得在交易已 finalized 时触发**。纠错是"已 finalized 交易 + 人发起"这一条独立轴，因此 Human Review Node 是独立节点，不能内联进 Coordinator。
 
 ---
 
@@ -32,10 +32,10 @@ Coordinator 不承担此职责，分界已确定（来源：`BK_Copilot/workflow
 
 ### 1. 节点身份与触发
 
-- Review 是一个**事后、人发起**的入口，独立于 Coordinator。
+- Human Review Node 是一个**事后、人发起**的入口，独立于 Coordinator。
 - 触发时机：交易已 finalized 之后，会计师复核当天 / 过往已自动完成的交易时。
 - 入口形态：一个**只读投影视图**（非 LLM），按 Bank Statement 聚合展示当天所有 High-Confidence 自动完成交易 + 所有 Rule 产出交易，供会计师查看。
-- 在 Review 里，**人类会计师本身就是发现器**（不是系统扫描发现），人类权威天然在场。
+- 在 Human Review Node 里，**人类会计师本身就是发现器**（不是系统扫描发现），人类权威天然在场。
 
 ### 2. 三层结构（职责分层，不可揉成一团）
 
@@ -82,7 +82,7 @@ Coordinator 不承担此职责，分界已确定（来源：`BK_Copilot/workflow
 
 ### 5. "rule 坏了 vs 一次性例外"的处理
 
-- 这是 LLM 在 Review 里**唯一不可替代的认知内核**：区分 (a) rule 错了 → 该降级 / (b) 这一笔是合法例外 → rule 留着只改这笔 / (c) rule scope 太宽 → 该收窄。
+- 这是 LLM 在 Human Review Node 里**唯一不可替代的认知内核**：区分 (a) rule 错了 → 该降级 / (b) 这一笔是合法例外 → rule 留着只改这笔 / (c) rule scope 太宽 → 该收窄。
 - 但**降级了刻度**：单次纠错对"rule 坏没坏"是弱证据，LLM **不在纠错当场裁决"rule 坏了"**。纠错时 LLM 只做两件——结构化这一笔的纠正 + 发"rule 被推翻一次"信号。"rule 到底坏没坏"是另一个**攒证据**的过程（N 次推翻 / 跨 case 模式），它本身可复核。
 - 即便最终判定"rule 该降级"，LLM 也只提案，走授权确认机制（会计师签 + 写 Governance Log），再由代码落盘。仍不碰字节。
 
@@ -106,15 +106,15 @@ Coordinator 不承担此职责，分界已确定（来源：`BK_Copilot/workflow
 
 本节点只声明"要持久化什么 + 谁有权威认定它有效"，不声明"怎么写、谁来写、什么顺序写"。相关单元：
 
-- **Change List Engine（影响展开引擎）**：确定性代码，归 Review 范畴（要与 Change List LLM 的清单对账）。其依赖图的声明位置与形态属 L4/seam，待定。裸遍历能力为机制类，将来治理审批流可能复用，届时抽成共享、不重复实现。
-- **授权确认机制**：共享机制（**非节点**，无自身判断，判断者是会计师）。它是所有扩张型变更通往写入机制的**单一、强制、不可旁路**关卡：read-back + diff 仲裁 + 会计师签字 + 带凭证触发写入。Review 在高半径 / 永久纠错时调用它；低半径单笔纠错不经过它。
+- **Change List Engine（影响展开引擎）**：确定性代码，归 Human Review Node 范畴（要与 Change List LLM 的清单对账）。其依赖图的声明位置与形态属 L4/seam，待定。裸遍历能力为机制类，将来治理审批流可能复用，届时抽成共享、不重复实现。
+- **授权确认机制**：共享机制（**非节点**，无自身判断，判断者是会计师）。它是所有扩张型变更通往写入机制的**单一、强制、不可旁路**关卡：read-back + diff 仲裁 + 会计师签字 + 带凭证触发写入。Human Review Node 在高半径 / 永久纠错时调用它；低半径单笔纠错不经过它。
 - **统一 finalization 写入机制**：共享确定性代码，跨 log 落盘（原子/顺序/幂等/不变量/审计 trace）。审批与纠错共用。
 - **Governance Log**：数据层，每笔权威变更的审计账本。**当前不存在，必须新建。**
 
 ### 9. source / 边界纪律
 
 - 运行层 log（Transaction / Case / Rule / Entity / Alias）以 `BK_Copilot/` 正式草案为准。
-- 规则治理层 / Review 层功能以本轮对话为设计来源。
+- 规则治理层 / Human Review Node 层功能以本轮对话为设计来源。
 - `new system/` 不作为任何参考来源。
 - 引"已冻结不变量"时区分性质：**外部强制**（审计要求：append-only、不可就地改）可当公理引用；**自我施加**的建模选择（如 Case Log 只存最新）要靠功能理由站住（Case Log 的功能是复用最准判断，历史归 Transaction + Intervention），不能拿文档本身自证。
 
@@ -128,6 +128,6 @@ Coordinator 不承担此职责，分界已确定（来源：`BK_Copilot/workflow
 2. **先例确认来源字段**：第 4 节"系统确认 vs 人工确认"依赖 Case Log 的确认来源字段（对话中以 `confirmed_by=system / accountant` 表述）。确切字段名 / 语义需与 `BK_Copilot/memory_layers/case_log/` 对齐确认。
 3. **HST/GST 重算的性质**：第 4 节"改分类 ⇒ 重算税"中，税率适用是**查表**（依赖 entity 已记录的税务状态字段）还是**判断**（字段缺失时需停下来问人）。依赖 entity / tax 模型是否已记录该字段，待对齐；缺失时按"引擎撞到缺失输入 → 停下来进 read-back"处理，不交 LLM 猜。
 4. **read-back UI 与只读复核视图**：是否同一 UI shell（一个是"浏览找错"，一个是"逐项确认提案"），待编排时定。
-5. **语义发现器（merge/split）是否并入 Review 由人发起**：系统自发审计长期文档做 merge/split 的依据存疑，可能改为只在 Review 由人发起提案。**单独挂起，将另开窗口讨论**（见项目记忆 `semantic-discovery-node-necessity-open`）。
+5. **语义发现器（merge/split）是否并入 Human Review Node 由人发起**：系统自发审计长期文档做 merge/split 的依据存疑，可能改为只在 Human Review Node 由人发起提案。**单独挂起，将另开窗口讨论**（见项目记忆 `semantic-discovery-node-necessity-open`）。
 6. **L4 / seam 机制**：影响展开引擎依赖图声明形态、授权确认机制 exact 实现、finalization 多 log 原子/顺序/幂等机制，均未冻结。
 7. **完整 read-back 模板 / 字段 / data contract**：本文不冻结，留 Stage 3。
