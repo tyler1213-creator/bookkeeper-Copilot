@@ -11,7 +11,6 @@
 | `confirmed_by` 审计留痕 | Transaction Log | 对“谁确认了该最终结论”的完整审计留痕，本层优先；Case Log 只可保存较粗的确认类型。 | 仅用于解释的 narrative、未确认的候选语义。 |
 | reasoning / audit narrative | Transaction Log 保存 trace | 可供 review、correction、governance、audit 阅读；不能成为未来自动决定或可复用判断依据。 | reusable authority、accountant approval、governance approval。 |
 | full processing path | Transaction Log 保存 trace | 用于复盘一笔交易经过哪些环节与如何处理。 | runtime source、identity source、learning source。 |
-| 情况 Y 身份待补线索 | Transaction Log | 落点已定为本层；它是不阻塞 finalization 的复查线索。 | candidate identity、stable entity authority、第三类身份状态。 |
 
 ## 2. 读取者
 
@@ -136,6 +135,7 @@ review / governance correction result
 - `confirmed_by` 审计留痕。
 - terminal / blocked / 无 JE 的最终状态语义。
 - 更正追加记录，含更改者与更改后的最终会计分类结果。
+- 情况 Y 身份待补线索：身份未知但分类完成的交易，其复查线索落点已定为本层；它是不阻塞 finalization 的复查线索，不是 candidate identity / stable entity authority / 第三类身份状态。
 
 这些 trace 用于：
 
