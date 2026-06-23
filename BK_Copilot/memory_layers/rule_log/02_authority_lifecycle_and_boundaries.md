@@ -160,7 +160,7 @@ Candidate 不能以 candidate 身份进入 durable Rule Log state；外部 candi
 - **L3，EntityLog / RuleLog / Governance 联合**：automation_policy 中哪种取值表示允许 rule-based automation / RuleMatch。
 - **L4 / seam**：RuleLog 执行面 query contract、reader / assembler 调用顺序、projection / cache / permission 边界。
 - **L4 / seam**：RuleLog 按 `entity_id` 索引的存储结构、检索和维护机制。
-- **L2·外阻，Governance / review path**：rule candidate queue、system-proposed promotion request、CaseLogEvidence 打包格式、accountant approval workflow。
+- **L2·外阻，Governance / review path**：rule promotion 发现侧谓词（含 CaseLogEvidence 资格、结果唯一性、证据强度和 "rule 被推翻一次" 累积规则）、rule candidate queue / 审核 inbox、system-proposed promotion request、CaseLogEvidence 打包格式、accountant approval workflow。
 - **L4 / Governance seam**：accountant direct rule creation 的 exact write mechanism、approval capture、写入执行者。
 - **L2·外阻 / L4，Governance / 记录层**：rule modification / overwrite / versioning / supersession / deletion / restore exact mutation path。
 - **L3 / Governance**：跨 log lifecycle 字段命名统一。

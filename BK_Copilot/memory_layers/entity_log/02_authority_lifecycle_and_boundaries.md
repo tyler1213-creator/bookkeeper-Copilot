@@ -112,7 +112,7 @@ candidate / review / lint signal
 - Entity Resolution `new_stable_entity` 后的实际写入执行者、调用方式、写入顺序和多 log finalization 机制；但及时可见和无需 governance approval 已冻结。
 - accountant explicit identity confirmation 后由哪个 finalization / memory write mechanism（完成 / 记忆写入机制）执行 stable entity 创建；但无需 governance approval 已冻结。
 - Alias（别名）在 Entity Log 与 Alias Log 之间的存储形态、projection / index 构建、同步更新和写入顺序尚未冻结。
-- automation policy auto-downgrade（自动化策略自动降级）的 exact approval / visibility contract（精确批准 / 可见性契约）。
+- automation policy auto-downgrade（自动化策略自动降级）的 detection、exact approval / visibility contract（精确批准 / 可见性契约）；该检测归 Entity Log automation_policy maintenance，不归当前确定性发现 job。
 - merge / split（合并 / 拆分）后 aliases（别名）、rules（规则）和 cases（案例）的跨 log 迁移、阻断、finalization、audit trace 和回滚机制。
 
 约束：
@@ -205,7 +205,7 @@ Entity merge / split 后，Entity Log 只保存 Entity 侧当前身份状态、s
 2. 五类保存信息各自的 exact field schema、enum（含 entity_status、automation_policy、risk 标记取值）、validation 和 refs 形态。
 3. `new_stable_entity` 与 accountant explicit identity confirmation 的最小创建 provenance 字段形态。
 4. `Alias Log` 的技术形态，以及 Entity Log 与 Alias Log 的物理存储关系、projection / index 构建方式、同步机制和写入顺序。
-5. `automation_policy`（自动化策略）与 Governance Log（治理日志）的存储 / projection 形态，以及自动降级 exact approval / visibility contract。
+5. `automation_policy`（自动化策略）与 Governance Log（治理日志）的存储 / projection 形态，以及自动降级 detection、exact approval / visibility contract。
 6. ER `new_stable_entity` 与 accountant explicit identity confirmation 后的实际写入执行者、调用方式、写入顺序和多 log finalization；但无需 governance approval 与及时可见语义已冻结。
 7. merge / split（合并 / 拆分）的治理审批、批量重判、跨 log finalization、audit trace 和回滚机制。
 8. Profile 内部结构事实建模，以及 Profile 与 Entity Log 的 ref / projection 形态；person 类型 stable entity 不特殊排除这一点已冻结。

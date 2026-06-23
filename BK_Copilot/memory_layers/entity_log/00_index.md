@@ -47,7 +47,7 @@
 - 身份脊梁、身份状态与重定向、身份复用面、控制状态、追溯指针五类信息各自的 field schema、enum（含 entity_status、automation_policy、risk 标记取值）和 refs 形态尚未冻结。
 - 最小创建 provenance、authority trace、evidence refs、governance refs 的字段形态尚未冻结。
 - `Alias Log` 具体以什么技术形态呈现，以及它与 `Entity Log` 的物理存储、projection / index 构建、同步方式和写入顺序尚未冻结。
-- `automation_policy_downgrade_path`（自动化策略自动降级路径）的 exact mutation contract（精确变更契约）尚未冻结。
+- `automation_policy_downgrade_path`（自动化策略自动降级路径）的 detection、exact mutation contract（精确变更契约）和治理可见性尚未冻结；该检测归 Entity Log automation_policy maintenance，不归当前确定性发现 job。
 - `automation_policy` 是直接存于 `Entity Log` 还是由 `Governance Log` 投影生成，属于存储 / projection 形态，尚未冻结。
 - ER `new_stable_entity` 与 accountant explicit identity confirmation 之后的实际写入执行者、调用方式、写入顺序和多 log finalization 机制尚未冻结，但必须保留“无需 governance approval”和“及时可见”的 L2 事实。
 - merge / split 的治理审批、批量重判、跨 log finalization、audit trace 和回滚机制尚未冻结。
@@ -58,4 +58,4 @@
 - M3：冻结 `entity_record`、五类保存信息、trace refs、entity_status / automation_policy / risk 标记等 exact field / enum / refs 形态。
 - M3 / L4：冻结 Profile 与 Entity Log 如需互相引用时的 ref / projection 形态；Profile 内部结构事实建模不属于 Entity Log L2。
 - L4 / seam：冻结 `Entity Log` 与 `Alias Log` 的 projection / index / 同步机制，以及 stable entity 创建后的实际写入执行者、顺序和多 log finalization。
-- L4 / seam：冻结 automation_policy 存储 / 投影形态、自动降级 exact approval / visibility contract，以及 merge / split 的跨 log finalization / audit / rollback 机制。
+- L4 / seam：冻结 automation_policy 存储 / 投影形态、自动降级 detection + exact approval / visibility contract，以及 merge / split 的跨 log finalization / audit / rollback 机制。

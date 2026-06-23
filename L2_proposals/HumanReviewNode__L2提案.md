@@ -26,10 +26,10 @@
 - **写入对象（语义，由 Finalization 落盘）**：Transaction Log（correction append）、Intervention Log（原因 + Intervention ID）、Case Log（更新/superseded）、Entity Log / Rule Log（扩张型变更：凭证→approved mutation）、**Governance Log（每笔扩张型变更的审计，需新建）**。A：Transaction Log 02 §3「review / governance 更正路径」；Case Log 02 §3、§5；Entity Log 02 §3「Review Node candidate」；Rule Log 02 §3「会计师直接创建路径」。
 - **审核 inbox（数据层，pull）**：确定性发现 job / 未来 LLM 审查节点把候选投入；本节点**主动读取**（非被推送）。需新建。
 
-### 上游补充 —— 三类触发源汇成同一"待确认清单"
-- **A · 会计师自己的纠错升级成永久**（"以后这个 entity 都这么走" = 撰写 rule/policy）。
-- **B · 确定性发现 job 投进审核 inbox 的候选**（系统自发扫出的阈值型机会）。
-- **C · 未来 LLM 审查节点的发现**（接口同 B，只产候选投入）。
+### 上游补充 —— 触发源汇成同一"待确认清单"
+- **A · 会计师自己主动发起**（纠错，或升级成永久 = 撰写 rule/policy）。
+- **B · 确定性发现 job 投进审核 inbox 的候选**：**目前只服务 Rule Match → 当前 = rule 升级候选**（决策 13）。本节点 pull。
+- **C · 未来 LLM 审查节点的发现**（接口同 B，只产候选投入；当前不存在）。
 
 ### 已锁事实（遵守，非审查；适用范围以对应正式文档为准）
 - **Coordinator/Review 分界**：Coordinator 处理 running/Pending、**不得在交易已 finalized 时触发**；finalized + 人发起这条独立轴归 HumanReviewNode。A：Coordinator 02 §1。
@@ -47,7 +47,7 @@
 - **核心职责（不变）**：按会计师指令，对系统各步骤实施修改——但**它不是修改的直接执行者**，而是通过调用多段确定性代码（Finalization）完成；Finalization 内有明确 schema 要求，部分改动（如 RuleLog）还需会计师凭证。
 - **新增职责**：充当**整个系统 ↔ 人类会计师之间、关于"规则变化 + 错误治理"的沟通桥梁**（详见决策 9 的统一治理漏斗）。
 
-**触发与边界**（用户拍板）：① 仅在**会计师主动要求**、或**系统主动发现错误并经会计师审核通过**时才修改；② 交易**运行过程中**的所有相关问题归 **Coordinator**；③ 交易**完成之后、非 Runtime** 时间的交互与修改，全部由本节点完成。位置不固定（批后/导入前/周审皆可），功能要求固定。
+**触发与边界**（用户拍板）：① 仅在**会计师主动要求**修改时动手（另一触发"系统主动发现错误经会计师审核"**挂起**——该项可能被删除，见第六节 FP-5）；② 交易**运行过程中**的所有相关问题归 **Coordinator**；③ 交易**完成之后、非 Runtime** 时间的交互与修改，全部由本节点完成。**沟通桥梁边界已锁（FP-1）**：本节点只管"规则变化 + 错误治理 + 事后纠错"三类；onboarding/目标询问/覆盖核对归 interaction_agent，运行期 pending 归 Coordinator。位置不固定（批后/导入前/周审皆可），功能要求固定。
 **为什么（锚定产品目标）**：服务「accountant control」「审计性」「纠错学习」——给会计师一个事后唯一干净入口，且人类权威天然在场。不能内联进 Coordinator：Coordinator 只处理 running 交易、finalized 后不得触发（A 已锁）。
 **指回**：Coordinator 02 §1；用户 1c + O1 + O7 拍板。
 **排除的替代**：① 当作 Old-System「Review Node」(JE 前 gate) 的同名延续（那是记账前 gate，B 类不具权威；A 类"Review 覆盖 final logging 前交易"等引用属旧账误挂，列待写回）；② 把 onboarding/目标询问/覆盖核对也吞进来（那归 interaction_agent，本节点的桥梁只管"规则变化 + 错误治理 + 事后纠错"，见决策 9 与第六节 FP-1）。
@@ -92,14 +92,16 @@
 **指回**：doc 第 3 节；与每个 BK_Copilot node spec「绝不能写入或修改」一致。
 **排除的替代**：高置信时跳过 read-back / 合并单笔与永久确认。理由：违反铁律，破审计与控制。
 
-### 决策 6 — 对象范围 = 系统一切已确定事实；半径决定走不走授权闸（C1）〔指向 02 §5/§6〕
-**结论**：HumanReviewNode 的纠错对象 = **系统中一切已确定的"事实"**：(a) 已/未完成交易；(b) 长期文档里的 Entity；(c) 已确定的 Rules。判定标准：
-- **只动这一笔交易自己**（含"这笔其实该指向另一个 entity"）→ 交易级、**低半径**，走单笔级联（决策 7）、**不过授权闸**（人已在场、不产生扩张型长期权威）。
-- **改 Entity 记录本身 / 改·降级 Rule / merge·split / automation 放宽** → **扩张型长期权威**，**一律过本节点的统一治理漏斗（决策 9）：会计师签字→凭证→Finalization 落盘 + Governance Log 审计**。会计师经 Review 直接改 rule = Rule Log §3「会计师直接创建路径」（带本人签字，合法）。
-**为什么**：「accountant control」——系统确定的事实都应支持人工修改；「审计性 + 权限不蔓延」——扩张型变更必经唯一强制闸。
-**指回**：用户 O4 + C1 拍板；Entity Log 02 §3（Review = merge_split/identity-risk/policy candidate 产出方）；Rule Log 02 §3（会计师直接创建路径）。
-**排除的替代**：Review 只能改交易、不碰 Entity/Rule。理由：与 A（Entity Log 已列 Review 为 candidate 产出方）及 owner 的"交互层=系统一切事实"定位冲突。
-**open boundary**：Engine 影响展开覆盖 entity/rule 编辑连带（改 entity X ⇒ 扇出其名下交易）的依赖图形态 = L4；**改 Rule/Entity 触及历史交易的处理** = 见决策 12（N1 已收口）。
+### 决策 6 — 对象范围 = 系统一切已确定事实；半径只决定"做什么 + 额外治理步骤"，不决定"是否签字"（FP-2 重构）〔指向 02 §5/§6〕
+**结论**：HumanReviewNode 的对象 = **系统中一切已确定的"事实"**：(a) 已完成交易；(b) 长期文档里的 Entity；(c) 已确定的 Rules。
+- **关键澄清（FP-2）**：**经 Review 的一切改动天然都已会计师签字**（决策 9），节点内**没有**"判断该不该批"的分类器。半径**不是**"过不过审批闸"，只决定**做什么 + 要不要额外治理步骤**。
+- **判别线不是"影不影响未来"**（连单笔纠错都经 Case Log 影响未来学习，切不开），而是 **"有没有立下/改动一条会自动驱动未来交易的确定性长期权威（rule/policy/entity 权威）"** vs **"只更新一条软的、受 use_level 约束的先例"**：
+  - **改一笔记录**（更新软先例）→ Transaction Log 追加 + Intervention Log + Case Log 先例更新（决策 7）。
+  - **改 rule / entity 权威 / automation**（动确定性长期权威）→ 在签字之上**额外**加：铁律 3 永久单独确认 + 跨 rule 互斥校验 + **落 Governance Log**。
+**为什么**：「accountant control」系统确定的事实都应支持人工修改；区分软先例 vs 长期确定性权威，才能正确路由额外治理步骤与 Governance Log，而不误把"是否签字"当成要判断的问题。
+**指回**：用户 O4 + C1 + FP-2 拍板；Entity Log 02 §3（Review = merge_split/identity-risk/policy candidate 产出方）；Rule Log 02 §3（会计师直接创建路径）。
+**排除的替代**：① Review 只能改交易、不碰 Entity/Rule（与 A 及 owner 定位冲突）；② 造一个"哪些改动需签字"的判据/清单（伪问题：经 Review 的一切本就已签字，FP-2）。
+**open boundary**：Engine 影响展开覆盖 entity/rule 编辑连带的依赖图形态 = L4；**改 Rule/Entity 触及历史交易的处理** = 见决策 12。
 
 ### 决策 7 — 单笔纠错级联（低半径）确定落点 〔指向 02 §4 写入、§10 trace〕
 **结论**：以"一条 active rule 跑出的分类被会计师推翻"为例，经 read-back 确认后由 Finalization 机制确定落：
@@ -124,34 +126,35 @@
 **排除的替代**：纠错当场让 LLM 裁决 rule 降级。理由：单次为弱证据 + 违反 rule 无自动降级。
 **open boundary**：确定性发现 job 的调用/节奏/"够格"阈值（与 Rule Log promotion 资格耦合）→ L2·外阻/另窗。
 
-### 决策 9 — 统一治理确认漏斗：本节点是唯一的人类漏斗，但是 conductor 不是 judge（O7 收口）〔指向 02 §5/§6/§9〕
-**结论**：系统里**任何需要会计师点头的"扩张型长期变更"**，没有别的路，全部汇到本节点的确认面，再到达会计师、再到达 Finalization。本节点是这条治理线上**唯一的人类漏斗**。
+### 决策 9 — 本节点 = 会计师的手 + 唯一人类交互面；conductor 不 judge（O7 + FP-2 收口）〔指向 02 §5/§6/§9〕
+**结论（瘦身后）**：**经 Review 的每一个改动，本质上都是会计师 read-back 确认并签字过的。** 节点内**没有**"判断该不该批"的分类器——是否需要会计师同意不是 Review 判断的事，而是 Review 的运作前提。
 
 **(1) 角色 = conductor（调度员），不是 judge（审批者）**：
-- 判断者永远是会计师；本节点（及其 LLM）不自己判断。
+- 判断者永远是会计师；本节点（及其 LLM）不自己判断、不自己批。
 - **不自己做检查**：跨 rule 互斥校验、promotion 资格判定等由确定性代码做，本节点只**调用并把结果摆给会计师**，绝不用 LLM 重判。
-- **不自己放行**：放行权在 Finalization 的凭证校验死代码里，不在本节点 LLM 里。理由 = **trusted base 要小**：本节点是复杂的、面向会计师的 LLM 节点，万一出 bug 或被注入，也越不过 Finalization「无凭证即拒绝」那道闸。
+- **不自己放行**：放行权在 Finalization 的凭证校验死代码里。理由 = **trusted base 要小**：本节点是复杂的、面向会计师的 LLM 节点，万一出 bug 或被注入，也越不过 Finalization「无凭证即拒绝」那道闸。这是**安全机制**，与"是否签字"无关（一切 Review 改动都签字）。
 
 **(2) 工作流程**（用户拍板）：
-1. 理解会计师指令 → 转成清晰的**系统变化执行图**（要改什么 + 会连带动到什么；纠错路径的连带由节点内 Change List Engine 沿依赖图展开，候选路径把候选影响范围摆清）。
-2. 会计师**确认执行图**、并清楚改动后的具体变化后；scope 升级（"改这一笔" vs "以后永远这么走"）必须**单独显式确认**（铁律 3）。
-3. 会计师对 **read-back 版本签字** → 生成**凭证** → 本节点据各 log Finalization 要求**备好 Input** → 调用相应写入机制落盘 + 往 **Governance Log** 记一笔审计。**无签字 = 无凭证 = Finalization 拒绝，任何 durable 改动都不发生。**
+1. 理解会计师指令 → 转成清晰的**系统变化执行图**（要改什么 + 会连带动到什么）。
+2. 会计师**确认执行图**、并清楚改动后的具体变化；scope 升级（"改这一笔" vs "以后永远这么走"）必须**单独显式确认**（铁律 3）。
+3. 会计师对 **read-back 版本签字** → 生成**凭证** → 本节点据各 log Finalization 要求**备好 Input** → 调用写入机制落盘。
+- **Finalization 落盘中途失败**（用户拍板）：本节点能在**不瞎编信息**前提下自行解决则不打扰会计师；需会计师额外允许/信息才回到会计师。
 
-**(3) 需经本漏斗的"扩张型长期变更"清单**：Rule 全生命周期（创建/promotion/修改/降级/删除）；automation policy 放宽/升级；Entity 治理级变更（merge/split/archive/生命周期，及把候选确认成 stable）；Alias 批准/拒绝、Role 确认；永久纠错（来源 A）。**Profile / 税务配置 / 科目映射变更归属未定 → 先挂，别默认全吞**（第六节 FP-2）。
+**(3) 半径只决定额外治理步骤（非"是否签字"，见决策 6）**：动**确定性长期权威**（rule 全生命周期 / automation 放宽·升级 / Entity 治理级 merge·split·archive·确认 stable / Alias·Role）→ 在签字之上额外加 **互斥校验 + 落 Governance Log**；只改一笔记录（软先例）→ 不进 Governance Log。**Profile / 税务 / 科目映射** 是否属"长期确定性权威"按决策 6 判别线归位（不再单独枚举挂起，FP-2）。
 
-**为什么**：权限不蔓延 + 审计性 + 单一可审计漏斗（正对应产品上"网页一个统一审核板块"）；把放行权放进小而死的 Finalization，使本节点即便失效也无法产生错误 durable 写入。
-**指回**：用户 O7 + 1c 第 6/9 节；Entity Log 02 §6 candidate→approval→mutation→Governance Log；Rule Log 02 §3（无自动成立、须会计师 sign-off）。
-**排除的替代**：① 把审批逻辑/放行权建进本节点 LLM（违反 trusted-base-要小 + LLM 永不自批）；② 保留一个独立的"授权确认机制"节点（已折叠：人面那半进本节点、强制半留 Finalization）。
-**open boundary**：凭证 exact 形态、read-back 完整模板、Finalization 多 log 原子机制 = L3/L4（留 Stage 3）；多个并发待确认项触及同一 rule/entity 时的排序/互斥 = L4/seam。
+**为什么**：accountant control + 审计性 + **read-back 是头号安全件**（Review 是会计师的手，防"手伸错地方/LLM 把会计师理解错"的唯一防线就是 read-back）；放行权放进小而死的 Finalization，使本节点即便失效也无法产生错误 durable 写入。
+**指回**：用户 O7 + FP-2 + 1c 第 6/9 节；Entity Log 02 §6；Rule Log 02 §3。
+**排除的替代**：① 把审批逻辑/放行权建进本节点 LLM（违反 trusted-base-要小 + LLM 永不自批）；② 保留独立"授权确认机制"节点（已折叠）；③ **造"哪些改动需签字"的分类器/清单**（伪问题，FP-2：经 Review 的一切本就已签字）。
+**open boundary**：凭证 exact 形态、read-back 完整模板、Finalization 多 log 原子机制 = L3/L4；多个并发待确认项触及同一 rule/entity 的排序/互斥 = L4/seam。
 
-### 决策 9b — 明确不经过本漏斗 / 不归本节点（免闸清单）〔指向 02 §1 触发、§5〕
-**结论**：以下本来就**免闸**，绝不接进来：
-- **低半径单笔纠错**：只改当前这一笔、不产生扩张型长期权威，且发起人即会计师本人（人类权威已在场）→ 走纠错落盘（决策 7），不经漏斗。
-- **restrictive auto-downgrade**：automation 往保守收紧 → 免审、自动生效、仅需治理可见，不经本节点（**只有放宽才过闸**）。A：Entity Log 02 §6 例外。
-- **Coordinator 运行中的当面身份确认**：交易还在跑、Coordinator 当场问会计师的确认 → 归 Coordinator。A：Coordinator 02。
-- **运行期常规写入**：如 ER 按死规矩把解析身份写进 Entity Log → 直接走 Finalization，不碰本节点。A：Entity Log 02 §3。
-**为什么**：保持漏斗的意义与本节点职责面干净——只管"扩张型长期权威变更"，运行期日常写入与收紧型动作都不归本节点。
-**指回**：用户 O7 第 6 节；A 各 log。
+### 决策 9b — 不归本节点的范围（不是"免闸"，是压根不来）〔指向 02 §1 触发、§5〕
+**结论**：以下**根本不经过 Review**（在别的路径上发生）——这是**范围排除**，不是"跳过审批闸"：
+- **restrictive auto-downgrade**：automation 往保守收紧 → 自动生效、仅需治理可见。A：Entity Log 02 §6 例外。
+- **Coordinator 运行中的当面身份确认**：交易还在跑时的确认 → 归 Coordinator。A：Coordinator 02。
+- **运行期常规写入**：如 ER 按死规矩把解析身份写进 Entity Log → 直接走 Finalization。A：Entity Log 02 §3。
+> 注：**低半径单笔纠错不在此列**——它是 Review 的改动、照样 read-back+签字（决策 9），只是不触发额外治理步骤（互斥/Governance Log）。
+**为什么**：保持本节点职责面干净——只做"会计师事后、非 runtime 的纠错与治理交互"，运行期日常写入与收紧型动作不归本节点。
+**指回**：用户 O7 第 6 节 + FP-2；A 各 log。
 
 ### 决策 10 — 决策权限表 〔指向 02 §5〕
 | 谁 | 可以决定 |
@@ -183,6 +186,17 @@
 **排除的替代**：① 改 rule 自动回溯改全部历史（违反 scope 不静默升级 + 该问会计师单笔还是全部）；② 改 rule 只影响未来、历史一律不动（与"事后纠错"本旨冲突，且 owner 明确历史可经 append 纠正）。
 **open boundary**：N 笔批量纠正的执行编排（逐笔 append 的顺序/原子）= Finalization 机制 L4/seam；Case Log "记录即发生 / 不留版本历史"的 exact 字段语义待与 Case Log M3 对齐。
 
+### 决策 13 — 候选路径：rule 升级走固定执行路径，Change List Engine 只服务纠错与降级/改动（FP-3 收口）〔指向 02 §3 读取、§6〕
+**结论**：
+- **确定性发现 job 目前只服务 Rule Match 一个节点** → 当前 inbox 候选 = **rule 升级候选**（某 entity 下某 pattern 够格升 rule）。
+- **直来直去的 rule 升级 = 固定化执行路径**：升完要写什么非常明确，**不走开放式 Change List Engine**，走一条固定路径；本节点只当**确认面 + 触发器**（把候选 + 证据摆给会计师签 → 触发固定路径）。
+- **若涉及降级 / 改动现有 rule** → 才回到 Change List Engine 展开连带 + 决策 12 的历史处理。
+→ 故 **Change List Engine 主要服务"纠错"与"降级/改动"的连带展开**；**纯升级不需要 Engine**。
+**为什么**：最小设计——固定后果不必动用开放式展开器；保持本节点薄。
+**指回**：用户 FP-3 拍板；Rule Log 02 §3/§4（promotion 须会计师 sign-off、附 CaseLogEvidence）。
+**排除的替代**：用通用 Change List Engine 展开一切候选（升级后果是固定的，开放展开多余）。
+**open boundary**：rule 升级"固定执行路径"的**定义归属** = 倾向 Rule 侧（Rule Log / Rule Match 治理），本节点只触发 → **L4/seam（NEW-1）**；确定性发现 job 调用/节奏/阈值 → L2·外阻。
+
 ---
 
 ## 三、分类备案
@@ -204,29 +218,32 @@
 - **审核 inbox** 数据层（确定性发现 / 未来 LLM 审查节点投候选，本节点 pull；需新建，≠ Governance Log）。
 - **Finalization 写入机制 / 确定性发现 job**（共享机制，另窗细化；"授权确认机制"已折叠，不再单列）。
 - **语义发现器 merge/split（系统自发那部分）**：挂起，另开窗口（记忆 `semantic-discovery-node-necessity-open`）。本节点只承接**人发起**的 merge/split。
-- **Profile / 税务配置 / 科目映射变更**是否归本节点确认范围：未定，先挂（FP-2）。
+- **rule 升级"固定执行路径"的定义归属**（NEW-1）：倾向 Rule 侧（Rule Log/Rule Match 治理）定义、本节点只触发 → 待对齐。
 - **与 Coordinator / interaction_agent 是否共用同一对话前端**（编排/呈现层，C2）。
+> 注：原"Profile/税务/科目映射是否归本节点"已由 FP-2 判别线（确定性长期权威 vs 软先例）自动归位，不再单挂。
 
 ---
 
 ## 四、自检与判定（Stage 1-2 清单）
 
-对照模板 §10 二十二问：1 为什么存在✓(决1)、2 不可删并内联✓(决1)、3 唯一核心职责✓(决1)、4 上游✓(决1，人发起)、5 下游✓(依赖)、6 读哪些 log✓(读取面)、7 直接写什么✓(决7，经 Finalization 机制，节点不裸写)、8 只能提什么 candidate✓(决6/9，扩张型变更 candidate 经授权闸)、9 绝不能写什么✓(铁律1，LLM 不写字节)、10 deterministic 决定✓/11 LLM 判断✓/12 accountant 决定✓/13 governance 批准✓(决10)、14 证据不足✓(决11，停下 read-back)、15 歧义✓(决4 对账→read-back 裁决)、16 source conflict✓(决12，改 rule 牵连历史 = 单笔/全部 + append 回溯)、17 留哪些 trace✓(决7，Intervention ID 链路 / correction append)、18 trace 不成 authority✓(铁律 + A)、19 对外契约面 + consumer✓(依赖/写入语义)、20 守运行/记忆 seam✓(决3/9，节点只声明存什么+谁有权威)、21 哪些未冻结✓(三节)、22 能否进 Stage 3 → **否**。
+对照模板 §10 二十二问：1 为什么存在✓(决1)、2 不可删并内联✓(决1)、3 唯一核心职责✓(决1)、4 上游✓(决1，人发起)、5 下游✓(依赖)、6 读哪些 log✓(读取面)、7 直接写什么✓(决7，经 Finalization 机制，节点不裸写)、8 只能提什么 candidate✓(决13，rule 升级候选来自确定性发现)、9 绝不能写什么✓(铁律1，LLM 不写字节)、10 deterministic 决定✓/11 LLM 判断✓/12 accountant 决定✓/13 governance 批准✓(决10)、14 证据不足✓(决11，停下 read-back)、15 歧义✓(决4 对账→read-back 裁决)、16 source conflict✓(决12，改 rule 牵连历史 = 单笔/全部 + append 回溯)、17 留哪些 trace✓(决7，Intervention ID 链路 / correction append)、18 trace 不成 authority✓(铁律 + A)、19 对外契约面 + consumer✓(依赖/写入语义)、20 守运行/记忆 seam✓(决3/9，节点只声明存什么+谁有权威)、21 哪些未冻结✓(三节)、22 能否进 Stage 3 → **否**。
 
-- **能否判定 L1-L2 完成**：O1–O7 + C1/C2 + Chatbot + N1/N2 已收口（含"授权确认机制折叠进本节点"）；**尚余第六节 FP-1~FP-5 第一性原理复查项**讨论后才判定完成。
+- **能否判定 L1-L2 完成**：O1–O7 + C1/C2 + Chatbot + N1/N2 + FP-1~FP-5 全部收口（FP-2 改为"经 Review 一切皆签字、半径只路由额外治理步骤"；FP-3 改为"rule 升级走固定路径"）；**L1-L2 主体已完整**，仅余 NEW-1 一条 seam 待与 Rule 侧对齐（不阻塞 L1-L2 判定）。
 - **能否进 Stage 3**：否。卡两类阻塞——① 圈外依赖落文（Intervention Log / Governance Log / 审核 inbox / Finalization 机制 / 确定性发现 / 语义发现器）；② L3 字段定稿。
 
 ---
 
 ## 五、本轮已收口
-- **决策 1/9/9b/10 + 依赖（O7）**：授权确认机制折叠进本节点（人面那半），强制半留 Finalization；本节点 = 唯一人类漏斗 + conductor 不 judge；三来源、扩张型清单、工作流程、免闸清单、凭证→Finalization 落盘已写明。
-- **决策 12（N1）**：改 rule 牵连历史 = 先问单笔/全部；全部则 Case Log 改记录、Transaction Log 逐笔 append；rule 去向单独确认。
-- **决策 2（N2）**：卡住/未完成交易归 Coordinator；Review 对象 = 已 finalized 事实。
-- **决策 8（O6）**：Review 接两类输入；对"rule 坏没坏"职责到"发信号"为止。
+- **决策 6/9/9b（FP-2 重构 + O7）**：经 Review 的一切改动天然已会计师签字；**节点内无"该不该批"分类器**；半径只决定"做什么 + 额外治理步骤（互斥/Governance Log）"，判别线 = "确定性长期权威 vs 软先例"（非"影不影响未来"）；conductor 不 judge；放行权在 Finalization 凭证死代码（安全机制，trusted base 小）；9b 改为"范围排除"而非"免闸"。
+- **决策 13（FP-3）**：确定性发现只服务 Rule Match → inbox = rule 升级候选；直来直去升级走**固定执行路径**（不用 Engine），降级/改动才用 Engine + 决策 12。
+- **决策 12（N1）/决策 2（N2）/决策 8（O6）**：改 rule 牵连历史的单笔/全部 + append 回溯；卡住交易归 Coordinator；Review 接两类输入、对 rule 坏没坏只发信号。
+- **read-back 抬升为头号安全件**：Review = 会计师的手，防"LLM 把会计师理解错"的唯一防线。
 
-## 六、第一性原理复查 —— 仍需讨论的 L1-L2 问题
-- **FP-1 沟通桥梁的边界**：决策 1 说本节点是"系统↔会计师"的沟通桥梁，但这措辞太宽。需钉死它**只**管"规则变化 + 错误治理 + 事后纠错"；onboarding/目标询问/覆盖核对归 interaction_agent、运行期 pending 归 Coordinator。三者对会计师的对话面如何分工 = 待议（这是"god-node"风险的正面回答：面宽但权薄——只在会计师请求或已批准的发现错误时动手、只在非 runtime、且 conductor 不 judge）。
-- **FP-2 确认范围的外延**：Profile / 税务配置 / 科目映射变更归不归本节点漏斗？owner 已说"先挂"。需要一个判据来决定"什么算扩张型长期变更"，而不是逐个枚举。
-- **FP-3 候选路径 vs 纠错路径的影响展开**：纠错路径由节点内 Change List Engine 展开连带；**inbox 候选（来源 B/C）的"执行图/影响范围"由谁产出**——本节点也跑 Engine，还是候选到达时已附带影响？决定 Engine 是"纠错专用"还是"通用展开器"。
-- **FP-4 会计师签的"执行图"批量边界**：当一次确认牵连 N 笔（决策 12）或一个候选触及多对象时，会计师签的是"一个整体执行图"还是逐项？部分失败时（Finalization 落盘中途失败）本节点对会计师呈现什么——这关系到"他批准的到底是什么"。
-- **FP-5 "系统主动发现的错误"的入口纪律**：决策 1 触发条件之一是"系统主动发现错误经会计师审核通过"。这类错误（≠ 阈值型 promotion 候选，而是"疑似记错了"）由谁发现、经哪个 inbox、与确定性发现 job 是否同一队列 = 待厘清。
+## 六、第一性原理复查 —— 结论与剩余 seam
+- **FP-1 ✓**：桥梁边界锁为"规则变化 + 错误治理 + 事后纠错"；面宽但权薄。
+- **FP-2 ✓（已消解，非我原方案）**：不造"该不该批"判据/清单——经 Review 一切皆签字。半径只路由额外治理步骤；判别线 = 确定性长期权威 vs 软先例。
+- **FP-3 ✓（按用户细化）**：rule 升级 = 固定路径；Engine 只服务纠错与降级/改动。
+- **FP-4 → L4**：执行图"一次同意全部 vs 逐笔"留 L4；中途失败规则已定（决策 9）。
+- **FP-5 → 搁置**：触发"系统主动发现错误"可能删除，入口纪律不议。
+- **NEW-1（剩余 seam，不阻塞 L1-L2）**：rule 升级"固定执行路径"的定义归属——倾向 **Rule 侧（Rule Log/Rule Match 治理）**定义、本节点只触发。待 Rule 侧对齐确认。
+- **第一性原理总评**：FP-2/FP-3 厘清后为**净简化**（少一个分类器、少一套漏斗审批叙事），未发现需推翻的结构。
