@@ -110,6 +110,6 @@
 
 ## 7. 未决定问题
 
-- 圈外依赖尚未落文：JE Generation、Transaction Log、Intervention Log、Governance / Review、Case Memory Update、interaction_agent 等。
+- 圈外依赖尚未落文：JE Generation、Transaction Log、Intervention Log、Governance / Review、interaction_agent 等。
 - 字段级 schema、enum、阈值、refs、写入执行者、写入顺序、聚合呈现机制、多表排序和 finalization 顺序均未冻结。
 - 详情见 `02_logic_and_boundaries.md` §12 和 `00_index.md` 的进入下一阶段 gate。

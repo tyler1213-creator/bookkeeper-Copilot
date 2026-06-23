@@ -113,6 +113,6 @@
 - Governance Log 数据层和“记录哪些变动”的判定标准。
 - 审核 inbox 数据层。
 - Intervention Log 正式 spec。
-- 确定性发现 job、JE Generation、Evidence Log、Case Memory Update Node 等待建或未对齐对象的正式边界。
+- 确定性发现 job、JE Generation、Evidence Log 等待建或未对齐对象的正式边界。
 - merge / split 标准化动作批模板与跨 log 迁移完整性契约。
 - 第三类正式 spec 归属目录命名在 Stage 3 前的最终确认。

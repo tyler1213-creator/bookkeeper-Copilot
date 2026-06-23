@@ -36,7 +36,7 @@
 - High Confidence 进 JE 前的 COA 校验 L2 行为已定：未命中客户 COA 则反馈回 CJ 重判，仍失败则转 Pending；但校验落点（CJ 末尾独立检查器 vs 并入 JE Generation Node）、重判次数上限、反馈 payload 和纠错 UX 仍归 L4 / seam。
 - CJ external lookup 只用于会计事实，不用于身份；外部来源 evidence reference 的 exact field schema、网页快照 / 缓存 / retrieval 机制、source quality taxonomy 仍归 L3 / L4，并需与 ER 侧纪律对齐。
 - reasoning / audit trace 应进入 Transaction Log，但 exact 存储字段、后续治理节点读取 reasoning 的 contract、Transaction Log 写入机制仍未冻结，归 L3 / L4 / 外阻。
-- `case_memory_update_candidate` 的 exact field schema、Case Memory Update Node 的写入机制、Case Log 与 Transaction Log 的 finalization trigger order 仍未冻结，归 L3 / L4 / seam。
+- High Confidence 路径可学习 case 内容经统一 finalization 写入机制沉淀为 Case Log 先例的 exact 写入机制、Case Log 与 Transaction Log 的 finalization trigger order 仍未冻结，归 L3 / L4 / seam。
 - High Confidence 结果的事后人工查看、汇总界面、抽查机制仍未冻结，归 UI / 后续设计。
 - 批次定义（如单张 Bank Statement）和一次提交多张表的串行 / 并行快照排序仍未冻结，归 Coordinator / 编排层。
 - 结构性无效 / 损坏输入的拒绝与否、被 CJ 与上游均无解交易的最终归处、纠错 candidate signal 的发出者与纠错流程均为 DEFERRED。
@@ -48,6 +48,6 @@
 - C1：Accountant / Governance authority boundary 已在 `02_logic_and_boundaries.md` §12 单列成文；进入 Stage 3 前需由 reviewer 确认其与 Entity Log / Case Log / Rule Log / Governance 后续草案无冲突。
 - C2：Stage 1 Functional Intent 已在 `01_functional_intent.md` 成文；进入 Stage 3 前需由 reviewer 确认 CJ 的唯一职责、排除范围和 workflow 位置无需新增 L2 决策。
 - C3：CJ 拥有 COA + HST / GST treatment 选择权已在 `01_functional_intent.md` §2 和 `02_logic_and_boundaries.md` §5 / §6 成文；进入 Stage 3 前需与 JE Generation 的纯构造边界联合确认。
-- 完成 `case_judgment_input` / `case_judgment_result` / Pending handoff / case memory update candidate 的字段级 L3 schema。
+- 完成 `case_judgment_input` / `case_judgment_result` / Pending handoff 的字段级 L3 schema。
 - 完成硬阻断字段、automation policy / use_level / confirmed_by enum、accounting treatment schema、external evidence ref、reasoning trace、COA 校验反馈 payload 的 L3 / L4 分工。
-- Coordinator / Pending Node、Case Memory Update Node、JE Generation Node、entity-level Knowledge Summary、Profile / Structural Match 的正式边界至少达到能支撑 CJ 接口收口的程度。
+- Coordinator / Pending Node、JE Generation Node、entity-level Knowledge Summary、Profile / Structural Match 的正式边界至少达到能支撑 CJ 接口收口的程度。

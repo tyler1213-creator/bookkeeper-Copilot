@@ -47,7 +47,7 @@ Transaction Log 是以 `transaction_id` 为主索引的逐笔交易审计 source
 - JE Generation Node 与 Transaction Log 的 exact handoff（JE result / journal_entry 留痕）。
 - Intervention Log 与 Transaction Log 的分界 exact contract。
 - Human Review Node review trace 进 Transaction Log 的 exact 边界（Human Review 是 finalized 后会计师人发起的纠错节点，不再是 final logging 前 gate）。
-- Case Memory Update Node 凭 `transaction_log_ref` / finalization proof 写 Case Log 的 exact 机制与 trigger order。
+- 统一 finalization 写入机制凭 `transaction_log_ref` / finalization proof 写 Case Log 的 exact 机制与 trigger order。
 - Transaction Log 与对外 final output report / export artifact 的 field-level 边界。
 - Governance（授权确认 = Human Review + Finalization）、Knowledge Summary / Knowledge Compilation、Evidence Log、Profile / Structural Match 与 Transaction Log 的 exact 读写边界。（Post-Batch Lint 已废除，删除。）
 - transaction correction 如何影响 Alias review / mutation、entity risk candidate。
@@ -60,5 +60,5 @@ Transaction Log 是以 `transaction_id` 为主索引的逐笔交易审计 source
 ## 进入下一阶段前必须解决
 
 - L3 字段定稿：record schema、reasoning / rule-hit ref、身份字段、terminal / blocked / 无 JE 状态、final outcome / COA / HST / processing path、`confirmed_by` 与 AI 高置信度自动完成标记。
-- 圈外依赖正式落文：JE Generation、Intervention Log、Review、Case Memory Update、对外 final output report / export artifact。
+- 圈外依赖正式落文：JE Generation、Intervention Log、Review、对外 final output report / export artifact。
 - L4 / seam 机制在对应阶段单独推进：exact writer、统一 finalization 写入机制、多 log 顺序、读取 retrieval / projection / permission、更正追加机制与 entity-index 检索机制。

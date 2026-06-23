@@ -29,7 +29,7 @@
 
 | Writer | 可以写什么 | 写入类型 | 需要 approval 吗 |
 | --- | --- | --- | --- |
-| Case Memory Update Node / unified finalization mechanism（候选写入机制，未冻结） | completed-case learning record、evidence condition、context note、`confirmed_by`、`use_level`、transaction finalization refs | direct case write，具体 writer / trigger order 未冻结 | 必须基于 stable-linked finalized transaction 和 finalization proof；是否需要额外 approval 未冻结 |
+| 统一 finalization 写入机制（writer / trigger order 未冻结） | completed-case learning record、evidence condition、context note、`confirmed_by`、`use_level`、transaction finalization refs | direct case write，具体 writer / trigger order 未冻结 | 必须基于 stable-linked finalized transaction 和 finalization proof；是否需要额外 approval 未冻结 |
 | Review / Coordinator / accountant interaction finalization path（未冻结） | accountant-confirmed outcome 或 correction context 进入 Case Log 的来源上下文 | finalization input / correction context，具体写入机制未冻结 | accountant final confirmation 是当前交易完成依据；是否由本路径直接写 Case Log 未冻结 |
 | Rule / automation / entity risk review flow（未冻结） | 读取 Case Log 生成治理候选 | temporary handoff / candidate outside Case Log storage | 是；不能直接把 candidate 变成 Entity Log / Rule Log / Governance Log mutation；candidate_signal_refs 不作为 Case Log 存储字段 |
 
@@ -91,7 +91,7 @@ Case Log evidence
 
 未冻结 mutation path：
 
-- Case Log 的 exact writer 是 Case Memory Update Node、统一 finalization / memory write mechanism，还是其他机制。
+- Case Log 的 exact writer 是统一 finalization / memory write mechanism，还是其他机制。
 - `Case Log` 与 `Transaction Log` 的 exact trigger order。
 - corrected / reversed / duplicate / split transaction 的 supersession 血缘链接和重判执行机制。
 - accountant correction 如何进入 Case Log 的 exact write mechanism。

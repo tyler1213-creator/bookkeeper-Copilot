@@ -18,7 +18,7 @@
 - 自动化率依赖 CJ 能处理“没有 rule 但证据足够”的常见交易。
 - 审计性依赖 CJ 用结构化 reasoning 说明证据如何收敛到 COA 与 HST / GST，而不是只留下结果。
 - accountant control 依赖 CJ 在 hard block、歧义、冲突或非公司支出立场不明时干净交回会计师，而不是静默放行。
-- correction learning 依赖 CJ 把 High Confidence 路径产生的可学习 case 内容交给后续 Case Memory Update，而不越权写入长期记忆。
+- correction learning 依赖 CJ 把 High Confidence 路径产生的可学习 case 内容随交易 finalize 经统一 finalization 写入机制沉淀为 Case Log 先例，而 CJ 不越权写入长期记忆。
 
 ## 2. 核心职责
 
@@ -32,9 +32,9 @@
 
 - 结构化 reasoning / audit trace，用于 review、correction、governance 和 audit。
 - Pending 的 reason、已执行动作摘要和可选推断性建议，供 Coordinator 组织会计师问题。
-- `case_memory_update_candidate`，仅在 High Confidence 自动路径产生，供 Case Memory Update Node 在 finalized 后处理。
+- High Confidence 路径派生的可学习 case 内容（evidence condition、context note、use_level 倾向、risk hints 等），随交易 finalized 后经统一 finalization 写入机制沉淀为 Case Log 先例；CJ 不另产独立候选、不授权写入。
 
-但这些不是主职责。本节点不因产生 reasoning、Pending 建议或 case memory candidate 而获得 durable write、governance approval 或长期规则 authority。
+但这些不是主职责。本节点不因产生 reasoning、Pending 建议或可学习 case 内容而获得 durable write、governance approval 或长期规则 authority。
 
 ## 3. 明确排除范围
 
@@ -77,7 +77,7 @@
 
 - JE Generation Node：消费经 deterministic COA 校验后的 High Confidence Classification，用确定的 (COA, HST/GST) 构造 JE；该对象尚无正式草案，CJ 不冻结其内部。
 - Coordinator：Pending 的唯一 consumer，负责把 reason、候选建议、交易 / entity 信息组织成会计师可回答的问题。
-- Case Memory Update Node：消费 `case_memory_update_candidate`；在交易 finalized 后凭 `transaction_log_ref` 或等价 finalization proof 处理 Case Log 写入。
+- 统一 finalization 写入机制：在交易 finalized 后凭 `transaction_log_ref` 或等价 finalization proof，把 High Confidence 路径的可学习 case 内容沉淀为 Case Log 先例；exact writer / trigger order 未冻结。
 - 后续 finalization / audit / learning 机制：负责 Transaction Log、Case Log 等持久化；CJ 只声明要持久化的语义，不声明写入者、顺序或存储机制。
 
 本节点位于流程中的原因：
@@ -102,7 +102,7 @@
 
 - 记忆复用：stable entity 下读取 Case Log 先例摘要和 entity-level Knowledge Summary 作为辅助上下文，但不把它们升格为 rule。
 - 有证据支持的建议：High Confidence 与 Pending 都必须带结构化 reasoning，说明当前证据、历史佐证和 COA / HST 结论的关系。
-- accountant correction learning：CJ 只发 High Confidence 路径的 case memory update candidate，后续 correction / finalization 路径再决定是否进入 Case Log。
+- accountant correction learning：CJ 只在 High Confidence 路径携带可学习 case 内容，后续 correction / finalization 路径再决定是否进入 Case Log。
 - 审计性：reasoning 进入 Transaction Log 或等价 audit trace；trace 可供 review / correction / governance / audit，但不成为 authority。
 - accountant control：hard block、identity unknown、authority 冲突、个人 vs 公司立场明确不属于公司时均交回会计师。
 - 自动化率提升：没有 active rule、没有历史先例但证据足够唯一落到 (COA, HST/GST) 的交易，可以走 High Confidence Classification。
@@ -117,8 +117,8 @@
 - 硬阻断必须由结构化字段 / flag 被代码确定性计算；语义级清单已定，exact 字段与 enum 留 L3。
 - High Confidence 进 JE 前必须过客户 COA 确定性校验；未命中反馈回 CJ 重判，仍无法合法落到 COA 时转 Pending。
 - mixed-use / 个人消费风险默认公司支出、不主动稽查；证据明确指向非公司支出时交回会计师，不设 materiality 阈值 gate。
-- 本节点只产生 case memory update candidate；不产生身份、alias、rule、automation 或 governance 候选。
-- Profile / Structural Match、JE Generation Node、entity-level Knowledge Summary、Coordinator / Pending、Case Memory Update、Transaction Log 等对象的正式边界仍有外阻；本节点引用它们时只能声明自身契约面和 open boundary。
+- 本节点除 High Confidence 路径携带的可学习 case 内容外，不产生身份、alias、rule、automation 或 governance 候选。
+- Profile / Structural Match、JE Generation Node、entity-level Knowledge Summary、Coordinator / Pending、Transaction Log 等对象的正式边界仍有外阻；本节点引用它们时只能声明自身契约面和 open boundary。
 
 ## 7. 未决定问题
 

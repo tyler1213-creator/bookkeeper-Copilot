@@ -34,7 +34,6 @@
 | 会计师人发起（经 Human Review Node 确认面，落盘经 Finalization） | entity lifecycle mutation（实体生命周期变更）、merge / split projection（合并 / 拆分投影）、automation policy mutation（自动化策略变更）的备料 | 节点备料 → Finalization 落盘（无节点裸写） | 是；批准 = 会计师 read-back 签字 + Finalization 凭证强制 + Governance Log 留痕；除系统受控自动降级外 |
 | Entity Log automation_policy maintenance / mutation contract（自动化策略维护机制，非节点） | 受控 restrictive auto-downgrade（收紧型自动降级） | restrictive mutation（收紧变更） | 自动降级必须保留治理可见性；放宽或升级必须 accountant approval |
 | Human Review Node（人审节点，会计师人发起） | merge / split、identity risk、policy mutation candidate（合并 / 拆分、身份风险、策略变更候选）备料 | candidate（候选） | 是；本节点不直接写 stable authority，candidate 经 Finalization 落盘 |
-| Case Memory Update Node（案例记忆更新节点） | entity risk / policy candidate（实体风险 / 策略候选） | candidate（候选） | 是；不能直接写 Entity Log |
 | Entity Resolution Node（实体识别节点） | `new_stable_entity` entity 本体和最小创建 provenance（具体字段名留 M3），以及 identity conflict / risk signal（身份冲突 / 风险信号） | direct stable entity body plus creation trace / runtime risk signal（直接稳定实体本体加创建追溯 / 运行时风险信号） | `new_stable_entity` 本体和创建追溯写入不需要 governance approval；Alias / Rule / automation_policy / Case Log / final transaction outcome 不随 entity 本体写入 |
 | Accountant explicit identity confirmation path（会计师明确身份确认路径，执行者留 L4 / seam） | stable entity 本体和最小创建 provenance（具体字段名留 M3） | direct stable entity creation via finalization / memory write mechanism（实际机制未冻结） | 不需要 governance approval；只确认 identity，不隐含分类结果、Alias、Rule、automation_policy 或 Case Log 写入 |
 
