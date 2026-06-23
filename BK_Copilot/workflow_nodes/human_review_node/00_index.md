@@ -36,7 +36,6 @@
 - 多个并发待确认项触及同一 rule / entity 时的排序、互斥、去重。
 - N 笔批量 correction append 的顺序、原子、部分失败呈现。
 - read-back UI 与只读复核视图是否同一 shell；QuickBooks / 自有 DB 等多来源呈现。
-- “rule 被推翻一次”信号的 exact 落点与累积判定。
 
 ### L2·外阻（圈外依赖）
 

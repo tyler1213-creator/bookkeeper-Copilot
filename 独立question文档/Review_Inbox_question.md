@@ -37,7 +37,7 @@ MVP 只需要 append 候选记录，不设计完整队列生命周期。
 - target：stable `entity_id`，以及 Rule 侧定义的 scope / pattern seed。
 - proposed treatment：供会计师确认的候选 rule 输出；exact shape 归 Rule / JE Generator L3。
 - evidence refs：CaseLogEvidence refs，且每条 evidence 必须能回到 finalized transaction proof。
-- predicate refs：Rule 侧谓词 id / version / run context，用来解释“为什么这次被捞出来”。
+- predicate refs：Rule 侧判据 id / version / run context，用来解释“为什么这次被捞出来”。
 - discovered_at / run_id / trigger kind：区分批后增量、定时全扫、手动 rescan。
 
 MVP 暂不冻结：

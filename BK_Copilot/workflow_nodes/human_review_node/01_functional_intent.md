@@ -49,7 +49,7 @@
 
 - 让 LLM 写 durable bytes，或让 LLM 自批 / 放行。
 - 高置信度自动通过、跳过 read-back，或把会计师“改这一笔”静默升级成“以后永远这么走”。
-- 当场裁决某条 rule “坏了”并执行降级；单次纠错只能结构化该笔并发出“rule 被推翻一次”信号。
+- 当场裁决某条 rule “坏了”并执行降级；rule 是否失效只由会计师在 review 时判断，单次纠错只结构化并 append 该笔（更正记录引用该 rule 作审计事实），系统不自发产降级信号 / 候选。
 - 重判确定性检查、跨 rule 互斥校验、promotion 资格判定或 Finalization 凭证校验。
 - 产生 candidate entity / candidate identity，或把 ambiguous / unresolved / conflict 当成独立身份状态。
 

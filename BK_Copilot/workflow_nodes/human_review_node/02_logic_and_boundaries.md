@@ -35,7 +35,7 @@
 | Transaction Log | final outcome、最终 COA / HST-GST、`confirmed_by` 审计留痕、processing path、rule-hit source / rule ref（字段形态未冻结） | 展示复核视图、定位已 finalized 事实、支持 correction append 备料 | 只读，非 authority producer；reasoning / audit narrative 不能成为 reusable authority、accountant approval 或 governance approval。 |
 | Case Log | relevant precedent、exception context、`use_level`、`confirmed_by`（exact enum 未冻结） | 帮助 accountant 理解历史案例；决定哪些 system-confirmed 先例语义上可被 supersede / update | Case Log 不是 deterministic rule、不是 final audit record；本节点不把案例变成 rule、entity authority 或 governance approval。 |
 | Entity Log | active state、authority refs、candidate context、identity risk / merge-split / policy context | 展示当前 entity authority 与候选风险；支持人发起 merge / split 或 entity mutation 的确认面 | 本节点不批准 durable entity mutation；candidate 不是 stable identity authority。 |
-| Rule Log | 当前 executable rule 上下文、rule provenance、当前执行状态、rule 是否 active | 判断某笔是否来自 active rule；支持 rule 被推翻一次信号、rule 改动 / 降级 / 纯升级确认面 | candidate / promotion request 不能执行；rule authority 必须经 accountant sign-off 和 Rule 侧治理路径。 |
+| Rule Log | 当前 executable rule 上下文、rule provenance、当前执行状态、rule 是否 active | 判断某笔是否来自 active rule；支持会计师在 review 时判断 rule 是否失效，以及 rule 改动 / 降级 / 纯升级的确认面 | candidate / promotion request 不能执行；rule authority 必须经 accountant sign-off 和 Rule 侧治理路径。 |
 
 ## 4. 写入对象
 
@@ -86,7 +86,7 @@
 
 - 听懂会计师纠错意图，结构化为要改什么、改成什么、scope 多大。
 - 产出系统变化执行图和 `P_llm`，作为与 `P_engine` 对账的独立第二意见。
-- 区分 rule 错、一次性例外、scope 过宽等语义，但只能提案和发信号，不能当场裁决 rule 降级。
+- 区分 rule 错、一次性例外、scope 过宽等语义，但只能提案、供会计师在 review 时判定，不能当场裁决 rule 降级，也不自发产降级信号 / 候选。
 - 证据缺失时先用会计知识分析、组织可选项和 read-back，让会计师最终决定。
 
 ### LLM 不能判断
@@ -168,9 +168,10 @@ diff 处理：
 如果单次纠错暗示某条 active rule 可能错误：
 
 - authority 顺序：单次纠错是弱证据；Rule Log active authority 不由本节点 LLM 当场废除。
-- 本节点行为：结构化这一笔的纠正，并发出“rule 被推翻一次”信号。
-- 是否生成 review / governance candidate：信号归确定性发现 / Rule Log promotion 或治理路径累积判定；exact 落点未冻结。
-- 是否阻断自动化：是否阻断后续 rule 执行归 Rule 侧治理和确定性发现，不由本节点当场裁决。
+- 本节点行为：照常 append 这一笔的更正记录（更正记录引用该 rule，作为审计事实留在 Transaction Log）。
+- rule 坏没坏 / 是否降级：只由会计师在 review 时判断（rule 由人创建确认、匹配出错概率低，系统不自发判断 rule 失效）；若会计师判定该 rule 应降级 / 废除 / 取消，由会计师当场人发起，走扩张型变更路径（决策 6 / 9）。
+- 系统不自发累积“被推翻”次数、不自发产降级候选；确定性发现只产 rule 升级候选、不碰降级。
+- 是否阻断自动化：由会计师在降级决定中处理，不由系统当场自动裁决。
 
 如果改一条 rule 牵连历史 N 笔：
 
@@ -194,7 +195,6 @@ diff 处理：
 - read-back 文本、会计师签字和凭证引用。
 - Case Log supersede / update 语义。
 - 扩张型变更的 Governance Log 留痕材料。
-- “rule 被推翻一次”信号。
 
 这些 trace 用于：
 
@@ -248,7 +248,6 @@ approval 是会计师签字本身；trace 只帮助复核和审计。
 3. 多个并发待确认项触及同一 rule / entity 的排序、互斥、去重。
 4. N 笔批量纠正的逐笔 append 顺序、原子、部分失败时对会计师的呈现。
 5. read-back UI 与只读复核视图是否同一 shell；多来源（QuickBooks vs 自有 DB）和多类 finalized 交易的呈现。
-6. “rule 被推翻一次”信号的 exact 落点与累积判定。
 
 ### L2·外阻（圈外依赖）
 

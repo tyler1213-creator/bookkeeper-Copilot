@@ -237,7 +237,7 @@ RuleMatchNode 不输出或维护命中次数、rule health 或统计值。这些
 2. RuleMatch 输入 handoff 的 exact 字段 schema 尚未冻结；归 L3。handoff 由谁组装属于 L4 / seam。
 3. RuleLog reader 的调用机制属于 L4 / seam。RuleLog 必须支持按 `entity_id` 索引，且每条 rule 承载 applicability；这是对 RuleLog 的前置约束，待 RuleLog 设计落定。
 4. rule 资格判据的最终归档之家尚未冻结，取决于 RuleLog M1-M2；本节点只声明自己消费该资格语义标准。
-5. rule promotion 发现侧尚未冻结：确定性发现 job 当前只服务 Rule Match / Rule 侧 promotion，具体阈值谓词、CaseLogEvidence 打包、审核 inbox 写入和 rule 升级固定执行路径归 RuleLog / RuleMatch 治理；本节点 runtime 不产 candidate、不维护统计。
+5. rule promotion 发现侧尚未冻结：确定性发现 job 当前只服务 Rule Match / Rule 侧 promotion，具体阈值判据、CaseLogEvidence 打包、审核 inbox 写入和 rule 升级固定执行路径归 RuleLog / RuleMatch 治理；本节点 runtime 不产 candidate、不维护统计。
 6. rule 集合 overlap-validation 算法属于 L4 / seam；catch-all pattern 是否作为 schema 语法糖属于 L3。
 7. entity-level / pattern-level rule 的 exact schema、condition enum、accounting treatment（judgment-free 完整）schema、资格阈值具体数字尚未冻结，归 L3 / JE Generator。
 8. JE Generator 接口尚未冻结；treatment “judgment-free 完整”的判据依赖 JE Generator 需要什么，属于跨节点 seam。

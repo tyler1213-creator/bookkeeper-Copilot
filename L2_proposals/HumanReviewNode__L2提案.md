@@ -117,13 +117,13 @@
 **为什么**：审计性（append-only + ID 链路）+ 记忆复用纯净（错先例及时失效，但不污染人工确认过的）。
 **指回**：doc 第 4 节；TxnLog 02 §6/§7、CaseLog 02 §5；confirmed_by 语义 = 用户拍板（exact enum 待 CaseLog M3）。
 **排除的替代**：就地改写 Transaction Log（违反 append-only）；让 LLM 决定作废哪些先例（应是确定性分支）。
-**open boundary**：confirmed_by exact enum（CaseLog M3，L3）；"rule 被推翻一次"信号的 exact 落点与累积判定（归确定性发现/Rule Log promotion，L2·外阻）。
+**open boundary**：confirmed_by exact enum（CaseLog M3，L3）。（注：原"rule 被推翻一次"信号→确定性发现累积判定已删除——rule 失效只由会计师在 review 时判断、降级人发起，系统不自发累积、不产降级候选。）
 
-### 决策 8 — "rule 坏了 vs 一次性例外"：LLM 唯一真判断，但降级，不当场裁决 〔指向 02 §5〕
-**结论**：区分 (a) rule 错了→该降级 / (b) 合法例外→rule 留着只改这笔 / (c) scope 太宽→该收窄，是 LLM 在本节点**唯一不可替代的认知内核**。但**降级了刻度**：单次纠错对"rule 坏没坏"是弱证据，LLM **不在纠错当场裁决"rule 坏了"**——只做两件：结构化这一笔的纠正 + 发"rule 被推翻一次"信号。"rule 到底坏没坏"是另一个**攒证据**的过程（N 次推翻 / 跨 case 模式），归节点外的确定性发现 / Rule Log promotion，且本身可复核。
-**为什么**：审计性 + 不让一次性错误污染 durable memory / rule authority；rule 无自动降级（A 已锁）。
+### 决策 8 — "rule 坏了 vs 一次性例外"：只由会计师在 review 判断，系统不自发判定 rule 失效 〔指向 02 §5/§9〕
+**结论**：区分 (a) rule 错了→该降级 / (b) 合法例外→rule 留着只改这笔 / (c) scope 太宽→该收窄，LLM 可在本节点辅助会计师理解，但**最终判断只由会计师在 review 时做**。单次纠错对"rule 坏没坏"是弱证据，LLM **不当场裁决"rule 坏了"**，只结构化并 append 这一笔（更正记录引用该 rule，作审计事实留 Transaction Log）。**"rule 到底坏没坏 / 该不该降级"不由系统自发判断**——rule 由人创建确认、匹配出错概率低，只有会计师在 review 结果时才能发现某条 rule 失效；若判定失效，由会计师当场人发起降级 / 废除（扩张型变更，决策 6/9）。系统**不自发累积"被推翻"次数、不自发产降级候选**；确定性发现只产 rule 升级候选、不碰降级。
+**为什么**：审计性 + 不让一次性错误污染 durable memory / rule authority；rule 无自动降级，且 rule 失效是语义判断、系统自发判不出，只能人在 review 时发现（A 已锁 rule 无自动降级）。
 **指回**：doc 第 5 节；Rule Log 02 §3/§4。
-**排除的替代**：纠错当场让 LLM 裁决 rule 降级。理由：单次为弱证据 + 违反 rule 无自动降级。
+**排除的替代**：① 纠错当场让 LLM 裁决 rule 降级（违反 rule 无自动降级）；② 让系统自发攒证据判断 rule 坏没坏、自动产降级候选（rule 失效是语义判断、系统自发判不出，只人在 review 时发现）。
 **open boundary**：确定性发现 job 的调用/节奏/"够格"阈值（与 Rule Log promotion 资格耦合）→ L2·外阻/另窗。
 
 ### 决策 9 — 本节点 = 会计师的手 + 唯一人类交互面；conductor 不 judge（O7 + FP-2 收口）〔指向 02 §5/§6/§9〕
@@ -236,7 +236,7 @@
 ## 五、本轮已收口
 - **决策 6/9/9b（FP-2 重构 + O7）**：经 Review 的一切改动天然已会计师签字；**节点内无"该不该批"分类器**；半径只决定"做什么 + 额外治理步骤（互斥/Governance Log）"，判别线 = "确定性长期权威 vs 软先例"（非"影不影响未来"）；conductor 不 judge；放行权在 Finalization 凭证死代码（安全机制，trusted base 小）；9b 改为"范围排除"而非"免闸"。
 - **决策 13（FP-3）**：确定性发现只服务 Rule Match → inbox = rule 升级候选；直来直去升级走**固定执行路径**（不用 Engine），降级/改动才用 Engine + 决策 12。
-- **决策 12（N1）/决策 2（N2）/决策 8（O6）**：改 rule 牵连历史的单笔/全部 + append 回溯；卡住交易归 Coordinator；Review 接两类输入、对 rule 坏没坏只发信号。
+- **决策 12（N1）/决策 2（N2）/决策 8（O6）**：改 rule 牵连历史的单笔/全部 + append 回溯；卡住交易归 Coordinator；Review 接两类输入、rule 坏没坏只由会计师在 review 判断（系统不自发判定失效、不产降级候选）。
 - **read-back 抬升为头号安全件**：Review = 会计师的手，防"LLM 把会计师理解错"的唯一防线。
 
 ## 六、第一性原理复查 —— 结论与剩余 seam
