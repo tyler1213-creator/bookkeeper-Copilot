@@ -145,7 +145,7 @@
 | --- | --- | --- | --- | --- |
 | `stable` | 当前所有可追溯 evidence 能够直接、清晰且无歧义地说明交易主体是谁。stable 内部有两种 provenance：复用既有（命中 Entity Log 中已存在的 stable entity，或 exact Alias match 指向既有 stable entity）与新建（第一次识别到的新对象、需新建档案）。两者都输出 state=`stable`，并必须携带可审计 identity reason。 | Rule Match（身份基础）；Case Judgment | 下游可把它作为当前交易 identity basis。若 provenance=新建，ER 必须在当前交易进入下游 judgment / pending 前发起同步 Entity Log publication，使该 stable entity 对后续 identity consumer 可见。 | 不代表 rule match 成功、会计分类、COA / HST / GST / 业务用途、automation permission、Case Log authority、accountant approval 或 governance approval。 |
 | `unknown` | 当前可追溯 evidence 不能直接、清晰且无歧义地说明主体是谁。unknown 可以携带 reason / context，例如 ambiguous、conflict、unresolved、missing evidence 或 alias issue；这些 reason 不构成 candidate entity、stable entity、Case Log handle 或 Rule Match basis。 | Case Judgment（输出 pending） | Case Judgment 不走高置信度自动分类通道，输出 pending；可读取身份线索、搜索线索、相似对象、reason 和 evidence refs 作为 runtime context。 | 不代表会计分类失败的总称，不允许伪造 entity，不代表 LLM 可以选择一个 winner，不支持 Rule Match 或 durable memory mutation。 |
-| `candidate_signal` | 与身份状态并行的非身份输出通道，指出后续可能需要处理的 Alias 写入、merge / split（合并 / 拆分）或身份治理问题。 | Coordinator / Review / Case Memory Update / Governance Review | 只作为 runtime handoff 供对应 consumer 进入 pending、review、case memory update 或 governance review 判断。 | 不代表 stable / unknown 之外的第三种 identity state，不代表 durable approval；本节点不直接写入长期记忆。 |
+| `candidate_signal` | 与身份状态并行的非身份输出通道，指出后续可能需要处理的 Alias 写入、merge / split（合并 / 拆分）或身份治理问题。这是确定性运行期判句信号，非系统自发语义判断（语义发现层已删除）。 | Coordinator / Human Review（会计师人发起）/ Case Memory Update | 只作为 runtime handoff 供对应 consumer 进入 pending、会计师人发起 review 或 case memory update 判断；merge / split 只由会计师在 Human Review 人发起。 | 不代表 stable / unknown 之外的第三种 identity state，不代表 durable approval；本节点不直接写入长期记忆。 |
 
 stable reason 的证据边界：
 
@@ -172,7 +172,7 @@ Rule Match 对输出的读取边界：
 如果缺少 identity signal（身份信号）：
 
 - 输出：`unknown` + reason（例如 missing evidence / unresolved）。
-- 下游应：Case Judgment Node（案例判断节点）输出 pending；Coordinator / Pending Node（协调 / 待确认节点）再决定是否向 accountant（会计师）补问，或由 Review Node（审核节点）处理。
+- 下游应：Case Judgment Node（案例判断节点）输出 pending；Coordinator / Pending Node（协调 / 待确认节点）再决定是否向 accountant（会计师）补问，或由 Human Review Node（人审节点，会计师人发起）处理。
 - 本节点不能：为了让 workflow（流程）继续而伪造 entity（实体）。
 
 ### 已确认的下游影响（Problem 2 结论）
@@ -211,7 +211,7 @@ Rule Match 对输出的读取边界：
 
 - 输出：`unknown` + reason（例如 ambiguous / competing identities）。
 - 是否允许自动化：本节点不决定自动化；但不得把歧义输出包装成 stable identity（稳定身份）。
-- 是否需要 pending / review / governance：Case Judgment 输出 pending 后，由 Coordinator / Pending（协调 / 待确认）、Review（审核）或 Governance Review（治理审核）根据卡点和 `candidate_signal` 决定。
+- 是否需要 pending / review / governance：Case Judgment 输出 pending 后，由 Coordinator / Pending（协调 / 待确认）、Human Review（会计师人发起）或 Governance（授权确认 = Human Review + Finalization）根据卡点和 `candidate_signal` 决定。
 
 本节点不能为了让 workflow 继续而猜一个 winner（胜出实体）。
 

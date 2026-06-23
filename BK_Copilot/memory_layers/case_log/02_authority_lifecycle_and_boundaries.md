@@ -19,8 +19,8 @@
 | --- | --- | --- | --- |
 | Case Judgment Node（案例判断节点） | 读取 relevant case precedent，辅助判断当前交易是否可走 case-based judgment | stable-linked case history、evidence condition、context note、`confirmed_by`、`use_level` | 不能把 Case Log 当 deterministic rule source；不能用 unknown entity 作为 case identity handle；读取聚合机制留 L4 |
 | Rule / automation / entity risk review flow（规则 / 自动化 / 实体风险审核流程，具体节点未冻结） | 读取 entity-linked case history，评估 rule promotion、automation risk 或 entity risk | case pattern、exception / correction history、`use_level`、case history distribution 派生视图 | 只能作为治理依据；不能直接修改 Entity Log、Rule Log、Governance Log 或 automation policy |
-| Review Node（审核节点） | 帮助 accountant 理解当前 review item 的历史案例上下文 | relevant precedent、exception context、`use_level` | Review 本身不把案例变成 rule、entity authority 或 governance approval |
-| Governance Review Node（治理审核节点） | 评估 rule change、automation policy change 或 entity risk update | case evidence、supporting refs、读取层派生聚合 | 必须通过 governance / accountant approval；Case Log 只提供依据 |
+| Human Review Node（人审节点，会计师人发起） | 帮助 accountant 理解当前 review item 的历史案例上下文 | relevant precedent、exception context、`use_level` | 本节点不把案例变成 rule、entity authority 或 governance approval |
+| Governance（授权确认 = Human Review 签字 + Finalization 凭证；无独立 Governance Review Node） | 评估 rule change、automation policy change 或 entity risk update | case evidence、supporting refs、读取层派生聚合 | 必须通过 accountant approval（Human Review 签字）；Case Log 只提供依据 |
 | Knowledge Compilation Node（知识编译节点） | 生成 readable summary（可读摘要） | case history summary material and refs | summary 不能替代 Case Log source authority，也不能替代 Transaction Log / Entity Log / Rule Log |
 
 ## 3. 写入者

@@ -128,6 +128,6 @@ Coordinator 不承担此职责，分界已确定（来源：`BK_Copilot/workflow
 2. **先例确认来源字段**：第 4 节"系统确认 vs 人工确认"依赖 Case Log 的确认来源字段（对话中以 `confirmed_by=system / accountant` 表述）。确切字段名 / 语义需与 `BK_Copilot/memory_layers/case_log/` 对齐确认。
 3. **HST/GST 重算的性质**：第 4 节"改分类 ⇒ 重算税"中，税率适用是**查表**（依赖 entity 已记录的税务状态字段）还是**判断**（字段缺失时需停下来问人）。依赖 entity / tax 模型是否已记录该字段，待对齐；缺失时按"引擎撞到缺失输入 → 停下来进 read-back"处理，不交 LLM 猜。
 4. **read-back UI 与只读复核视图**：是否同一 UI shell（一个是"浏览找错"，一个是"逐项确认提案"），待编排时定。
-5. **语义发现器（merge/split）是否并入 Human Review Node 由人发起**：系统自发审计长期文档做 merge/split 的依据存疑，可能改为只在 Human Review Node 由人发起提案。**单独挂起，将另开窗口讨论**（见项目记忆 `semantic-discovery-node-necessity-open`）。
+5. **语义发现器（merge/split）—— 已裁撤删除（2026-06-23 收口）**：系统自发审计长期文档做 merge/split 的依据非法（架构已拒绝 semantic similarity 作 identity authority），与 FP-5 系统自发错误发现一并删除。merge/split 只保留会计师在 Human Review Node 人发起；可确定性化的身份/一致性冲突归确定性发现 / 写入闸 / ER 运行期判句。（不再是未决项）
 6. **L4 / seam 机制**：影响展开引擎依赖图声明形态、授权确认机制 exact 实现、finalization 多 log 原子/顺序/幂等机制，均未冻结。
 7. **完整 read-back 模板 / 字段 / data contract**：本文不冻结，留 Stage 3。

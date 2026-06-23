@@ -41,7 +41,7 @@
 - onboarding、材料提交前目标询问、覆盖完整性核对；这些归 interaction_agent / onboarding 路径。（决策 1 / 9b）
 - 运行期 Pending、running 交易、blocked / terminal / 卡住交易的处置；这些归 Coordinator 或对应运行期路径。（决策 1 / 2 / 9b）
 - 直接写 Transaction Log、Intervention Log、Case Log、Entity Log、Rule Log、Governance Log 或其它 durable memory。
-- 系统自发 merge / split 或系统自发错误发现入口；该系统自发发现层已与 FP-5 合并挂起，本节点当前只承接会计师人发起的 merge / split 与纠错。（用户澄清 4）
+- 系统自发 merge / split 或系统自发错误发现入口；该系统自发语义发现层已裁撤删除，系统不自发做此类语义判断，本节点只承接会计师人发起的 merge / split 与纠错。（用户澄清 4）
 - 定义纯 rule 升级的固定执行路径；该路径归 Rule 侧，本节点只作确认面和触发器。（用户澄清 3）
 - 决定 Chatbot 前端是否与 Coordinator / interaction_agent 共用；这是编排 / 呈现层问题。（用户澄清 5）
 
@@ -100,6 +100,6 @@
 
 ## 7. 未决定问题
 
-- 系统自发发现层（FP-5 + 语义发现器）是否必要：暂不删除，合并挂起，另窗讨论；本节点当前不实现系统自发入口。（用户澄清 4）
+- 系统自发发现层（FP-5 + 语义发现器）：已裁撤删除（不再是未决项）。系统不自发做 merge / split 或错误发现的语义判断；本节点不实现系统自发入口，只承接会计师人发起的 merge / split 与纠错。（用户澄清 4）
 - NEW-1：rule 升级固定执行路径的定义归 Rule 侧；本节点只触发，Rule 侧机制仍待落实。（用户澄清 3）
 - C2：本节点 Chatbot 是否与 Coordinator / interaction_agent 共用同一对话前端，归编排 / 呈现层。（用户澄清 5）

@@ -11,7 +11,7 @@
 
 - 交易仍在 running / Pending / 卡住 / terminal / blocked 状态，或仍需运行期交互；这些归 Coordinator 或对应运行期路径。（决策 1 / 2）
 - 仅发生 onboarding、目标询问、覆盖核对；这些归 interaction_agent / onboarding 路径。
-- 系统自发语义判断发现的 merge / split 或错误发现入口；该系统自发发现层挂起，本节点当前不实现入口。（用户澄清 4）
+- 系统自发语义判断发现的 merge / split 或错误发现入口；该系统自发语义发现层已裁撤删除，本节点不实现此入口。（用户澄清 4）
 
 ## 2. 上游前置条件
 
@@ -255,10 +255,10 @@ approval 是会计师签字本身；trace 只帮助复核和审计。
 2. Governance Log 数据层：扩张型变更审计账本，待建。
 3. 审核 inbox 数据层：确定性发现 / 未来 LLM 审查节点投候选，本节点 pull；待建，且不等于 Governance Log。
 4. Finalization 写入机制 / 确定性发现 job 正式 spec：共享机制，另窗细化。
-5. 系统自发发现层（FP-5 + 语义发现器）：用户已确认二者本质同一问题，即“系统自发语义判断 -> 喂给人审”；暂不删除，合并挂起，另窗讨论。本节点当前只承接会计师人发起的 merge / split 与纠错。
+5. 系统自发发现层（FP-5 + 语义发现器）：用户已确认二者本质同一问题，即“系统自发语义判断 -> 喂给人审”；已裁撤删除（系统不自发做此类语义判断）。本节点只承接会计师人发起的 merge / split 与纠错；可确定性化的身份/一致性冲突归确定性发现 / 写入闸 / ER 运行期判句，不在本节点。
 6. NEW-1：rule 升级固定执行路径的定义归 Rule 侧（Rule Log / Rule Match 治理），本节点只触发；Rule 侧定义机制待落实。
 7. C2：沟通桥梁与 Coordinator / interaction_agent 的对话面分工，以及是否共用同一对话前端；归编排 / 呈现层。
-8. A 类残留待写回：五个 log + Coordinator 正式草案中旧 writer 模型 / 旧 Review Node 引用，待按单独对象 prompt 处理；本节点只在自身范围声明新边界。
+8. A 类残留待写回：废除 / 删除节点引用（Post-Batch Lint / Governance Review Node / 旧 Review Node / 语义发现器）已于 2026-06-23 在五个 log + Coordinator + ER 正式草案中清理完成；仅剩与废除节点无关的「旧 candidate→指定节点裸写」writer 模型泛化清理，按单独对象 prompt 推进；本节点只在自身范围声明新边界。
 
 这些问题解决前，不能进入：
 

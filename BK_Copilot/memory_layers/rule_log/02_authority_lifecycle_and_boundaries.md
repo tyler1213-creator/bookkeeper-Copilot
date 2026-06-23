@@ -4,7 +4,7 @@
 
 Rule Log 是 executable rule authority 与 rule membership 的唯一真值。Rule Log 定义什么内容够格成为 executable rule authority，即 authority-content 标准，并校验已批准 provenance；该标准在 Governance / accountant 审批时应用与执行，Rule Log 不在写入时自行重跑每条 rule 的资格判断。
 
-只有满足以下四条“全函数”判据并已获得 accountant 批准的内容，才能成为 Rule Log 中可执行 rule：
+只有满足以下四条“全函数”判句并已获得 accountant 批准的内容，才能成为 Rule Log 中可执行 rule：
 
 - Scope 可客观判定：仅凭当前交易客观事实和 stable entity 身份即可确定当前交易是否属于该 scope。
 - 历史 treatment 唯一无分叉：在该 scope 下有效正面先例收敛到唯一 approved accounting treatment；若有正当分叉，必须收窄 scope 或不进入 Rule Log。
@@ -49,6 +49,8 @@ Rule Log 的执行面必须保证同一 entity 下的 executable rules 两两互
 - CaseLogEvidence 支撑的 system-proposed promotion request。
 - lint / review / governance process 生成的 rule promotion candidate。
 - accountant 在直接创建前观察到的可执行 rule 设想。
+
+> 关于 rule 升级（promotion）发现侧的扫描 / 候选产出机制，参见 `独立question文档/Deterministic_Discovery_question.md`（确定性发现机制当前唯一权威文档）；promotion 资格判句的定义权仍归本（Rule）侧，确定性发现只套用。
 
 Candidate 不能直接成为：
 
@@ -160,7 +162,8 @@ Candidate 不能以 candidate 身份进入 durable Rule Log state；外部 candi
 - **L3，EntityLog / RuleLog / Governance 联合**：automation_policy 中哪种取值表示允许 rule-based automation / RuleMatch。
 - **L4 / seam**：RuleLog 执行面 query contract、reader / assembler 调用顺序、projection / cache / permission 边界。
 - **L4 / seam**：RuleLog 按 `entity_id` 索引的存储结构、检索和维护机制。
-- **L2·外阻，Governance / review path**：rule promotion 发现侧判据（含 CaseLogEvidence 资格、结果唯一性、证据强度和 "rule 被推翻一次" 累积规则）、rule candidate queue / 审核 inbox、system-proposed promotion request、CaseLogEvidence 打包格式、accountant approval workflow。
+- **L2·外阻，Governance / review path**：rule promotion 发现侧判句（含 CaseLogEvidence 资格、结果唯一性、证据强度；不承接 rule 失效 / 降级判断）、rule candidate queue / 审核 inbox、system-proposed promotion request、CaseLogEvidence 打包格式、accountant approval workflow。
+  > 关于 rule 升级（promotion）发现侧的扫描 / 候选产出机制，参见 `独立question文档/Deterministic_Discovery_question.md`（确定性发现机制当前唯一权威文档）；promotion 资格判句的定义权仍归本（Rule）侧，确定性发现只套用。
 - **L4 / Governance seam**：accountant direct rule creation 的 exact write mechanism、approval capture、写入执行者。
 - **L2·外阻 / L4，Governance / 记录层**：rule modification / overwrite / versioning / supersession / deletion / restore exact mutation path。
 - **L3 / Governance**：跨 log lifecycle 字段命名统一。

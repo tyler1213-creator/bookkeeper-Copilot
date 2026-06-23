@@ -24,7 +24,7 @@
 
 - L3：CJ Pending handoff / `pending_request_context` exact schema、pending 子类型 enum、Coordinator question 模板、accountant 回答结构、情况 X / Y 落点字段、带选项 pending 问题结构、身份确认 provenance、Case Log 学习记录字段 / enum、各类 governance / review candidate schema、转 JE 所需格式 contract。
 - L4 / seam：Entity Log + Alias Log 统一写入执行机制、Case Log 学习记录 exact writer / trigger order、多 log finalization、stable entity 下分类问题聚合呈现与逐笔确认机制、多表排序 / 批起始快照、受限重跑边界、提问话术 / 编排、身份缺口后续 triage、人机对话通道与多节点提问呈现。
-- L2·外阻：JE Generation、Transaction Log、Intervention Log、Governance / Governance Review、Profile / Structural Match、Knowledge Summary、Review Node、Case Memory Update Node、interaction_agent、Onboarding 等圈外对象正式边界。
+- L2·外阻：JE Generation、Transaction Log、Intervention Log、Governance（授权确认 = Human Review + Finalization）、Profile / Structural Match、Knowledge Summary、Human Review Node、Case Memory Update Node、interaction_agent、Onboarding 等圈外对象正式边界。
 - 以上延后项详情见 `02_logic_and_boundaries.md` §12。延后项的 `缺口地图.md` Coordinator section 由用户单独维护；本节点正式草案不写回缺口地图。
 
 ## 进入下一阶段前必须解决

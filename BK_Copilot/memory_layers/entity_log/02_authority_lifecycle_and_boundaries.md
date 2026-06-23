@@ -21,19 +21,19 @@
 | Entity Resolution Node（实体识别节点） | 判断当前 evidence（证据）是否指向 stable entity（稳定实体） | entity identity（实体身份）、Alias 库、status（状态）、risk flags（风险标记）、automation policy（自动化策略） | 只有 `new_stable_entity` entity 本体可同步写入；Alias / automation policy / rule 不随 entity 本体同步写入 |
 | Rule Match Node（规则匹配节点，经 Entity Resolution handoff 投影） | 消费上游已确认 stable entity 的放行 / 卡点上下文，用于 rule route 和 eligibility 判断 | 不直接读取 Entity Log；由 Entity Resolution 读取 Entity Log 后，将该 entity 的 automation_policy / eligibility 当前状态和身份基础投影进 handoff | Entity Log 仍是 automation_policy / identity control 的 source of truth，但不是 Rule Match 的直接读取对象；Rule Match 必须自行读取 Rule Log，Entity Log 不提供 rule condition；Alias lookup 只发生在上游 Entity Resolution |
 | Case Judgment Node（案例判断节点） | 使用 entity context（实体上下文）和 automation boundary（自动化边界） | identity basis（身份基础）、risk flags（风险标记）、automation policy（自动化策略） | 不能把 Entity Log 当 Case Log（案例日志）或 classification memory（分类记忆） |
-| Coordinator / Pending 路径（协调 / Pending 路径） | 将 identity gap（身份缺口）转成人工问题所需的 identity 背景 | blocking context（阻断上下文）、candidate refs（候选引用）——均由 Case Judgment 在构造 Pending handoff 时读取并投影进 Pending | Coordinator 本身不直接读取 Entity Log，全部 identity 上下文随 CJ Pending 在手；identity risk flags（风险标记）不投影给 Coordinator（服务 Review / Governance / Post-Batch Lint），accountant answer（会计师回答）不能由 Coordinator 直接写入 Entity Log |
-| Review Node（审核节点） | 向 accountant（会计师）展示当前 entity authority（实体权威）和候选风险 | active state（有效状态）、authority refs（权威引用）、candidate context（候选上下文） | Review 本身不批准 durable entity mutation（长期实体变更） |
-| Governance Review Node（治理审核节点） | 处理 Alias / merge / split / policy mutation（别名 / 合并 / 拆分 / 策略变更） | current state（当前状态）、old value（旧值）、candidate context（候选上下文）、evidence refs（证据引用） | 必须写 Governance Log（治理日志）或等价 audit trace（审计追溯） |
-| Post-Batch Lint Node（批后体检节点） | 检查身份风险、merge / split candidate（合并 / 拆分候选）、automation risk（自动化风险） | entity clusters（实体簇）、身份级 risk flags、policy state（策略状态）、case-derived hints（案例衍生提示） | 只能提出候选；case-derived hints 不直接成为 Entity Log risk_flags；自动放宽或升级 policy（策略）禁止 |
+| Coordinator / Pending 路径（协调 / Pending 路径） | 将 identity gap（身份缺口）转成人工问题所需的 identity 背景 | blocking context（阻断上下文）、candidate refs（候选引用）——均由 Case Judgment 在构造 Pending handoff 时读取并投影进 Pending | Coordinator 本身不直接读取 Entity Log，全部 identity 上下文随 CJ Pending 在手；identity risk flags（风险标记）不投影给 Coordinator（归 Human Review / Governance 的会计师人发起路径消费），accountant answer（会计师回答）不能由 Coordinator 直接写入 Entity Log |
+| Human Review Node（人审节点） | 向 accountant（会计师）展示当前 entity authority（实体权威）和候选风险，并作为会计师人发起 merge / split / policy mutation 的确认面 | active state（有效状态）、authority refs（权威引用）、candidate context（候选上下文）、current state / old value / evidence refs | 本节点不批准 durable entity mutation；批准 = 会计师 read-back 签字，落盘经 Finalization 凭证校验 + Governance Log 留痕 |
 | Knowledge Compilation Node（知识编译节点） | 生成 readable customer knowledge（可读客户知识） | entity identity（实体身份）、aliases（别名）、risk and policy summary（风险和策略摘要） | summary（摘要）不能替代 Entity Log authority（实体日志权威） |
+
+> 已删除的读取者（按现行设计改读）：**Post-Batch Lint Node** 与 **Governance Review Node** 已废除。系统自发语义判断 merge / split / 身份风险的发现层已裁撤删除；可确定性化的身份 / 一致性冲突由 Entity Resolution 运行期判句 + 确定性发现 job + 写入前同步守卫发现，merge / split 只由会计师在 Human Review 人发起；automation risk 归 Entity Log automation_policy maintenance / mutation contract；governance 批准 = 会计师 read-back 签字（Human Review）+ Finalization 凭证强制，不再有独立 Governance Review Node 读取面。
 
 ## 3. 写入者
 
 | Writer | 可以写什么 | 写入类型 | 需要 approval 吗 |
 | --- | --- | --- | --- |
-| Governance Review Node（治理审核节点） | entity lifecycle mutation（实体生命周期变更）、merge / split projection（合并 / 拆分投影）、automation policy mutation（自动化策略变更） | governance mutation（治理变更） | 是，除系统受控自动降级外 |
-| Post-Batch Lint Node（批后体检节点） | automation policy downgrade candidate（自动化策略降级候选）或受控 auto-applied downgrade（自动生效降级） | candidate / restrictive mutation（候选 / 收紧变更） | 放宽或升级必须 approval；自动降级必须 governance visibility（治理可见） |
-| Review Node（审核节点） | merge / split、identity risk、policy mutation candidate（合并 / 拆分、身份风险、策略变更候选） | candidate（候选） | 是；Review 不直接写 stable authority（稳定权威） |
+| 会计师人发起（经 Human Review Node 确认面，落盘经 Finalization） | entity lifecycle mutation（实体生命周期变更）、merge / split projection（合并 / 拆分投影）、automation policy mutation（自动化策略变更）的备料 | 节点备料 → Finalization 落盘（无节点裸写） | 是；批准 = 会计师 read-back 签字 + Finalization 凭证强制 + Governance Log 留痕；除系统受控自动降级外 |
+| Entity Log automation_policy maintenance / mutation contract（自动化策略维护机制，非节点） | 受控 restrictive auto-downgrade（收紧型自动降级） | restrictive mutation（收紧变更） | 自动降级必须保留治理可见性；放宽或升级必须 accountant approval |
+| Human Review Node（人审节点，会计师人发起） | merge / split、identity risk、policy mutation candidate（合并 / 拆分、身份风险、策略变更候选）备料 | candidate（候选） | 是；本节点不直接写 stable authority，candidate 经 Finalization 落盘 |
 | Case Memory Update Node（案例记忆更新节点） | entity risk / policy candidate（实体风险 / 策略候选） | candidate（候选） | 是；不能直接写 Entity Log |
 | Entity Resolution Node（实体识别节点） | `new_stable_entity` entity 本体和最小创建 provenance（具体字段名留 M3），以及 identity conflict / risk signal（身份冲突 / 风险信号） | direct stable entity body plus creation trace / runtime risk signal（直接稳定实体本体加创建追溯 / 运行时风险信号） | `new_stable_entity` 本体和创建追溯写入不需要 governance approval；Alias / Rule / automation_policy / Case Log / final transaction outcome 不随 entity 本体写入 |
 | Accountant explicit identity confirmation path（会计师明确身份确认路径，执行者留 L4 / seam） | stable entity 本体和最小创建 provenance（具体字段名留 M3） | direct stable entity creation via finalization / memory write mechanism（实际机制未冻结） | 不需要 governance approval；只确认 identity，不隐含分类结果、Alias、Rule、automation_policy 或 Case Log 写入 |
@@ -73,9 +73,9 @@ Alias（别名）的当前定义已确认：
 
 | State | 含义 | 谁可以进入 | 谁可以退出 | 下游含义 |
 | --- | --- | --- | --- | --- |
-| `active`（有效） | 该 stable entity 当前可作为 runtime stable identity target（运行时稳定身份目标） | Entity Resolution `new_stable_entity` 及时 publication、accountant explicit identity confirmation、Governance approval（治理批准） | Governance Review（治理审核） | 可被 Entity Resolution（实体识别）作为稳定目标；不等于自动分类许可 |
-| `merged`（已合并） | 该 entity 已并入 surviving entity，不能再直接作为 active target | Governance Review（治理审核） | 通常不退出；治理回滚规则留 L4 | runtime 应按当前 supersession 指向跳转到 surviving entity |
-| `archived`（已归档） | 该 entity 不再作为常规 active target，但保留历史解释和审计引用 | Governance Review（治理审核） | Governance Review（治理审核）；恢复条件留 L3 / L4 | 不得被静默当作 active identity target；可作历史解释 |
+| `active`（有效） | 该 stable entity 当前可作为 runtime stable identity target（运行时稳定身份目标） | Entity Resolution `new_stable_entity` 及时 publication、accountant explicit identity confirmation、会计师批准（Human Review + Finalization） | 会计师批准（Human Review + Finalization） | 可被 Entity Resolution（实体识别）作为稳定目标；不等于自动分类许可 |
+| `merged`（已合并） | 该 entity 已并入 surviving entity，不能再直接作为 active target | 会计师批准（Human Review + Finalization） | 通常不退出；治理回滚规则留 L4 | runtime 应按当前 supersession 指向跳转到 surviving entity |
+| `archived`（已归档） | 该 entity 不再作为常规 active target，但保留历史解释和审计引用 | 会计师批准（Human Review + Finalization） | 会计师批准（Human Review + Finalization）；恢复条件留 L3 / L4 | 不得被静默当作 active identity target；可作历史解释 |
 
 Automation policy 不属于 lifecycle state。它是独立的 entity-level control state，用来控制自动化卡点；lifecycle state 只回答 identity target 是否仍有效。
 
@@ -99,9 +99,9 @@ accountant explicit identity confirmation in downstream pending path
 ```
 
 ```text
-candidate / review / lint signal
+candidate signal (确定性发现 job / ER 运行期判句 / 会计师人发起 Human Review)
 -> evidence and authority review
--> accountant / governance approval, unless restrictive auto-downgrade is explicitly allowed
+-> accountant approval (Human Review read-back 签字), unless restrictive auto-downgrade is explicitly allowed
 -> Entity Log mutation
 -> Governance Log or equivalent audit trace
 -> downstream reads updated authority
@@ -158,7 +158,7 @@ Entity merge / split 后，Entity Log 只保存 Entity 侧当前身份状态、s
 如果 Case Log（案例日志）显示分类不稳定、记账结果漂移或 automation / policy 风险，但 Entity Log（实体日志）尚未更新：
 
 - authority 顺序：Entity Log（实体日志）当前 identity / control authority（身份 / 控制权威）仍有效；Case Log（案例日志）只提供 case-derived evidence（案例衍生依据）。
-- runtime 行为：由 Post-Batch Lint / Review / Governance Review（批后体检 / 审核 / 治理审核）生成 candidate（候选）。
+- runtime 行为：由确定性发现 job / ER 运行期判句生成确定性 candidate，或由会计师在 Human Review 人发起生成 candidate（候选）；系统不自发做语义判断。
 - 是否阻断自动化：除非已有 policy / governance constraint（策略 / 治理限制），否则 Case Log 本身不直接阻断；分类不稳定本身不写入 Entity Log risk_flags。
 - 是否生成 review / governance candidate：是。
 

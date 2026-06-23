@@ -215,7 +215,7 @@ RuleMatchNode 不输出或维护命中次数、rule health 或统计值。这些
 
 | 借鉴内核 | 旧系统来源 | 现在为何仍成立 |
 | --- | --- | --- |
-| “分类一致 / 出现第二种分类即 non_promotable” | observations 升级条件 | 即资格判据“结果唯一、无分叉”，提升为第一性判据 |
+| “分类一致 / 出现第二种分类即 non_promotable” | observations 升级条件 | 即资格判句“结果唯一、无分叉”，提升为第一性判句 |
 | “防偶发”的证据意图（大于等于 3 次 / 跨大于等于 2 月背后的目的） | rules / observations 升级硬条件 | 保留其作为证据强度的角色，但降级为证据、不继承为门槛，阈值下放 L3 / 治理 |
 | accountant 可零积累主动建规则 | rules 来源二 | 反证次数非本质：资格看可判定 + 唯一 + 已批准，不看积累量 |
 | active rule 权威只来自事前批准 | “only via approved paths 才能建 rule” | 保留精神：active rule 必须事前批准；执行机制归 RuleLog / Governance 外阻 |
@@ -236,11 +236,12 @@ RuleMatchNode 不输出或维护命中次数、rule health 或统计值。这些
 1. automation_policy 中“哪种取值 = 放行 rule-based automation”的 exact 取值集合 / 语义尚未冻结；归 L3，需 RuleLog / EntityLog 联合对齐 Governance。
 2. RuleMatch 输入 handoff 的 exact 字段 schema 尚未冻结；归 L3。handoff 由谁组装属于 L4 / seam。
 3. RuleLog reader 的调用机制属于 L4 / seam。RuleLog 必须支持按 `entity_id` 索引，且每条 rule 承载 applicability；这是对 RuleLog 的前置约束，待 RuleLog 设计落定。
-4. rule 资格判据的最终归档之家尚未冻结，取决于 RuleLog M1-M2；本节点只声明自己消费该资格语义标准。
-5. rule promotion 发现侧尚未冻结：确定性发现 job 当前只服务 Rule Match / Rule 侧 promotion，具体阈值判据、CaseLogEvidence 打包、审核 inbox 写入和 rule 升级固定执行路径归 RuleLog / RuleMatch 治理；本节点 runtime 不产 candidate、不维护统计。
+4. rule 资格判句的最终归档之家尚未冻结，取决于 RuleLog M1-M2；本节点只声明自己消费该资格语义标准。
+5. rule promotion 发现侧尚未冻结：确定性发现 job 当前只服务 Rule Match / Rule 侧 promotion，具体阈值判句、CaseLogEvidence 打包、审核 inbox 写入和 rule 升级固定执行路径归 RuleLog / RuleMatch 治理；本节点 runtime 不产 candidate、不维护统计。
+   > 关于 rule 升级（promotion）发现侧的扫描 / 候选产出机制，参见 `独立question文档/Deterministic_Discovery_question.md`（确定性发现机制当前唯一权威文档）；promotion 资格判句的定义权仍归本（Rule）侧，确定性发现只套用。
 6. rule 集合 overlap-validation 算法属于 L4 / seam；catch-all pattern 是否作为 schema 语法糖属于 L3。
 7. entity-level / pattern-level rule 的 exact schema、condition enum、accounting treatment（judgment-free 完整）schema、资格阈值具体数字尚未冻结，归 L3 / JE Generator。
-8. JE Generator 接口尚未冻结；treatment “judgment-free 完整”的判据依赖 JE Generator 需要什么，属于跨节点 seam。
+8. JE Generator 接口尚未冻结；treatment “judgment-free 完整”的判句依赖 JE Generator 需要什么，属于跨节点 seam。
 
 这些问题解决前，不能进入：
 

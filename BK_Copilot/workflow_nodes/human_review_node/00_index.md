@@ -43,10 +43,10 @@
 - Governance Log 数据层（待建）。
 - 审核 inbox 数据层（待建）。
 - Finalization 写入机制 / 确定性发现 job 正式 spec。
-- 系统自发发现层（FP-5 + 语义发现器）是否必要：挂起；本节点当前只承接会计师人发起的 merge / split 与纠错。
+- 系统自发发现层（FP-5 + 语义发现器）已裁撤删除：系统不自发做 merge / split 或错误发现的语义判断；本节点只承接会计师人发起的 merge / split 与纠错。（已结，非未决项）
 - NEW-1：rule 升级“固定执行路径”的定义归 Rule 侧（Rule Log / Rule Match 治理），本节点只触发。
 - C2：本节点成品 Chatbot 是否与 Coordinator / interaction_agent 共用同一对话前端，归编排 / 呈现层。
-- A 类残留待写回：五个 log + Coordinator 正式草案中旧 writer 模型 / 旧 Review Node 引用的写回，不在本节点文件内执行。
+- A 类残留待写回：废除 / 删除节点引用（Post-Batch Lint / Governance Review Node / 旧 Review Node / 语义发现器）已于 2026-06-23 在五个 log + Coordinator + ER 正式草案中清理完成；仅剩与废除节点无关的「旧 candidate→指定节点裸写」writer 模型泛化清理，不在本节点文件内执行。
 
 ## 进入下一阶段前必须解决
 

@@ -32,6 +32,7 @@
 - `BK_Copilot/`：已开始重写的正式 node / memory layer 草案；对应对象的当前标准边界以这里为准。
 - `BK_Copilot/node:layer spec template/`：正式 node / memory layer spec 的模板规则。
 - `L2_proposals/`：已审或讨论中对象的 L2 提案与追溯入口；不替代 `BK_Copilot/` 正式草案。
+- `独立question文档/`：主题讨论 / 机制结论入口；角色逐文件决定。若用户明确把某一 question 文档升为“当前唯一权威设计文档”，则在其主题范围内按该声明使用，直到落入正式 `BK_Copilot/` spec。已被正式草案替代的 question 文档只作历史背景。
 - `interaction_agent.md`：交互 / 目标层 Agent 的根目录概念入口；正式 spec 未冻结。
 - `未解决问题暂存清单.md`：已废弃历史参考，不再作为当前待办入口。
 - `new system/` 与 `old_system_nodedesign/`：被审计材料，不进入 authority。
@@ -51,6 +52,7 @@
 - `缺口地图.md`：未冻结 L3 / L4 / seam / L2·外阻缺口池。
 - `BK_Copilot/`：对应 node / memory layer 的当前正式草案边界。
 - `L2_proposals/`：L2 讨论与提案追溯入口。
+- 用户指定为当前权威的 `独立question文档/` 主题文档：仅在该主题尚未落入正式 `BK_Copilot/` spec、且用户明确声明其权威状态时生效；不替代无关对象的正式草案。
 
 如果同一职责范围内出现冲突，按上述顺序解决；如果职责范围不同，不要互相覆盖。比如 `当前任务状态.md` 不能改写 node 边界，`BK_Copilot/` 草案也不能改写 agent 操作规则。
 

@@ -69,7 +69,7 @@
 - `Rule Match Node`（规则匹配节点）：读取身份结果和身份权威说明，自行判断 rule eligibility（规则匹配资格）。
 - `Case Judgment Node`（案例判断节点）：读取身份上下文，自行判断是否可以 case-based judgment（基于案例判断）。
 - `Coordinator / Pending Node`（协调 / 待确认节点）：读取身份卡点，自行生成 accountant-facing question（面向会计师的问题）。
-- `Review Node`（审核节点）和 `Governance Review Node`（治理审核节点）：读取候选信号，但这些信号不是 approval（批准）。
+- `Human Review Node`（人审节点，会计师人发起）与 Governance（授权确认 = Human Review 签字 + Finalization 凭证）：读取候选信号，但这些信号不是 approval（批准）。
 - `Case Memory Update Node`（案例记忆更新节点）：只能在交易完成后结合 final outcome（最终结果）考虑候选信号。
 
 本节点位于流程中的原因：

@@ -46,10 +46,10 @@ Transaction Log 是以 `transaction_id` 为主索引的逐笔交易审计 source
 
 - JE Generation Node 与 Transaction Log 的 exact handoff（JE result / journal_entry 留痕）。
 - Intervention Log 与 Transaction Log 的分界 exact contract。
-- Review Node 是否覆盖所有 final logging 前交易，以及 review trace 进 Transaction Log 的 exact 边界。
+- Human Review Node review trace 进 Transaction Log 的 exact 边界（Human Review 是 finalized 后会计师人发起的纠错节点，不再是 final logging 前 gate）。
 - Case Memory Update Node 凭 `transaction_log_ref` / finalization proof 写 Case Log 的 exact 机制与 trigger order。
 - Transaction Log 与对外 final output report / export artifact 的 field-level 边界。
-- Governance / Governance Review、Knowledge Summary / Knowledge Compilation、Evidence Log、Post-Batch Lint、Profile / Structural Match 与 Transaction Log 的 exact 读写边界。
+- Governance（授权确认 = Human Review + Finalization）、Knowledge Summary / Knowledge Compilation、Evidence Log、Profile / Structural Match 与 Transaction Log 的 exact 读写边界。（Post-Batch Lint 已废除，删除。）
 - transaction correction 如何影响 Alias review / mutation、entity risk candidate。
 
 ### DEFERRED
