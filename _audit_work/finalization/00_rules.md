@@ -1,11 +1,12 @@
 # 00_rules — Finalization 审计必守规则蒸馏
 
 > 本轮审计对象 **Finalization（统一 finalization 写入机制）** 是「第三类对象：跨层共享机制」（非 workflow node、非 memory layer）。落正式文档时模板归属另定（B 文档 §文件角色）。
+> 历史工作区提示：若后续复制复用本文件，以根目录 `AGENTS.md`、`当前任务状态.md` 的最新口径为准；`new system/` 已作废且不再作为审计目标，`new system/` 与 `old_system_nodedesign/` 未经用户明确授权不得读取。
 
 ## A. 必守通用规则（带出处）
 
-1. **Source authority 铁律（A/B 分层）** — 审计目标与原则.md / AGENTS.md：正式 `BK_Copilot/` 文档 + 已锁事实是唯一设计约束来源（A 类）；`new system/`、`old_system_nodedesign/` 仅作热身 + 问题发生器（B 类），永不进设计、不当结构模板、不当正确性证明。Proposal 每条契约必须指回 A 原文或用户拍板决定。
-2. **可编辑范围** — 只产出 `L2_proposals/` 提案 + `_audit_work/` 工作区；不创建/编辑 `BK_Copilot/` 正式文档、不改已锁文件、不碰 new/old system。
+1. **Source authority 铁律（A/授权历史材料分层）** — 审计目标与原则.md / AGENTS.md：正式 `BK_Copilot/` 文档 + 已锁事实是唯一设计约束来源（A 类）；`new system/` 已作废且不再作为审计目标，`new system/`、`old_system_nodedesign/` 未经用户明确授权不得读取；即使获准读取，也只作历史追溯 + 问题发生器，永不进设计、不当结构模板、不当正确性证明。Proposal 每条契约必须指回 A 原文或用户拍板决定。
+2. **可编辑范围** — 只产出 `L2_proposals/` 提案 + `_audit_work/` 工作区；不创建/编辑 `BK_Copilot/` 正式文档、不改已锁文件；未经用户明确授权，不读取或编辑 new/old system。
 3. **停止并问用户** — 出现真实产品决策点、B 类假设与 A 类/已锁事实冲突、关键 A 源按路径找不到、output 的 consumer 无法从已锁结论确定、正式文档之间或与已锁不变量矛盾 → 停下报告，不得用 B 覆盖 A。
 4. **守「运行 / 记忆」seam** — 各节点 02「交给记忆/finalization 层持久化的内容」一节统一表述：节点（运行层）只声明「存什么 + 谁有权威认定它有效」，**不声明「怎么写、谁来写、什么顺序写」**（见 rule_match 02:58、human_review 02:50、case_judgment 02:90、coordinator 02:59）。Finalization 在「机制」侧，**只决定「怎么写」，不重判「该不该写、内容对不对」**（B §七，待 A 化）。
 5. **契约面规则** — 每个 output 写明 consumer，不与已锁下游抵触；契约面只能从 A 类重建。

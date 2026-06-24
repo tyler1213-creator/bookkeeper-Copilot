@@ -42,5 +42,5 @@ owner 已确认 ①② 本质同一——"系统自发语义判断 → 喂给人
 
 协调：Human Review Node 已落正式草案；本窗口不改 HRN 文档，裁决与接缝以 finding / 待用户决定项交回。
 
-纪律：new/old system 只是审计对象、无权威；不要因为旧 Post-Batch Lint / Governance Review 曾设计过 merge/split 或错误检测就认定它必要（已废除、本就无权威）；裁决锚定核心产品目标（记忆复用 / 审计性 / 会计师控制权 / 不让一次性判断污染长期记忆）。产出：必要性裁决报告（覆盖 merge/split 与 FP-5）+（若保留）融入方案；结论写成 finding / 待用户决定项，不静默改正式草案。
+纪律：`new system/` 已作废，不再作为审计目标；`new system/` 与 `old_system_nodedesign/` 未经用户明确授权不得读取，且无权威。不要因为旧 Post-Batch Lint / Governance Review 曾设计过 merge/split 或错误检测就认定它必要（已废除、本就无权威）；裁决锚定核心产品目标（记忆复用 / 审计性 / 会计师控制权 / 不让一次性判断污染长期记忆）。产出：必要性裁决报告（覆盖 merge/split 与 FP-5）+（若保留）融入方案；结论写成 finding / 待用户决定项，不静默改正式草案。
 ```

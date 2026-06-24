@@ -1,10 +1,11 @@
 # 00 · 规则蒸馏（Human Review Node 审计）
 
 > 本文件是第 2 步「问题梳理」的标尺，也是 L2 Proposal 的自检表。逐字搬自 `workflow_node_spec_template_rules.md` §10 + `AGENTS.md` + `审计目标与原则.md`。
+> 历史工作区提示：若后续复制复用本文件，以根目录 `AGENTS.md`、`当前任务状态.md` 的最新口径为准；`new system/` 已作废且不再作为审计目标，`new system/` 与 `old_system_nodedesign/` 未经用户明确授权不得读取。
 
 ## A. 必守通用规则（逐条 + 出处）
 
-1. **Source authority 铁律**（`AGENTS.md` §Source Authority）：用户明确指令最高；其余文档只在自身职责内有权威；`new system/`、`old_system_nodedesign/` 不提供任何权威参考。→ 本轮 owner 明确：Human Review Node 功能设计来源 = `Human_Review_Node_question.md` 本轮对话；运行层 log 以 `BK_Copilot/` 正式草案为准；`new system/` 不作参考。
+1. **Source authority 铁律**（`AGENTS.md` §Source Authority）：用户明确指令最高；其余文档只在自身职责内有权威；`new system/` 已作废且不再作为审计目标；`new system/`、`old_system_nodedesign/` 未经用户明确授权不得读取，且不提供任何权威参考。→ 本轮 owner 明确：Human Review Node 功能设计来源 = `Human_Review_Node_question.md` 本轮对话；运行层 log 以 `BK_Copilot/` 正式草案为准；`new system/` 不作参考。
 2. **运行 / 记忆 seam**（template §2）：节点只声明「要持久化什么 + 谁有权威认定它有效」，**不**声明「怎么写、谁来写、什么顺序写」。后者属记忆层 spec / finalization 机制。
 3. **契约面**（template §2 / §6）：节点只通过显式、最小、写明的输出契约面与下游交互；每个输出必须写明 consumer；字段级 schema 冻结属 Stage 3。
 4. **不为对称 / 完整 / 未来可能性而存在**（template §2、`AGENTS.md` §审计方法）：只因架构完整性存在的对象不得进正式文档。

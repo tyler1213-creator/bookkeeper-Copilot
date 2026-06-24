@@ -9,8 +9,8 @@
 - 新窗口读档路线
 - source authority 规则
 - 不同任务类型的必读材料
-- New system / Old system 的处理边界
-- 可编辑范围与只读审计对象范围
+- New system / Old system 的作废与授权读取边界
+- 可编辑范围与历史材料授权边界
 - 审计方法、停止条件和输出纪律
 
 它不负责项目背景、当前状态、阶段规划、系统地图、缺口清单或具体主题结论沉淀。
@@ -35,7 +35,8 @@
 - `独立question文档/`：主题讨论 / 机制结论入口；角色逐文件决定。若用户明确把某一 question 文档升为“当前唯一权威设计文档”，则在其主题范围内按该声明使用，直到落入正式 `BK_Copilot/` spec。已被正式草案替代的 question 文档只作历史背景。
 - `interaction_agent.md`：交互 / 目标层 Agent 的根目录概念入口；正式 spec 未冻结。
 - `未解决问题暂存清单.md`：已废弃历史参考，不再作为当前待办入口。
-- `new system/` 与 `old_system_nodedesign/`：被审计材料，不进入 authority。
+- `new system/`：New System 旧材料，已作废；不再作为审计目标、baseline、authority 或默认读档材料。未经用户明确同意，不得读取其文档内容。
+- `old_system_nodedesign/`：Old-System 旧材料；不作为审计目标、baseline、authority 或默认读档材料。未经用户明确同意，不得读取其文档内容。
 
 ## Source Authority
 
@@ -61,7 +62,7 @@
 - `new system/`
 - `old_system_nodedesign/`
 
-它们只能说明对应设计材料曾经如何表述自己，不能证明某个设计正确、必要、应保留、应回归或应作为 baseline。
+其中 `new system/` 已作废，不再作为审计目标。`new system/` 与 `old_system_nodedesign/` 均是授权读取材料：只有在用户明确同意读取具体 New System / Old-System 文档时，才可进入；即使读取，也只能作为历史 source text / 追溯背景，不能证明某个设计正确、必要、应保留、应回归或应作为 baseline。
 
 ## 必读路线
 
@@ -79,8 +80,9 @@
 - 需要查未冻结缺口、seam 或圈外依赖：读 `缺口地图.md`。
 - 需要当前正式草案：读 `BK_Copilot/` 下对应 node / memory layer 文档。
 - 需要追溯已审对象 L2 讨论：读 `L2_proposals/[对象]__L2提案.md`。
-- 需要审计 New system 原始材料：读 `new system/new_system.md` 和相关 `new system/node_stage_designs/*.md`，但只把它们当作审计对象。
-- 只有在用户明确要求审计、比较或追溯 Old system 材料时，才读取 `old_system_nodedesign/`；读取后仍不得把其中任何信息当成权威参考、baseline 或可复用约束来源。
+- 默认读档范围只限现行 BKCopilot 内容：active 治理 / 跟踪文档、`BK_Copilot/` 正式草案、模板规则、必要的 `L2_proposals/` 与用户指定的主题记录。
+- 需要读取 New System 或 Old-System 文档时，必须先取得用户对具体读取范围的明确同意；未获同意前不得读取 `new system/` 或 `old_system_nodedesign/` 下任何文档内容。
+- 即使获得同意，`new system/` 已作废且不再作为审计目标；New System / Old-System 只能作为历史 source text / 追溯背景，不得进入 authority、baseline 或可复用约束来源。
 
 修改治理文档前，先读：
 
@@ -100,15 +102,17 @@
 
 当前审计仓库没有 `supporting documents/` 目录。除非之后新增该目录，否则不要引用或要求读取不存在的 supporting files。
 
-## 被审计材料处理
+## New / Old 材料处理
 
-`new system/new_system.md` 是当前系统材料的主要总览，也是被审计对象。
+`new system/` 下所有 New System 文档已经作废，不再作为审计目标。
 
-`new system/node_stage_designs/` 包含当前 node 设计材料。这些文档只说明当前设计材料如何表达自己，不是 authority、baseline、正确性证明或 implementation-ready contract。
+`old_system_nodedesign/` 下 Old-System 文档也不作为审计目标、历史意图权威、标准答案、回归目标、可复用约束来源或评判当前系统的依据。
 
-`old_system_nodedesign/` 包含旧系统材料。它们不是历史意图权威、标准答案、回归目标、可复用约束来源或评判当前系统的依据。
+未经用户明确同意，不得读取 New System 或 Old-System 文档内容。若用户同意读取，需满足：
 
-审计某个 node 时，如需读取 New system 或 Old system，只能把它们当作 source text。任何看似有用的想法，都必须脱离来源重新按核心产品目标、当前已确认规则和正式 `BK_Copilot/` 草案论证。
+- 用户明确授权具体读取范围或具体文件。
+- 读取目的只能是历史追溯、差异说明或用户指定的比较，不得把 New System 恢复为审计目标。
+- 任何看似有用的想法，都必须脱离来源重新按核心产品目标、当前已确认规则和正式 `BK_Copilot/` 草案论证。
 
 ## 审计方法
 
@@ -150,7 +154,7 @@
 - `缺口地图.md`，仅当 L3 / L4 / seam / L2·外阻缺口状态变化时
 - 用户要求创建的新审计报告或聚焦审计笔记
 
-默认只读的被审计材料，除非用户明确要求编辑：
+默认不可读、不可编辑的历史材料，除非用户明确授权具体读取或编辑：
 
 - `new system/new_system.md`
 - `new system/node_stage_designs/*.md`
@@ -166,7 +170,8 @@
 - 把审计性和会计师控制权视为产品要求。
 - 清楚区分 evidence、memory、judgment、governance 和 audit records。
 - 不要仅为对称性、完整性或未来可选性新增组件。
-- 不要把 New system 或 Old system 中的结构、字段、流程或能力推广成当前结论。
+- 不要读取未获授权的 New System 或 Old-System 文档。
+- 不要把 New System 或 Old-System 中的结构、字段、流程或能力推广成当前结论。
 - 不要把第一版 Stage 3 data contracts 当成冻结实现文档。
 - 不要把 AI reasoning 文本变成可复用 authority；可复用 authority 必须来自已批准的 memory、rules、cases、profile 或 governance state。
 - 长期性设计结论不写入规则文档；应写入用户指定的长期结论文档、对应主题记录或正式 `BK_Copilot/` 文档。
@@ -178,14 +183,15 @@
 - 任务需要改变产品设计合同，而不只是审计它们。
 - 某个审计发现依赖用户尚未决定的业务优先级。
 - 两个权威来源冲突，且无法通过职责范围和 authority 顺序解决。
-- 当前工作会把 `new system/` 或 `old_system_nodedesign/` 当成权威参考、当前有效 baseline 或正确性证明。
-- 当前工作会模糊被审计材料与当前有效规则 / 正式草案的边界。
-- 任务需要大范围重写 `new system/`，而不是一次聚焦的已请求编辑。
+- 当前工作需要读取 `new system/` 或 `old_system_nodedesign/`，但用户尚未明确授权具体读取范围。
+- 当前工作会把 `new system/` 或 `old_system_nodedesign/` 当成审计目标、权威参考、当前有效 baseline 或正确性证明。
+- 当前工作会模糊历史材料与当前有效规则 / 正式草案的边界。
+- 任务需要编辑 `new system/` 或 `old_system_nodedesign/`，但用户尚未明确要求该具体编辑。
 
 遇到以下情况，宁可暂缓，也不要强行闭环：
 
 - 当前 baseline 需要真实设计决策，而不是措辞清理。
-- 某个被审计材料中的能力是否应保留需要真实产品决策。
+- 某个历史材料或待审对象中的能力是否应保留需要真实产品决策。
 - 某个简化会改变审计性、会计师控制权或自动化 authority，而用户尚未批准。
 
 ## 文档更新纪律
@@ -200,7 +206,7 @@
 - `AGENTS.md` 保持聚焦 agent operation，不放临时交接细节。
 - `缺口地图.md` 不记录已收口 L1 / L2 结论。
 - `未解决问题暂存清单.md` 不再更新。
-- 从被审计材料中发现看似有用的想法时，只能标为待论证假设，不得静默当成当前设计规则、intent 或 constraint。
+- 从已授权读取的 New System / Old-System 历史材料中发现看似有用的想法时，只能标为待论证假设，不得静默当成当前设计规则、intent 或 constraint。
 
 ## 输出要求
 

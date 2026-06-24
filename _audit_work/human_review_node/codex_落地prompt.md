@@ -18,6 +18,7 @@
 - `缺口地图.md`
 
 除上述文件外，绝不触碰其它 workflow node、memory layer、未列出的治理文档、`new system/`、`old_system_nodedesign/`。
+`new system/` 已作废，不再作为审计目标；`new system/` 与 `old_system_nodedesign/` 未经用户明确授权具体范围，不得读取或编辑。
 如果驱动提案里出现「改其它对象文件」的拟改条目（例如「A 类五个 log + Coordinator 草案中旧 writer 模型 / 旧 Review Node 引用的写回」），**不要执行**——那属于另一个对象，由单独 prompt 处理；本 prompt 内对该结论只在本节点自己范围的文件里声明，并把它登记为本节点的 open boundary（见 02 §12 「A 类残留待写回」）。
 
 ## 必读（按此顺序，且只把它们当依据）
@@ -26,7 +27,7 @@
 2. 模板（必须遵守其结构与「禁止写法」与「Stage 1-2 完成清单 22 问」）：`BK_Copilot/node:layer spec template/workflow_node_spec_template_rules.md`
 3. 结构依据（建模式）：上述模板中 00_index / 01 / 02 的章节结构与各「完成清单」必答项。
 4. 锁定上游 / 不变量：`当前任务状态.md`、`缺口地图.md`（Human Review Node section + 顶部「跨层共享机制」），以及被引用的 A 类正式草案（`BK_Copilot/workflow_nodes/coordinator_node/02`、`memory_layers/{transaction_log,case_log,entity_log,rule_log}/02`）。出现冲突时以这些已锁结论为准，按权威顺序解决，不以 new/old system 为准。
-`new system/` 和 `old_system_nodedesign/` 只是审计对象，没有任何权威性，不得作为依据或 baseline。
+`new system/` 已作废，不再作为审计目标；`new system/` 和 `old_system_nodedesign/` 均非默认读档材料，没有任何权威性，不得作为依据或 baseline。未经用户明确授权具体范围，不得读取这两个目录下的文档。
 
 ## 用户已审定的澄清（凌驾于现状文字与提案措辞之上；只存在于本指令，务必照此落地）
 ① **唯一来源 = 本 L2 提案**。提案/工作区里凡把设计来源指向 `Human_Review_Node_question.md` 的措辞，一律改为指回本 L2 提案 + 用户拍板；正式文档不得出现对该 question 文件的悬空依赖。
@@ -91,7 +92,7 @@
 - `缺口地图.md`（必更）：把已收口 L1-L2 不再回写；保留 / 更新本节点 L3 / L4-seam / L2·外阻挂起项（注意本轮已记录的：NEW-1 归 Rule 侧、系统自发发现层合并挂起、C2 留编排层、待建依赖 open boundary）；确认正式文档已建后指针指向 `BK_Copilot/workflow_nodes/human_review_node/`。
 - 其它治理文档（`系统上下文地图.md` / `审计阶段路线图.md` / `AGENTS.md` / `审计目标与原则.md` / `项目背景速读.md`）：仅当其职责范围内内容确因本次落地变化时才动；否则不碰。
 
-更新纪律：保持克制、遵守权威顺序；规则文档不承载长期设计结论正文；不加产品功能逻辑细节；不把 new/old system 当 baseline 或权威。
+更新纪律：保持克制、遵守权威顺序；规则文档不承载长期设计结论正文；不加产品功能逻辑细节；不读取未获授权的 new/old system，不把 new/old system 当 baseline、审计目标或权威。
 
 ## 完成后输出
 - 建了哪些文件、每个文件写了哪些节、对应提案哪条决策或哪条澄清。
