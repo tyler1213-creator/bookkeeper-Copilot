@@ -1,0 +1,93 @@
+<svg width="680" height="690" viewBox="0 0 680 690" xmlns="http://www.w3.org/2000/svg" font-family="-apple-system, system-ui, 'Segoe UI', sans-serif">
+<title>Evidence Intake 内部子流程：六块 + 一闸门</title>
+<defs>
+<marker id="ah" markerWidth="9" markerHeight="9" refX="6" refY="4.5" orient="auto">
+<path d="M1.5,1.5 L6.5,4.5 L1.5,7.5" fill="none" stroke="#9aa3ad" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+</marker>
+</defs>
+
+<!-- main spine connectors -->
+<path d="M265 68 L265 86" fill="none" stroke="#9aa3ad" stroke-width="1.6" marker-end="url(#ah)"/>
+<path d="M265 136 L265 158" fill="none" stroke="#9aa3ad" stroke-width="1.6" marker-end="url(#ah)"/>
+<path d="M265 208 L265 230" fill="none" stroke="#9aa3ad" stroke-width="1.6" marker-end="url(#ah)"/>
+<path d="M265 280 L265 302" fill="none" stroke="#9aa3ad" stroke-width="1.6" marker-end="url(#ah)"/>
+<path d="M265 352 L265 374" fill="none" stroke="#9aa3ad" stroke-width="1.6" marker-end="url(#ah)"/>
+<path d="M265 430 L265 452" fill="none" stroke="#9aa3ad" stroke-width="1.6" marker-end="url(#ah)"/>
+<path d="M265 502 L265 524" fill="none" stroke="#9aa3ad" stroke-width="1.6" marker-end="url(#ah)"/>
+<path d="M265 574 L265 596" fill="none" stroke="#9aa3ad" stroke-width="1.6" marker-end="url(#ah)"/>
+
+<!-- branch connectors (dashed) -->
+<path d="M410 111 L450 111" fill="none" stroke="#9aa3ad" stroke-width="1.6" stroke-dasharray="4 3" marker-end="url(#ah)"/>
+<path d="M410 327 L450 327" fill="none" stroke="#9aa3ad" stroke-width="1.6" stroke-dasharray="4 3" marker-end="url(#ah)"/>
+<path d="M410 402 L450 402" fill="none" stroke="#9aa3ad" stroke-width="1.6" stroke-dasharray="4 3" marker-end="url(#ah)"/>
+
+<!-- main boxes -->
+<g>
+<rect x="120" y="24" width="290" height="44" rx="10" fill="#3b6ea5"/>
+<text x="265" y="43" text-anchor="middle" font-size="14" fill="#ffffff">进料</text>
+<text x="265" y="59" text-anchor="middle" font-size="12" fill="#dfe8f2">原始材料 + 批次来源</text>
+</g>
+<g>
+<rect x="120" y="86" width="290" height="50" rx="10" fill="#3b6ea5"/>
+<text x="265" y="107" text-anchor="middle" font-size="14" fill="#ffffff">A 收料与查重</text>
+<text x="265" y="125" text-anchor="middle" font-size="12" fill="#dfe8f2">文件级 hash 去重</text>
+</g>
+<g>
+<rect x="120" y="158" width="290" height="50" rx="10" fill="#3b6ea5"/>
+<text x="265" y="179" text-anchor="middle" font-size="14" fill="#ffffff">B 解析 · 抠客观字段</text>
+<text x="265" y="197" text-anchor="middle" font-size="12" fill="#dfe8f2">金额·方向·日期·账户·币种</text>
+</g>
+<g>
+<rect x="120" y="230" width="290" height="50" rx="10" fill="#3b6ea5"/>
+<text x="265" y="251" text-anchor="middle" font-size="14" fill="#ffffff">C 余额链体检</text>
+<text x="265" y="269" text-anchor="middle" font-size="12" fill="#dfe8f2">账单自洽 + 相邻连续</text>
+</g>
+<g>
+<rect x="120" y="302" width="290" height="50" rx="10" fill="#3b6ea5"/>
+<text x="265" y="323" text-anchor="middle" font-size="14" fill="#ffffff">D 证据↔交易配对</text>
+<text x="265" y="341" text-anchor="middle" font-size="12" fill="#dfe8f2">单账单内 · 唯一才 confirmed</text>
+</g>
+<g>
+<rect x="120" y="374" width="290" height="56" rx="12" fill="#b87a2b"/>
+<text x="265" y="397" text-anchor="middle" font-size="14" fill="#ffffff">放行闸门 · 六项资格</text>
+<text x="265" y="416" text-anchor="middle" font-size="12" fill="#f3e6d4">单张账单：全有或全无</text>
+</g>
+<g>
+<rect x="120" y="452" width="290" height="50" rx="10" fill="#3b6ea5"/>
+<text x="265" y="473" text-anchor="middle" font-size="14" fill="#ffffff">E 铸号</text>
+<text x="265" y="491" text-anchor="middle" font-size="12" fill="#dfe8f2">发 transaction_id</text>
+</g>
+<g>
+<rect x="120" y="524" width="290" height="50" rx="10" fill="#3b6ea5"/>
+<text x="265" y="545" text-anchor="middle" font-size="14" fill="#ffffff">F 打包放行</text>
+<text x="265" y="563" text-anchor="middle" font-size="12" fill="#dfe8f2">客观事实 + 证据 + 编号</text>
+</g>
+<g>
+<rect x="120" y="596" width="290" height="46" rx="10" fill="#3b6ea5"/>
+<text x="265" y="616" text-anchor="middle" font-size="14" fill="#ffffff">下游</text>
+<text x="265" y="633" text-anchor="middle" font-size="12" fill="#dfe8f2">Profile → ER → Rule Match</text>
+</g>
+
+<!-- branch boxes -->
+<g>
+<rect x="450" y="86" width="170" height="50" rx="10" fill="#b87a2b"/>
+<text x="535" y="107" text-anchor="middle" font-size="14" fill="#ffffff">保全转走</text>
+<text x="535" y="125" text-anchor="middle" font-size="12" fill="#f3e6d4">重复 / 不认识材料</text>
+</g>
+<g>
+<rect x="450" y="302" width="170" height="50" rx="10" fill="#b87a2b"/>
+<text x="535" y="323" text-anchor="middle" font-size="14" fill="#ffffff">证据池</text>
+<text x="535" y="341" text-anchor="middle" font-size="12" fill="#f3e6d4">候选 / 未配等锚点</text>
+</g>
+<g>
+<rect x="450" y="374" width="170" height="56" rx="10" fill="#b87a2b"/>
+<text x="535" y="397" text-anchor="middle" font-size="14" fill="#ffffff">纠错路</text>
+<text x="535" y="416" text-anchor="middle" font-size="12" fill="#f3e6d4">整张账单挂起返工</text>
+</g>
+
+<!-- legend -->
+<rect x="120" y="656" width="14" height="14" rx="3" fill="#3b6ea5"/>
+<text x="140" y="667" text-anchor="start" font-size="12" fill="#8a929b">主干 = 放行进交易流</text>
+<rect x="330" y="656" width="14" height="14" rx="3" fill="#b87a2b"/>
+<text x="350" y="667" text-anchor="start" font-size="12" fill="#8a929b">闸门 / 挡下 = 保全不丢</text>
+</svg>
