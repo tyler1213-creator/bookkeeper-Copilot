@@ -17,22 +17,16 @@
 
 - memory reuse（记忆复用）必须先知道当前交易指向哪个 entity（实体）。
 - evidence-supported suggestion（有证据支持的建议）要求身份判断能回到 raw evidence（原始证据）。
-- accountant control（会计师控制权）要求 `candidate_signal` / governance candidate（治理候选）不能自动变成 durable authority（长期权威）。
+- accountant control（会计师控制权）要求本节点的 runtime 身份输出（identity result + reason）不能自动变成 durable authority（长期权威）；merge / split、身份风险等治理判断只能由会计师人发起。
 - automation rate（自动化率）只有在 identity authority（身份权威）清楚时才有价值，否则自动化会放大错误。
 
 ## 2. 核心职责
 
 本节点的唯一核心职责是：
 
-> 输出当前交易的 identity state（身份状态：`stable` 或 `unknown`）和 identity authority annotations（身份权威边界说明）。
+> 输出当前交易的 identity state（身份状态：`stable` 或 `unknown`），并为该判断附上可审计的 identity reason（含 `unknown` 时的 reason / context）。
 
-本节点可以辅助产生：
-
-- `candidate_signal`（运行时候选信号），例如 Alias 写入需求、merge / split（合并 / 拆分）相关候选。
-- `identity_risk_flags`（身份识别风险标记），例如名称相似、多对象竞争、历史误认或身份混用。
-- `blocking_reason`（身份层阻断原因），说明为什么当前身份结果不能被当作更高 authority（权威）。
-
-但这些不是主职责。
+本节点不产出与身份状态并行的候选 / 风险通道。原 `candidate_signal`、`merge_split_candidate`、`identity_risk_flags`、`blocking_reason` 已删除（2026-06-25 收口，理由见 §3 与 `02_logic_and_boundaries.md` §6）：身份层的冲突、歧义、缺证、alias 问题一律收敛为 `unknown` 的 reason / context；merge / split 与身份风险归 Entity Log + 会计师人发起 Human Review，本节点只读、不产。
 
 ## 3. 明确排除范围
 
@@ -45,6 +39,7 @@
 - accountant-facing question generation（面向会计师的问题生成）。
 - transaction finalization（交易最终确认）。
 - durable memory write mechanism（长期记忆写入机制）；但 ER 判定新建 stable entity 后，必须在下游继续前发起同步 Entity Log + Alias Log finalization，且无需 governance approval（治理批准）。
+- 产出 merge / split 候选、identity risk flags（身份风险标记），或任何与身份状态并行的候选 / 风险信号；merge / split 与身份风险归 Entity Log + 会计师人发起 Human Review，本节点只读相关 Entity Log 状态、不产候选。
 
 本节点绝不能：
 
@@ -69,7 +64,7 @@
 - `Rule Match Node`（规则匹配节点）：读取身份结果和身份权威说明，自行判断 rule eligibility（规则匹配资格）。
 - `Case Judgment Node`（案例判断节点）：读取身份上下文，自行判断是否可以 case-based judgment（基于案例判断）。
 - `Coordinator / Pending Node`（协调 / 待确认节点）：读取身份卡点，自行生成 accountant-facing question（面向会计师的问题）。
-- `Human Review Node`（人审节点，会计师人发起）与 Governance（授权确认 = Human Review 签字 + Finalization 凭证）：读取候选信号，但这些信号不是 approval（批准）。
+- `Human Review Node`（人审节点，会计师人发起）与 Governance（授权确认 = Human Review 签字 + Finalization 凭证）：不是本节点的 runtime 下游消费者；merge / split 与身份风险纠正由会计师在此人发起，所需身份上下文从 Entity Log / Governance Log 读取，本节点不向其推送候选信号。
 
 本节点位于流程中的原因：
 
@@ -93,7 +88,6 @@
 - 通过 entity-first identity（实体优先身份识别）让不同表面写法可以汇入同一 stable entity（稳定实体）。
 - 通过 evidence refs（证据引用）让身份判断可审计、可纠正。
 - 通过 Alias / governance authority（别名 / 治理权威）防止模型用语义相似度越权。
-- 通过 runtime `candidate_signal` output（运行时候选信号输出）让系统学习有入口，但不污染 durable authority（长期权威）。
 - 通过新建 stable entity 的及时 Entity Log + Alias Log finalization，让清楚、可追溯且无冲突的新对象及其 confirmed surface text 在同 batch 后续交易中可被自然匹配。
 - 通过受控 AI 联网搜索减少不必要的 accountant pending 问题；搜索只辅助判断“这是谁”，不能产生 accounting outcome（会计处理结果）或 authority（权威）。
 
@@ -110,7 +104,6 @@ Alias（别名）在本节点中的当前含义：
 - `evidence_refs`（证据引用）必须可追溯到 Evidence Log（证据日志）或 evidence foundation（证据基础）。
 - `Entity Log`（实体日志）和 `Governance Log`（治理日志）优先于 Knowledge Summary（知识摘要）。
 - 本节点判断为新建 stable entity 时，state 仍为 `stable`；ER 自主决定、无需 governance approval，并必须在下游继续前发起同步 Entity Log + Alias Log finalization：Entity Log 创建 stable entity 本体、最小创建 provenance 和初始 entity-centered Alias surface，Alias Log 写入对应 confirmed surface text -> stable entity 的反查 projection。实际由 ER 直接写入还是同步调用专门写入 / 存储机制、两者写入顺序和幂等机制属于 L4 / seam。
-- `candidate_signal`（候选信号）是 runtime-only（仅运行时）handoff，不是 durable authority（长期权威）。
 - 未确认的 surface text 不能作为 Alias 使用。
 - Entity Resolution 输出 `unknown` 后，如果 accountant 在 Coordinator 交互中明确确认 identity，交易不重新进入本节点；该 accountant confirmation（会计师确认）替代本节点身份判断。
 - `confidence`（身份识别置信度）只表示 identity confidence（身份置信度），不能表示 accounting classification confidence（会计分类置信度）。

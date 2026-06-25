@@ -42,9 +42,10 @@
 - Entity Resolution 判定新建 stable entity 时，state 仍为 `stable`，provenance 语义为新建。ER 自主决定、无需 governance approval，并必须在当前交易进入下游 judgment / pending 前发起同步 Entity Log + Alias Log finalization：Entity Log 创建 stable entity 本体、最小创建 provenance 和初始 entity-centered Alias surface，Alias Log 写入该 confirmed surface text -> stable entity 的反查 projection；实际由 ER 亲手写入还是同步调用专门写入 / 存储机制，留 L4 / seam。
 - `unknown` 输出后由 accountant 明确确认 identity 时，交易不重新进入 Entity Resolution；accountant confirmation（会计师确认）替代本节点的身份判断，后续创建 stable entity 和分类完成由下游路径处理。
 - `unknown` 输出可以携带 identity clues、ambiguity reason、missing evidence reason、搜索线索和 evidence refs 作为 runtime context，但这些信息不是 stable entity 或 identity authority。
+- 本节点对外输出收敛为身份结果本身：identity state（`stable` / `unknown`）、stable 时的 entity 标识、identity reason、evidence refs、`unknown` 的 reason / context；**不再输出 `candidate_signal` / `merge_split_candidate` / `alias_conflict_issue` / `identity_governance_issue` / `blocking_reason` / `identity_risk_flags` 等并行候选 / 风险通道（2026-06-25 收口删除）**。理由：这些输出无下游消费者、与 `unknown` reason 重复、或超出本节点能力 / 职责。merge / split 归会计师人发起 Human Review + Entity Log；identity risk flags 归 Entity Log（本节点只读）；身份卡点与冲突一律经 `unknown` + reason 表达。
 
 ## 进入下一阶段前必须解决
 
 - 决定 `entity_resolution_output`（实体识别运行时输出）中哪些字段属于 identity fact（身份事实），哪些只属于 downstream derived decision（下游派生判断）。
-- 确认本节点除新建 stable entity 的同步 Entity Log + Alias Log finalization 外，不直接持久化 `candidate_signal`（候选信号），只通过 runtime handoff（运行时交接）交给下游。
+- 本节点除新建 stable entity 的同步 Entity Log + Alias Log finalization 外，不产生任何 durable write，也不产生与身份状态并行的候选 / 风险通道；身份卡点只经 `unknown` + reason 表达（原 `candidate_signal` 等已删除，见上）。
 - 决定是否需要 Stage 3: Data Contract。如果需要，必须先移除或下沉 `rule_eligibility`（规则匹配资格）、`case_context_eligibility`（案例上下文资格）和 `downstream_authority_summary`（下游权限摘要）这类下游派生字段。

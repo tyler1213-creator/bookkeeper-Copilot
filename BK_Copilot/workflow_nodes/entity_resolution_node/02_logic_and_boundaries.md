@@ -61,14 +61,12 @@
 
 该 finalization 不代表 Rule（规则）、automation policy（自动化策略）、Case Log（案例日志）或 Transaction Log（交易审计日志）已经写入。
 
-### 只能提出 candidate / issue（非身份状态）
+### 非身份输出只剩 `unknown` 的 reason / context
 
-除新建 stable entity 的同步 Entity Log + Alias Log finalization 外，本节点只能提出非身份候选或运行时问题：
+本节点不产出与身份状态并行的候选 / 风险通道。原 `candidate_signal`、`merge_split_candidate`、`alias_conflict_issue`、`identity_governance_issue` **已删除（2026-06-25 收口）**：它们无下游消费者（Case Judgment 只读身份结果与 `unknown` reason，见 §6；Human Review 从 Entity Log 读 merge / split / risk 上下文并只接会计师人发起）、与 `unknown` reason 重复、或超出本节点能力 / 职责（merge / split 见 §5、§9）。
 
-- `candidate_signal`（运行时候选信号），例如 Alias 冲突 / 非初始 Alias review 需求、merge / split（合并 / 拆分）相关候选。
-- `merge_split_candidate`（实体合并 / 拆分候选）。
-- `alias_conflict_issue`（Alias 冲突问题）。
-- `identity_governance_issue`（身份相关治理问题）。
+除新建 stable entity 的同步 Entity Log + Alias Log finalization 外，本节点唯一的非身份输出是：
+
 - `unknown` reason / context（例如 ambiguous、conflict、unresolved、missing evidence、alias issue），只能作为 runtime context，不构成 candidate entity、stable entity、Case Log handle 或 Rule Match basis。
 
 ### 绝不能写入或修改
@@ -95,7 +93,6 @@
 - 当前 surface text 是否 exact match（完全命中）已确认 Alias；命中时可直接复用 Alias 指向的 stable entity。
 - 当前 Alias 查询是否存在冲突或多 entity 竞争。
 - 当本节点判定新建 stable entity 时，Entity Log + Alias Log finalization 的语义范围是否只限 stable entity 本体、最小创建 provenance 和已够格 raw surface text -> stable entity Alias projection，不夹带 rule / automation authority（规则 / 自动化权威）。
-- 哪些候选或风险只能作为 runtime handoff（运行时交接），不能成为 durable memory（长期记忆）。
 
 ### LLM 可以判断
 
@@ -140,13 +137,12 @@
 
 本表是本节点对下游唯一的契约面：下游只能依赖此处声明的输出类别，不得依赖本节点未声明的内部状态或实现。
 
-本节点对外只声明两类 identity state：`stable` 与 `unknown`。`candidate_signal` 是与 identity state 并行的非身份输出通道，不属于 `stable` / `unknown` 分类。
+本节点对外只声明两类 identity state：`stable` 与 `unknown`。除身份结果及其 reason / context 外，本节点不声明任何与身份状态并行的候选 / 风险输出通道。
 
 | Output Category | 含义 | Consumer（谁消费） | 下游影响 | 不代表什么 |
 | --- | --- | --- | --- | --- |
 | `stable` | 当前所有可追溯 evidence 能够直接、清晰且无歧义地说明交易主体是谁。stable 内部有两种 provenance：复用既有（命中 Entity Log 中已存在的 stable entity，或 exact Alias match 指向既有 stable entity）与新建（第一次识别到的新对象、需新建档案）。两者都输出 state=`stable`，并必须携带可审计 identity reason。 | Rule Match（身份基础）；Case Judgment | 下游可把它作为当前交易 identity basis。若 provenance=新建，ER 必须在当前交易进入下游 judgment / pending 前发起同步 Entity Log + Alias Log finalization，使该 stable entity 及其 confirmed Alias projection 对后续 identity consumer 可见。 | 不代表 rule match 成功、会计分类、COA / HST / GST / 业务用途、automation permission、Case Log authority、accountant approval 或 governance approval。 |
 | `unknown` | 当前可追溯 evidence 不能直接、清晰且无歧义地说明主体是谁。unknown 可以携带 reason / context，例如 ambiguous、conflict、unresolved、missing evidence 或 alias issue；这些 reason 不构成 candidate entity、stable entity、Case Log handle 或 Rule Match basis。 | Case Judgment（输出 pending） | Case Judgment 不走高置信度自动分类通道，输出 pending；可读取身份线索、搜索线索、相似对象、reason 和 evidence refs 作为 runtime context。 | 不代表会计分类失败的总称，不允许伪造 entity，不代表 LLM 可以选择一个 winner，不支持 Rule Match 或 durable memory mutation。 |
-| `candidate_signal` | 与身份状态并行的非身份输出通道，指出后续可能需要处理的 Alias 冲突 / 非初始 Alias review、merge / split（合并 / 拆分）或身份治理问题。这是确定性运行期判句信号，非系统自发语义判断（语义发现层已删除）。 | Coordinator / Human Review（会计师人发起） | 只作为 runtime handoff 供对应 consumer 进入 pending 或会计师人发起 review；merge / split 只由会计师在 Human Review 人发起。 | 不代表 stable / unknown 之外的第三种 identity state，不代表 durable approval；本节点不直接写入长期记忆。 |
 
 stable reason 的证据边界：
 
@@ -212,7 +208,7 @@ Rule Match 对输出的读取边界：
 
 - 输出：`unknown` + reason（例如 ambiguous / competing identities）。
 - 是否允许自动化：本节点不决定自动化；但不得把歧义输出包装成 stable identity（稳定身份）。
-- 是否需要 pending / review / governance：Case Judgment 输出 pending 后，由 Coordinator / Pending（协调 / 待确认）、Human Review（会计师人发起）或 Governance（授权确认 = Human Review + Finalization）根据卡点和 `candidate_signal` 决定。
+- 是否需要 pending / review / governance：Case Judgment 输出 pending 后，由 Coordinator / Pending（协调 / 待确认）、Human Review（会计师人发起）或 Governance（授权确认 = Human Review + Finalization）根据卡点和 `unknown` reason 决定。
 
 本节点不能为了让 workflow 继续而猜一个 winner（胜出实体）。
 
@@ -224,21 +220,21 @@ Rule Match 对输出的读取边界：
 
 - authority 顺序：Governance Log（治理日志）/ Entity Log（实体日志）中的 approved / applied authority（已批准 / 已生效权威）优先于 Knowledge Summary（知识摘要）和 LLM semantic match（LLM 语义匹配）。
 - 本节点行为：保守输出 `unknown` + reason（例如 conflict / blocked / ambiguous）。
-- 是否生成 review / governance candidate：可以通过 `candidate_signal` 生成 `identity_governance_issue`（身份相关治理问题），但不能批准。
+- 是否生成 review / governance candidate：不生成并行候选；冲突经 `unknown` + reason（conflict / blocked）表达，治理处置由会计师人发起 Human Review + Governance 决定。
 - 是否阻断自动化：本节点只说明 identity authority problem（身份权威问题）；下游决定 automation path（自动化路径）。
 
 如果 current evidence（当前证据）与 Alias 库冲突，或同一 surface text 可能对应多个 entity：
 
 - authority 顺序：已确认 stable entity 和可追溯 evidence 优先于 LLM semantic match（LLM 语义匹配）。
 - 本节点行为：输出 `unknown` + reason（例如 alias issue / conflict / ambiguous）。
-- 是否生成 review / governance candidate：可以通过 `candidate_signal` 生成，但不能批准。
+- 是否生成 review / governance candidate：不生成并行候选；Alias 冲突经 `unknown` + reason（alias issue / conflict）表达，Alias 修正归 Alias Log / 会计师人发起路径。
 - 是否阻断自动化：不得输出 stable identity basis（稳定身份基础）来支持 deterministic path（确定性路径）。
 
 如果 accountant context（会计师上下文）与 durable memory（长期记忆）冲突：
 
 - authority 顺序：明确 accountant confirmation（会计师确认）只在其确认范围内有效；模糊说明不能泛化成 durable authority（长期权威）。
 - 本节点行为：输出 conflict reason（冲突原因）和 relevant refs（相关引用）。
-- 是否生成 review / governance candidate：可以通过 `candidate_signal` 生成，但不能批准。
+- 是否生成 review / governance candidate：不生成并行候选；冲突经 conflict reason + relevant refs 表达，治理处置由会计师人发起。
 - 是否阻断自动化：如果冲突影响当前身份是否安全，不能输出 stable identity basis（稳定身份基础）。
 
 ## 10. Audit / Trace 边界
@@ -253,8 +249,6 @@ Rule Match 对输出的读取边界：
 - matched Alias surface text（命中的 Alias 表面写法），如果存在。
 - Alias lookup basis（Alias 查询依据），如果存在。
 - 最小创建 provenance 语义，如果存在；exact field schema 未冻结。
-- `blocking_reason`（身份层阻断原因），如果存在。
-- `identity_risk_flags`（身份识别风险标记），如果存在。
 - `governance_constraint_refs`（治理限制引用），如果存在。
 - `intervention_context_refs`（人工介入上下文引用），如果存在。
 
