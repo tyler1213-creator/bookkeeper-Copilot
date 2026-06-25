@@ -58,7 +58,7 @@ Coordinator 无独立读取面。全部上下文来自 CJ Pending handoff 这一
 
 本节点产出、但由记忆 / finalization 层执行写入的内容：本节点只声明“存什么 + 谁有权威认定它有效”，不声明“怎么写、谁来写、什么顺序写”。
 
-- 身份确认：当 accountant 明确确认 stable entity 时，本节点发出“stable entity 出现”信号，触发与 ER 共用的统一写入节点处理 Entity Log + Alias Log。有效性来自 accountant explicit identity confirmation；该确认不需要 governance approval，且只确认 identity。
+- 身份确认：当 accountant 明确确认 stable entity 时，本节点发出“stable entity 出现”信号，触发与 ER 共用的统一写入节点处理 Entity Log + Alias Log。有效性来自 accountant explicit identity confirmation；该确认不需要 governance approval，且只确认 identity 及其对应 Alias projection。
 - Case Log 学习记录语义：stable-linked（实体已是 stable，无论由 ER 命中还是会计师确认而来）、已 finalized、且会计师已确认 accounting outcome 的交易，可以产生 `confirmed_by=accountant` 的学习记录语义，并必须凭 Transaction Log 或等价 finalization proof。有效性来自 accountant confirmation + finalization proof。拿不到 entity 的交易（情况 X / Y）只 finalize 到 Transaction Log，不进 Case Log。
 - 交互留痕：本节点与 accountant 的提问、回答、确认、纠正、追问、身份问一次后停止的原因等，形成 Intervention Log 最小 record 语义。有效性来自交互事实；它不是业务 authority。
 - 最终交易结果审计：会计师答复足够后形成的交易 finalization 语义应由 Transaction Log 或等价 finalization 机制承接；exact contract 属圈外。

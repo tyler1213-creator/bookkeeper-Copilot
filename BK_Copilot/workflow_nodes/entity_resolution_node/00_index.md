@@ -26,7 +26,7 @@
 - `entity_resolution_output`（实体识别运行时输出）的 exact field schema（精确字段结构）尚未冻结。
 - `new_stable_entity` 最小创建 provenance 的 exact field schema（精确字段结构）尚未冻结。
 - external evidence reference（外部证据引用）的 exact field schema（例如 URL / source title / retrieved_at / snippet 等）尚未冻结。
-- ER 判定新建 stable entity 后的实际写入执行者、调用方式和写入顺序属于 L4 / seam，尚未冻结。
+- ER 判定新建 stable entity 后，Entity Log + Alias Log 同步 finalization 的实际写入执行者、调用方式和写入顺序属于 L4 / seam，尚未冻结。
 - `knowledge_summary_conflict_repair`（Knowledge Summary 与 Entity Log / Governance Log 冲突时的修复流程）尚未冻结。
 
 ## 当前已确认边界
@@ -39,12 +39,12 @@
 - 当前确认需要一个可被 Entity Resolution 查询的 Alias 库，用于从当前交易的 surface text 反查过去已经确认过的 entity；Alias 库具体技术形态尚未冻结。
 - exact Alias match 是确定性身份复用路径：当前 transaction surface text 完全命中 Alias Log / Alias 库中既有 Alias 时，Entity Resolution 可以直接输出该 Alias 指向的 `stable` entity。
 - Entity Resolution 可以使用 AI 联网搜索辅助 identity 判断；搜索结果列表和搜索摘要只能作为 clue。由搜索打开并可追溯的外部来源，在与当前交易 evidence 共同指向清晰、唯一、无实质竞争的业务对象时，可以作为 stable reason 的 evidence point；该 evidence point 只支持 identity，不支持会计分类、Rule 或自动化许可。
-- Entity Resolution 判定新建 stable entity 时，state 仍为 `stable`，provenance 语义为新建。ER 自主决定、无需 governance approval，并必须在当前交易进入下游 judgment / pending 前发起同步 Entity Log publication，使该 stable entity 对后续同 batch / 后续交易可见；实际由 ER 亲手写入还是同步调用专门写入 / 存储机制，留 L4 / seam。
+- Entity Resolution 判定新建 stable entity 时，state 仍为 `stable`，provenance 语义为新建。ER 自主决定、无需 governance approval，并必须在当前交易进入下游 judgment / pending 前发起同步 Entity Log + Alias Log finalization：Entity Log 创建 stable entity 本体、最小创建 provenance 和初始 entity-centered Alias surface，Alias Log 写入该 confirmed surface text -> stable entity 的反查 projection；实际由 ER 亲手写入还是同步调用专门写入 / 存储机制，留 L4 / seam。
 - `unknown` 输出后由 accountant 明确确认 identity 时，交易不重新进入 Entity Resolution；accountant confirmation（会计师确认）替代本节点的身份判断，后续创建 stable entity 和分类完成由下游路径处理。
 - `unknown` 输出可以携带 identity clues、ambiguity reason、missing evidence reason、搜索线索和 evidence refs 作为 runtime context，但这些信息不是 stable entity 或 identity authority。
 
 ## 进入下一阶段前必须解决
 
 - 决定 `entity_resolution_output`（实体识别运行时输出）中哪些字段属于 identity fact（身份事实），哪些只属于 downstream derived decision（下游派生判断）。
-- 确认本节点除新建 stable entity 的同步 Entity Log publication 外，不直接持久化 `candidate_signal`（候选信号），只通过 runtime handoff（运行时交接）交给下游。
+- 确认本节点除新建 stable entity 的同步 Entity Log + Alias Log finalization 外，不直接持久化 `candidate_signal`（候选信号），只通过 runtime handoff（运行时交接）交给下游。
 - 决定是否需要 Stage 3: Data Contract。如果需要，必须先移除或下沉 `rule_eligibility`（规则匹配资格）、`case_context_eligibility`（案例上下文资格）和 `downstream_authority_summary`（下游权限摘要）这类下游派生字段。

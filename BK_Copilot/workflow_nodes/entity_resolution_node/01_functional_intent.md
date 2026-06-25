@@ -44,13 +44,13 @@
 - journal entry generation（分录生成）。
 - accountant-facing question generation（面向会计师的问题生成）。
 - transaction finalization（交易最终确认）。
-- durable memory write mechanism（长期记忆写入机制）；但 ER 判定新建 stable entity 后，必须在下游继续前发起同步 Entity Log publication，且无需 governance approval（治理批准）。
+- durable memory write mechanism（长期记忆写入机制）；但 ER 判定新建 stable entity 后，必须在下游继续前发起同步 Entity Log + Alias Log finalization，且无需 governance approval（治理批准）。
 
 本节点绝不能：
 
 - 在未满足 stable 判断标准时把对象当作新建 stable entity 写入。
-- 在新建 stable entity publication 时同时写入 Alias（别名）、修改 automation policy（自动化策略）或创建 rule（规则）。
-- 把未确认的 surface text 当作 Alias 使用。
+- 绕过统一 finalization 机制裸写 Alias（别名），或把未确认 / 未够格的 surface text 写成 Alias。
+- 在新建 stable entity finalization 时夹带 automation policy（自动化策略）修改或创建 rule（规则）。
 - merge / split entity（合并 / 拆分实体）。
 - 修改 `automation_policy`（自动化策略）。
 - 创建、升级、修改、删除或降级 active rule（生效规则）。
@@ -94,7 +94,7 @@
 - 通过 evidence refs（证据引用）让身份判断可审计、可纠正。
 - 通过 Alias / governance authority（别名 / 治理权威）防止模型用语义相似度越权。
 - 通过 runtime `candidate_signal` output（运行时候选信号输出）让系统学习有入口，但不污染 durable authority（长期权威）。
-- 通过新建 stable entity 的及时 Entity Log publication，让清楚、可追溯且无冲突的新对象在同 batch 后续交易中可被自然匹配。
+- 通过新建 stable entity 的及时 Entity Log + Alias Log finalization，让清楚、可追溯且无冲突的新对象及其 confirmed surface text 在同 batch 后续交易中可被自然匹配。
 - 通过受控 AI 联网搜索减少不必要的 accountant pending 问题；搜索只辅助判断“这是谁”，不能产生 accounting outcome（会计处理结果）或 authority（权威）。
 
 Alias（别名）在本节点中的当前含义：
@@ -109,7 +109,7 @@ Alias（别名）在本节点中的当前含义：
 - `transaction_id`（稳定交易 ID）必须来自 `Evidence Intake / Preprocessing Node`（证据接收 / 预处理节点）。
 - `evidence_refs`（证据引用）必须可追溯到 Evidence Log（证据日志）或 evidence foundation（证据基础）。
 - `Entity Log`（实体日志）和 `Governance Log`（治理日志）优先于 Knowledge Summary（知识摘要）。
-- 本节点判断为新建 stable entity 时，state 仍为 `stable`；ER 自主决定、无需 governance approval，并必须在下游继续前发起同步 Entity Log publication。实际由 ER 直接写入还是同步调用专门写入 / 存储机制属于 L4 / seam。
+- 本节点判断为新建 stable entity 时，state 仍为 `stable`；ER 自主决定、无需 governance approval，并必须在下游继续前发起同步 Entity Log + Alias Log finalization：Entity Log 创建 stable entity 本体、最小创建 provenance 和初始 entity-centered Alias surface，Alias Log 写入对应 confirmed surface text -> stable entity 的反查 projection。实际由 ER 直接写入还是同步调用专门写入 / 存储机制、两者写入顺序和幂等机制属于 L4 / seam。
 - `candidate_signal`（候选信号）是 runtime-only（仅运行时）handoff，不是 durable authority（长期权威）。
 - 未确认的 surface text 不能作为 Alias 使用。
 - Entity Resolution 输出 `unknown` 后，如果 accountant 在 Coordinator 交互中明确确认 identity，交易不重新进入本节点；该 accountant confirmation（会计师确认）替代本节点身份判断。
@@ -129,5 +129,5 @@ Rule Match（规则匹配）在本节点下游的当前边界：
 - `entity_resolution_output`（实体识别运行时输出）的 exact field schema（精确字段结构）尚未冻结。
 - `new_stable_entity` 最小创建 provenance 的 exact field schema（精确字段结构）尚未冻结。
 - external evidence reference（外部证据引用）的 exact field schema（精确字段结构）尚未冻结。
-- 新建 stable entity publication 的实际写入执行者、调用方式和写入顺序属于 L4 / seam，尚未冻结。
+- 新建 stable entity 触发的 Entity Log + Alias Log 同步 finalization 的实际写入执行者、调用方式和写入顺序属于 L4 / seam，尚未冻结。
 - `knowledge_summary_conflict_repair`（Knowledge Summary 与 Entity Log / Governance Log 冲突时的修复流程）尚未冻结。

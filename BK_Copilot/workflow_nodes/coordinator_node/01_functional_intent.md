@@ -102,7 +102,7 @@
 - 会计分类判断权锁在 Case Judgment / accountant 交互路径；Coordinator 不自定分类结论。
 - CJ Pending 是唯一输入；Pending 的唯一 consumer 是 Coordinator。
 - 已确认交易不重入 CJ / ER。
-- accountant 明确身份确认可以创建 stable entity，无需 governance approval；该确认只确认 identity，不隐含分类、Alias、Rule、policy 或 Case Log 写入。
+- accountant 明确身份确认可以创建 stable entity，无需 governance approval；该确认只确认 identity 及其对应 Alias projection，不隐含分类、Rule、policy 或 Case Log 写入。
 - Entity Log 身份背景由 CJ 在构造 Pending 时读取并投影；Coordinator 本身不直接读 Entity Log。
 - identity risk flags 不投影给 Coordinator，也不由 Coordinator 或当前会计师消费；它们归 Human Review（会计师人发起）/ Governance，以及 ER 运行期判句 / 确定性发现的确定性冲突处理。
 - `Role` 字段和 Transaction Identity 节点已删除，本节点不得按旧材料补回。

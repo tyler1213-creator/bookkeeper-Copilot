@@ -103,9 +103,9 @@ Alias 当前定义：
 ## 5. 已知约束
 
 - `active`（有效）只表示 entity（实体）可作为稳定身份目标，不等于可以自动分类。
-- Stable entity 的 L2 创建入口只确认两类：`Entity Resolution Node` 判断 `new_stable_entity` 后发起及时 Entity Log publication；accountant explicit identity confirmation 后创建 stable entity。
-- 两类创建入口都不需要 governance approval（治理批准），且只确认 entity 本体和最小创建 provenance；不隐含 Alias、Rule、automation_policy、Case Log 或 final transaction outcome 写入。
-- `new_stable_entity` 的实际写入执行者、调用方式、写入顺序和多 log finalization 属 L4 / seam；但“无需 governance approval”和“及时可见”是 L2 已定事实。
+- Stable entity 的 L2 创建入口只确认两类：`Entity Resolution Node` 判断 `new_stable_entity` 后发起及时 Entity Log + Alias Log finalization；accountant explicit identity confirmation 后触发与 ER 共用的 Entity Log + Alias Log 统一写入路径。
+- 两类创建入口都不需要 governance approval（治理批准），且确认 entity 本体、最小创建 provenance 和该交易对应的已确认 Alias identity reuse surface；stable entity 创建必须同步写入 Alias Log projection，但不隐含 Rule、automation_policy、Case Log 或 final transaction outcome 写入。
+- `new_stable_entity` 的实际写入执行者、调用方式、写入顺序和多 log finalization 属 L4 / seam；但“无需 governance approval”“及时可见”和“Entity Log + Alias Log 同步写入”是 L2 已定事实。
 - Alias 只提供 identity reuse（身份复用）能力，不提供 rule authority（规则权威）或会计分类结论。
 - Rule Match 不直接读取 Entity Log；Entity Resolution 读取 Entity Log 后，把该 entity 的 automation_policy / eligibility 当前状态投影进 handoff 传给 Rule Match。
 - `Case Log`（案例日志）可以提供 case-derived policy / governance evidence（案例衍生的策略 / 治理依据），但不能直接修改 Entity Log（实体日志），也不能把分类不稳定直接写成 Entity Log risk_flags。
@@ -122,6 +122,6 @@ Alias 当前定义：
 - Alias 在 Entity Log 与 Alias Log 之间的物理存储、projection / index 构建、同步机制和写入顺序尚未冻结。
 - `automation_policy`（自动化策略）是直接存储在 Entity Log，还是由 Governance Log 投影生成，属于存储 / projection 形态，尚未冻结。
 - automation policy 自动降级的 exact approval / visibility contract 尚未冻结。
-- Stable entity 创建后的实际写入执行者、调用方式、写入顺序和多 log finalization 属 L4 / seam。
+- Stable entity 创建后 Entity Log + Alias Log 同步 finalization 的实际写入执行者、调用方式、写入顺序和多 log finalization 属 L4 / seam。
 - merge / split 后 Alias、Rule、Case 的跨 log 迁移 / 阻断 / finalization / rollback 机制尚未冻结；Entity Log L2 只定 Entity 侧身份状态与重定向。
 - Profile 与 Entity Log 的 ref / projection 形态、Profile 结构事实是否回显到 Entity 视图，留给 Profile 或联合 L3 / L4。

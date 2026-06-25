@@ -107,7 +107,7 @@
 
 ## 6. 未决定问题
 
-- Alias 的写入执行者、确切写入时机 / 顺序和具体 memory write / finalization 机制；倾向是在创建 stable entity 成立时同步写入 Alias，但需待 seam 阶段确认。
+- Alias 的写入执行者、确切写入顺序和具体 memory write / finalization 机制；stable entity 创建成立时必须同步写入对应 Alias Log projection，exact 顺序、幂等和存储实现待 seam 阶段确认。
 - Alias 库具体以什么技术形态呈现。
 - Alias Log 与 Entity Log 是独立 store、嵌套记录、查询投影，还是其他形态。
 - `alias_record` 的 exact field schema。

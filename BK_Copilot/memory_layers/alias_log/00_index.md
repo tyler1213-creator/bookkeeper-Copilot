@@ -45,7 +45,7 @@
 - Entity Resolution 是 Alias Log 唯一已冻结的直接 reader；Rule Match、Case Log、Case Judgment 或其他下游节点不得直接读取 Alias Log，只能通过 ER 输出的 stable entity 间接受益。
 - 多匹配时 Alias Log 不选 winner，交给 Entity Resolution 结合当前 evidence 判断；ER 定不了则输出 `unknown + reason`。
 - Entity merge 后，Alias 语义上跟随 merge 结果指向新的 stable entity；Entity split 后，原 Alias 不自动归属任一方，必须由治理 / correction 按新边界重判。
-- 够格 Alias relationship 自动进入 durable Alias Log，无需额外 governance / accountant approval gate；写入执行者、确切时机 / 顺序和 finalization mechanism 留到 L4 / seam。
+- 够格 Alias relationship 自动进入 durable Alias Log，无需额外 governance / accountant approval gate；stable entity 创建时同步写入已锁，写入执行者、确切顺序和 finalization mechanism 留到 L4 / seam。
 - Alias 只提供 identity reuse（身份复用）能力，不提供 rule authority（规则权威）、会计分类结论或自动落账权限。
 
 ## 当前未冻结边界
@@ -53,7 +53,7 @@
 - Alias 库具体技术形态、索引和存储实现尚未冻结。
 - Alias Log 与 Entity Log 的具体存储 / 投影关系尚未冻结。
 - `alias_record` 的 exact field schema（精确字段结构）尚未冻结。
-- Alias 的写入执行者、确切写入时机 / 顺序和统一 memory write / finalization 机制尚未冻结；写入资格和“无需额外审批”已冻结。
+- Alias 的写入执行者、确切写入顺序和统一 memory write / finalization 机制尚未冻结；写入资格、“无需额外审批”和“stable entity 创建时同步写入”已冻结。
 - 受控 normalization / equivalence（标准化 / 等价匹配）规则尚未冻结。
 - 高度类似历史 Alias 何时足以支持身份判断尚未冻结。
 - historical Alias conflict 的 correction / governance path 尚未冻结。
@@ -65,7 +65,7 @@
 
 - 确定 `alias_record` 的 exact field schema。
 - 确定 Alias 库技术形态、索引、存储实现，以及 Alias 与 Entity Log 的 storage / projection boundary（存储 / 投影边界）。
-- 确定 Alias 写入执行者、确切写入时机 / 顺序和统一 memory write / finalization 机制。
+- 确定 Alias 写入执行者、确切写入顺序和统一 memory write / finalization 机制。
 - 确定 Alias 查询、受控 normalization / equivalence 和非 exact matching 的最小语义规则。
 - 确定 historical Alias conflict、split 后逐条重新归属、merge / split 同步更新和 Governance audit 边界的执行机制。
 - 确定是否进入 M3 data contract；在字段、消费者和 mutation authority 稳定前不得创建 `03_data_contract.md`。
