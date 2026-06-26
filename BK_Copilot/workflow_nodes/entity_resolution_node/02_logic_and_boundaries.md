@@ -90,8 +90,7 @@
 - 输入是否具备 `transaction_id`（稳定交易 ID）、objective transaction basis（客观交易基础）和 traceable `evidence_refs`（可追溯证据引用）。
 - 当前交易是否已经被 structural path（结构性路径）完成；若已完成，本节点不得继续。
 - `entity_status`（实体生命周期状态）、governance constraint（治理限制）等 authority check（权威检查）是否满足。
-- 当前 surface text 是否 exact match（完全命中）已确认 Alias；命中时可直接复用 Alias 指向的 stable entity。
-- 当前 Alias 查询是否存在冲突或多 entity 竞争。
+- 当前 surface text 是否 exact match（完全命中）已确认 Alias；命中时直接复用该 Alias 指向的 stable entity，不再判断该 entity 是否"干净"（lifecycle / 冲突等留下游与 Entity Log）。
 - 当本节点判定新建 stable entity 时，Entity Log + Alias Log finalization 的语义范围是否只限 stable entity 本体、最小创建 provenance 和已够格 raw surface text -> stable entity Alias projection，不夹带 rule / automation authority（规则 / 自动化权威）。
 
 ### LLM 可以判断
@@ -223,13 +222,6 @@ Rule Match 对输出的读取边界：
 - 是否生成 review / governance candidate：不生成并行候选；冲突经 `unknown` + reason（conflict / blocked）表达，治理处置由会计师人发起 Human Review + Governance 决定。
 - 是否阻断自动化：本节点只说明 identity authority problem（身份权威问题）；下游决定 automation path（自动化路径）。
 
-如果 current evidence（当前证据）与 Alias 库冲突，或同一 surface text 可能对应多个 entity：
-
-- authority 顺序：已确认 stable entity 和可追溯 evidence 优先于 LLM semantic match（LLM 语义匹配）。
-- 本节点行为：输出 `unknown` + reason（例如 alias issue / conflict / ambiguous）。
-- 是否生成 review / governance candidate：不生成并行候选；Alias 冲突经 `unknown` + reason（alias issue / conflict）表达，Alias 修正归 Alias Log / 会计师人发起路径。
-- 是否阻断自动化：不得输出 stable identity basis（稳定身份基础）来支持 deterministic path（确定性路径）。
-
 如果 accountant context（会计师上下文）与 durable memory（长期记忆）冲突：
 
 - authority 顺序：明确 accountant confirmation（会计师确认）只在其确认范围内有效；模糊说明不能泛化成 durable authority（长期权威）。
@@ -239,34 +231,14 @@ Rule Match 对输出的读取边界：
 
 ## 10. Audit / Trace 边界
 
-本节点应保留的 trace：
+本节点不另设独立 trace 账：ER 是近乎无状态的身份判断步，审计面就是它自己的输出。审计材料 = 身份结果（`identity_state` / `entity_id`）+ `identity_reason`（stable）/ `unknown_reason_context`（unknown）+ `identity_evidence_refs`。
 
-- `transaction_id`（稳定交易 ID）。
-- `evidence_used`（用于身份判断的证据）。
-- stable 输出的 identity reason：用最少、可审计文字说明本次 stable 判断依赖哪些 evidence points。
-- 如果 stable reason 依赖联网搜索取得的外部来源，保留可追溯 external evidence reference，使 reviewer 能回到来源核验 identity 判断；exact URL / source title / retrieved_at / snippet 等字段形态留到 Stage 3。
-- matched surface text（用于创建或匹配 stable entity 的当前表面文本），如果存在。
-- matched Alias surface text（命中的 Alias 表面写法），如果存在。
-- Alias lookup basis（Alias 查询依据），如果存在。
-- 最小创建 provenance 语义，如果存在；exact field schema 未冻结。
-- `governance_constraint_refs`（治理限制引用），如果存在。
-- `intervention_context_refs`（人工介入上下文引用），如果存在。
+- `identity_evidence_refs` 的 ref 可指向内部 Evidence Log，或在 stable 依赖联网时指向外部可追溯来源（外部来源的 exact URL / source title / retrieved_at / snippet 等字段形态留到 Stage 3）。
+- 治理 / 介入限制若影响了本次判断，作为 ref 挂在 reason 上，不单设字段。
+- 新建实体的 creation provenance 归 Entity Log（E 同步 finalization 写入），不是 ER 的运行期 trace。
+- 交易级审计材料（`identity_reason` + `identity_evidence_refs`，含外部来源 ref）随交易在 finalization 时落入 Transaction Log；ER 只产出、不写 Transaction Log。
 
-这些 trace 用于：
-
-- review（审核）。
-- correction（纠正）。
-- governance（治理）。
-- audit（审计）。
-
-这些 trace 本身不能绕过 stable output / Entity Log 成为独立：
-
-- entity authority（实体权威）。
-- accounting classification（会计分类）。
-- rule authority（规则权威）。
-- case authority（案例权威）。
-- accountant approval（会计师批准）。
-- governance approval（治理批准）。
+这些审计材料用于 review（审核）/ correction（纠正）/ governance（治理）/ audit（审计），但本身不能绕过 stable output / Entity Log 成为独立的 entity authority（实体权威）、accounting classification（会计分类）、rule authority（规则权威）、case authority（案例权威）、accountant approval（会计师批准）或 governance approval（治理批准）。
 
 ## 11. Legacy Constraint Translation
 

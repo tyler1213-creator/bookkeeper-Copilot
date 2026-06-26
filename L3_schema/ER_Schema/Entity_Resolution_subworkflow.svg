@@ -1,0 +1,108 @@
+<svg width="720" height="650" viewBox="0 0 720 650" xmlns="http://www.w3.org/2000/svg" role="img" font-family="-apple-system, system-ui, 'Segoe UI', sans-serif">
+<title>Entity Resolution 子流程（两条路）：Alias 完全命中确定性直达 stable；未命中走证据 + 外部搜索路</title>
+<desc>上游交接经入口闸门、取银行原文后到 Alias 完全命中查询。exact 命中直接复用既有实体输出 stable；未命中或仅高度相似走证据加外部搜索认人，再做身份判定得 stable（复用/新建）或 unknown。新建实体同步写 Entity Log 与 Alias Log。stable 走 Rule Match，unknown 走 Case Judgment。</desc>
+<defs>
+<marker id="ah" markerWidth="9" markerHeight="9" refX="6" refY="4.5" orient="auto">
+<path d="M1.5,1.5 L6.5,4.5 L1.5,7.5" fill="none" stroke="#9aa3ad" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+</marker>
+<marker id="ahg" markerWidth="9" markerHeight="9" refX="6" refY="4.5" orient="auto">
+<path d="M1.5,1.5 L6.5,4.5 L1.5,7.5" fill="none" stroke="#3a7d5d" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+</marker>
+</defs>
+
+<path d="M310 62 L310 76" fill="none" stroke="#9aa3ad" stroke-width="1.6" marker-end="url(#ah)"/>
+<path d="M310 124 L310 140" fill="none" stroke="#9aa3ad" stroke-width="1.6" marker-end="url(#ah)"/>
+<path d="M310 188 L310 204" fill="none" stroke="#9aa3ad" stroke-width="1.6" marker-end="url(#ah)"/>
+<path d="M310 256 L310 294" fill="none" stroke="#9aa3ad" stroke-width="1.6" marker-end="url(#ah)"/>
+<text x="318" y="278" font-size="10" fill="#8a929b">未命中 · 仅相似</text>
+<path d="M310 346 L310 370" fill="none" stroke="#9aa3ad" stroke-width="1.6" marker-end="url(#ah)"/>
+<path d="M310 426 L310 462" fill="none" stroke="#9aa3ad" stroke-width="1.6" marker-end="url(#ah)"/>
+
+<path d="M420 101 L478 101" fill="none" stroke="#9aa3ad" stroke-width="1.6" stroke-dasharray="4 3" marker-end="url(#ah)"/>
+<text x="426" y="95" font-size="10" fill="#8a929b">不合格</text>
+
+<path d="M200 231 L105 231 L105 300" fill="none" stroke="#9aa3ad" stroke-width="1.6" marker-end="url(#ah)"/>
+<text x="116" y="224" font-size="10" fill="#8a929b">exact 命中</text>
+<path d="M105 354 L105 489 L200 489" fill="none" stroke="#9aa3ad" stroke-width="1.6" marker-end="url(#ah)"/>
+
+<path d="M420 399 L478 399" fill="none" stroke="#3a7d5d" stroke-width="1.8" marker-end="url(#ahg)"/>
+<text x="428" y="392" font-size="10" fill="#3a7d5d">新建</text>
+
+<path d="M310 514 L310 534" fill="none" stroke="#9aa3ad" stroke-width="1.6"/>
+<path d="M230 534 L435 534" fill="none" stroke="#9aa3ad" stroke-width="1.6"/>
+<path d="M230 534 L230 550" fill="none" stroke="#9aa3ad" stroke-width="1.6" marker-end="url(#ah)"/>
+<path d="M435 534 L435 550" fill="none" stroke="#9aa3ad" stroke-width="1.6" marker-end="url(#ah)"/>
+<text x="244" y="548" font-size="10" fill="#8a929b">stable</text>
+<text x="412" y="548" font-size="10" fill="#8a929b">unknown</text>
+
+<g>
+<rect x="200" y="20" width="220" height="42" rx="10" fill="#3b6ea5"/>
+<text x="310" y="39" text-anchor="middle" font-size="14" fill="#ffffff">上游交接</text>
+<text x="310" y="55" text-anchor="middle" font-size="11" fill="#dfe8f2">transaction_id · 证据 · 非结构信号</text>
+</g>
+<g>
+<rect x="200" y="78" width="220" height="46" rx="12" fill="#b87a2b"/>
+<text x="310" y="98" text-anchor="middle" font-size="14" fill="#ffffff">入口资格闸门</text>
+<text x="310" y="114" text-anchor="middle" font-size="11" fill="#f3e6d4">ID 稳 · 证据可追溯 · 非结构</text>
+</g>
+<g>
+<rect x="200" y="142" width="220" height="46" rx="10" fill="#3b6ea5"/>
+<text x="310" y="162" text-anchor="middle" font-size="14" fill="#ffffff">A　取银行原文</text>
+<text x="310" y="178" text-anchor="middle" font-size="11" fill="#dfe8f2">raw_description（读 EI）· 备齐证据</text>
+</g>
+<g>
+<rect x="200" y="206" width="220" height="50" rx="10" fill="#3b6ea5"/>
+<text x="310" y="227" text-anchor="middle" font-size="14" fill="#ffffff">B　Alias 完全命中查询</text>
+<text x="310" y="244" text-anchor="middle" font-size="11" fill="#dfe8f2">确定性 exact match</text>
+</g>
+<g>
+<rect x="30" y="300" width="150" height="54" rx="10" fill="#3b6ea5"/>
+<text x="105" y="322" text-anchor="middle" font-size="13" fill="#ffffff">stable · 复用既有</text>
+<text x="105" y="339" text-anchor="middle" font-size="11" fill="#dfe8f2">exact alias 命中</text>
+</g>
+<g>
+<rect x="200" y="296" width="220" height="50" rx="10" fill="#3b6ea5"/>
+<text x="310" y="317" text-anchor="middle" font-size="14" fill="#ffffff">C　证据 + 外部搜索 认人</text>
+<text x="310" y="334" text-anchor="middle" font-size="11" fill="#dfe8f2">未命中才走 · LLM 判</text>
+</g>
+<g>
+<rect x="200" y="372" width="220" height="54" rx="10" fill="#3b6ea5"/>
+<text x="310" y="394" text-anchor="middle" font-size="14" fill="#ffffff">D　身份判定</text>
+<text x="310" y="411" text-anchor="middle" font-size="11" fill="#dfe8f2">复用 / 新建 / unknown</text>
+</g>
+<g>
+<rect x="200" y="464" width="220" height="50" rx="10" fill="#3b6ea5"/>
+<text x="310" y="485" text-anchor="middle" font-size="14" fill="#ffffff">F　打包与路由</text>
+<text x="310" y="502" text-anchor="middle" font-size="11" fill="#dfe8f2">身份结果 + 审计随交易走</text>
+</g>
+
+<g>
+<rect x="150" y="552" width="160" height="52" rx="10" fill="#3b6ea5"/>
+<text x="230" y="574" text-anchor="middle" font-size="14" fill="#ffffff">→ Rule Match</text>
+<text x="230" y="592" text-anchor="middle" font-size="11" fill="#dfe8f2">stable 身份基础</text>
+</g>
+<g>
+<rect x="355" y="552" width="170" height="52" rx="10" fill="#3b6ea5"/>
+<text x="440" y="574" text-anchor="middle" font-size="14" fill="#ffffff">→ Case Judgment</text>
+<text x="440" y="592" text-anchor="middle" font-size="11" fill="#dfe8f2">unknown → pending</text>
+</g>
+
+<g>
+<rect x="478" y="78" width="212" height="46" rx="10" fill="#b87a2b"/>
+<text x="584" y="98" text-anchor="middle" font-size="13" fill="#ffffff">invalid · blocked handoff</text>
+<text x="584" y="114" text-anchor="middle" font-size="11" fill="#f3e6d4">回 Evidence Intake / 停</text>
+</g>
+<g>
+<rect x="478" y="372" width="212" height="56" rx="10" fill="#3a7d5d"/>
+<text x="584" y="396" text-anchor="middle" font-size="13" fill="#ffffff">E　新建实体 finalization</text>
+<text x="584" y="414" text-anchor="middle" font-size="11" fill="#d9ebe1">同步写 Entity Log + Alias Log</text>
+</g>
+
+<rect x="30" y="618" width="14" height="14" rx="3" fill="#3b6ea5"/>
+<text x="50" y="629" font-size="11" fill="#8a929b">主干身份链</text>
+<rect x="150" y="618" width="14" height="14" rx="3" fill="#b87a2b"/>
+<text x="170" y="629" font-size="11" fill="#8a929b">闸门 / 挡下</text>
+<rect x="270" y="618" width="14" height="14" rx="3" fill="#3a7d5d"/>
+<text x="290" y="629" font-size="11" fill="#8a929b">新建实体 → 同步写记忆层</text>
+<text x="500" y="629" font-size="11" fill="#8a929b">左路 = Alias 确定性直达 stable</text>
+</svg>
