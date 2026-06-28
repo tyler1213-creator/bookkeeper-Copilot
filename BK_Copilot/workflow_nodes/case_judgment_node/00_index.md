@@ -25,8 +25,8 @@
 - `case_judgment_input` / `case_judgment_result` exact field schema、status enum 仍未冻结，归 Stage 3。
 - accounting treatment 字段结构、COA / HST / GST 表达方式、refs 形态，以及它与 JE Generation Node 的接口对齐仍未冻结，归 Stage 3 / JE Generation 联合收口。
 - Pending handoff / `pending_request_context` 的 exact field schema 仍未冻结，归 Stage 3；Coordinator / Pending Node 的提问模板、追问策略和交互机制仍属 L2 外阻 / seam。
-- Entity Log `automation_policy`、Case Log `use_level` / `confirmed_by` 的 exact enum 取值仍未冻结，分别归 Entity Log / Case Log L3。
-- 会导致 CJ 自动转 Pending 的硬阻断已经有语义清单：ER `unknown`、Entity Log `automation_policy` 收紧、Entity Log 身份级 risk flags、Case Log `use_level` 必审 / 不可复用 / 失效；但这些阻断尚未结构化为具体字段 / enum，归 L3。
+- Entity Log `force_pending` / `promotion_lock`、Case Log `use_level` / `confirmed_by` 的 exact enum 取值仍未冻结，分别归 Entity Log / Case Log L3。
+- 会导致 CJ 自动转 Pending 的硬阻断已经有语义清单：ER `unknown`、Entity Log `force_pending`、Case Log `use_level` 必审 / 不可复用 / 失效；但这些阻断尚未结构化为具体字段 / enum，归 L3。
 - 固定加载知识的注入、缓存、retrieve 机制，以及单笔上下文的排序 / 拼装机制仍未冻结，归 L4 / seam。
 - Case Log per-entity rollup / retrieval pack 的生成机制仍未冻结，归 Case Log 读取层 L4 / seam。
 - Case Log 先例摘要的 exact 字段 / 呈现形态、次数 / 确认数 / 金额容差等阈值仍未冻结，归 L3；rollup 如何从逐条 case 派生仍归 L4 / seam。
@@ -49,5 +49,5 @@
 - C2：Stage 1 Functional Intent 已在 `01_functional_intent.md` 成文；进入 Stage 3 前需由 reviewer 确认 CJ 的唯一职责、排除范围和 workflow 位置无需新增 L2 决策。
 - C3：CJ 拥有 COA + HST / GST treatment 选择权已在 `01_functional_intent.md` §2 和 `02_logic_and_boundaries.md` §5 / §6 成文；进入 Stage 3 前需与 JE Generation 的纯构造边界联合确认。
 - 完成 `case_judgment_input` / `case_judgment_result` / Pending handoff 的字段级 L3 schema。
-- 完成硬阻断字段、automation policy / use_level / confirmed_by enum、accounting treatment schema、external evidence ref、reasoning trace、COA 校验反馈 payload 的 L3 / L4 分工。
+- 完成硬阻断字段、force_pending / promotion_lock / use_level / confirmed_by enum、accounting treatment schema、external evidence ref、reasoning trace、COA 校验反馈 payload 的 L3 / L4 分工。
 - Coordinator / Pending Node、JE Generation Node、entity-level Knowledge Summary、Profile / Structural Match 的正式边界至少达到能支撑 CJ 接口收口的程度。

@@ -1,0 +1,319 @@
+<!DOCTYPE html>
+<!--
+  字段链路审核视图 — HTML 派生视图（供人审核，非权威）
+  ============================================================================
+  ★ 重要：本文件不是权威 ★
+  权威是同目录的 markdown：字段链路大表.md（Schema 设计一切以它为准）。
+  本文件只是它的 HTML 审核视图，供人眼审核；双击浏览器打开即可，不依赖任何 App。
+
+  ★ 更新纪律（务必遵守）★
+  1. 日常 Schema 设计请改 字段链路大表.md，不要改本文件。
+  2. 本视图仅在 owner 单独明确指示时更新；更新时严格依据 字段链路大表.md 把值填进
+     下方 <script id="tableData"> 的 JSON——不要凭空发挥、不要让本视图领先于 .md。
+  3. 你只编辑 JSON 数据块；绝不要改 <style> 或底部渲染 <script>——设计/配色/列结构靠它们保持一致。
+  4. 未设计的节点（CJ / Coord / HRN / Final）一律留空，不臆造它们对值的处理。
+  5. 动作词只有六个：create / remake / pass / read / set / save；某节点未出现就不写它的 key（自动渲染成 —）。
+  6. 每个值必须有 "born"（出生地）和 "landing"（最终落点）；同一个值一个名。改完更新 "lastUpdated"。
+
+  cells 写法：每个节点 key 对应一个数组，元素形如 {"a":"create","sub":"可选小注"}；
+  也可只写 {"sub":"..."} 表示纯条件小注不带动作。多个元素会依次排在同一格内。
+  ============================================================================
+-->
+<html lang="zh">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>字段链路大表 · 常驻视图</title>
+<style>
+  :root{
+    --bg:#faf9f5; --surface:#ffffff; --surface-alt:#f4f3ed;
+    --text:#1a1a18; --text-2:#57564f; --text-muted:#8a8980;
+    --border:#e6e4db; --border-strong:#d0cec3; --warn:#854F0B; --accent:#3987e5;
+    --font:-apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC","Hiragino Sans GB","Microsoft YaHei",sans-serif;
+    --mono:ui-monospace,SFMono-Regular,"SF Mono",Menlo,Consolas,monospace;
+  }
+  @media (prefers-color-scheme: dark){
+    :root{
+      --bg:#1e1d1b; --surface:#262522; --surface-alt:#2d2c28;
+      --text:#f4f3ed; --text-2:#c3c2b7; --text-muted:#8a8980;
+      --border:#3a3934; --border-strong:#4a4843; --warn:#FAC775; --accent:#5aa0f0;
+    }
+  }
+  *{box-sizing:border-box;}
+  body{margin:0;background:var(--bg);color:var(--text);font-family:var(--font);font-size:13px;line-height:1.6;padding:24px 28px 60px;}
+  h1{font-size:20px;font-weight:600;margin:0 0 4px;}
+  .meta{color:var(--text-2);font-size:12px;margin:0 0 2px;}
+  .meta b{color:var(--text);font-weight:600;}
+  .authority{color:var(--text-muted);font-size:11.5px;margin:0 0 16px;}
+  .bar{display:flex;flex-wrap:wrap;gap:10px 18px;align-items:center;margin:14px 0 12px;}
+  .legend{display:flex;flex-wrap:wrap;gap:6px 14px;align-items:center;}
+  .lg{display:flex;align-items:center;gap:5px;color:var(--text-2);font-size:11.5px;}
+  #filter{margin-left:auto;background:var(--surface);border:0.5px solid var(--border-strong);color:var(--text);
+          border-radius:8px;padding:7px 11px;font-size:12px;width:220px;font-family:var(--font);}
+  #filter:focus{outline:none;box-shadow:0 0 0 2px var(--accent);}
+  .count{color:var(--text-muted);font-size:11.5px;}
+  .sec{font-size:12px;color:var(--text-2);font-weight:600;margin:22px 0 7px;}
+  .scl{overflow:auto;max-height:72vh;border:0.5px solid var(--border);border-radius:10px;background:var(--surface);}
+  table{border-collapse:separate;border-spacing:0;min-width:1180px;width:100%;}
+  th,td{border-right:0.5px solid var(--border);border-bottom:0.5px solid var(--border);padding:7px 9px;vertical-align:top;text-align:left;}
+  th:last-child,td:last-child{border-right:none;}
+  thead th{background:var(--surface-alt);color:var(--text-2);font-weight:600;font-size:11.5px;white-space:nowrap;
+           position:sticky;top:0;z-index:2;}
+  thead th.fut{color:var(--text-muted);text-align:center;min-width:46px;}
+  thead th.live{color:var(--text);}
+  .c-val{position:sticky;left:0;background:var(--surface);z-index:1;}
+  thead th.c-val{background:var(--surface-alt);z-index:3;}
+  td.val{font-family:var(--mono);font-size:11px;color:var(--text);white-space:nowrap;}
+  td.born{color:var(--text-2);font-size:11px;white-space:nowrap;}
+  td.land{color:var(--text);font-size:11.5px;}
+  td.note{color:var(--text-2);font-size:11px;}
+  td.fut{background:var(--surface-alt);text-align:center;color:var(--text-muted);}
+  tbody tr:hover td{background:var(--surface-alt);}
+  tbody tr:hover td.fut{background:var(--surface-alt);}
+  tbody tr:hover td.c-val{background:var(--surface-alt);}
+  .sub{display:block;color:var(--text-2);font-size:10px;margin-top:1px;}
+  .warn{color:var(--warn);}
+  .dash{color:var(--text-muted);}
+  .chip{display:inline-block;padding:1px 6px;border-radius:999px;font-size:10px;font-weight:600;font-family:var(--mono);white-space:nowrap;line-height:1.7;margin:1px 0;}
+  .k-create{background:#E1F5EE;color:#04342C;}
+  .k-remake{background:#EEEDFE;color:#26215C;}
+  .k-set{background:#E6F1FB;color:#042C53;}
+  .k-pass{background:#F1EFE8;color:#2C2C2A;}
+  .k-read{background:transparent;color:var(--text-2);border:0.5px solid var(--border-strong);}
+  .k-save{background:#EAF3DE;color:#173404;}
+  details{margin:10px 0;border:0.5px solid var(--border);border-radius:10px;background:var(--surface);padding:4px 14px;}
+  summary{cursor:pointer;font-size:12px;font-weight:600;color:var(--text-2);padding:8px 0;}
+  details ul{margin:4px 0 12px;padding-left:20px;}
+  details li{font-size:12px;color:var(--text-2);margin:5px 0;line-height:1.55;}
+  details li code{font-family:var(--mono);font-size:11px;color:var(--text);background:var(--surface-alt);padding:1px 4px;border-radius:4px;}
+</style>
+</head>
+<body>
+
+<h1 id="title">字段链路大表</h1>
+<p class="meta" id="subtitle"></p>
+<p class="meta">最后更新：<b id="lastUpdated"></b></p>
+<p class="authority" id="authority"></p>
+
+<div class="bar">
+  <div class="legend">
+    <span class="lg"><span class="chip k-create">create</span>凭空新建</span>
+    <span class="lg"><span class="chip k-remake">remake</span>上游算出新值</span>
+    <span class="lg"><span class="chip k-set">set</span>同名敲定</span>
+    <span class="lg"><span class="chip k-pass">pass</span>原样透传</span>
+    <span class="lg"><span class="chip k-read">read</span>读用不改</span>
+    <span class="lg"><span class="chip k-save">save</span>落库</span>
+    <span class="lg"><span class="dash">—</span>未出现</span>
+  </div>
+  <input id="filter" type="text" placeholder="筛选值 / 落点 / 备注…">
+</div>
+
+<div class="sec">主干值 · 沿主链流转 <span class="count" id="bbCount"></span></div>
+<div class="scl">
+  <table id="backbone"><thead id="bbHead"></thead><tbody id="bbBody"></tbody></table>
+</div>
+
+<div class="sec">旁路信号值 · 出生即分流（不沿主链走）</div>
+<div class="scl" style="max-height:none;">
+  <table id="bypass" style="min-width:720px;"><thead id="bpHead"></thead><tbody id="bpBody"></tbody></table>
+</div>
+
+<details id="checksBox">
+  <summary>口径与断头检查</summary>
+  <ul id="checksList"></ul>
+</details>
+
+<details id="openingsBox">
+  <summary>挂起的开口（依赖谁，不在本轮硬冻）</summary>
+  <ul id="openingsList"></ul>
+</details>
+
+<details>
+  <summary>如何更新这张表（给后续 Claude / 给你自己）</summary>
+  <ul>
+    <li><b>本视图非权威</b>：权威是 <code>字段链路大表.md</code>，Schema 设计改它、不改本文件。</li>
+    <li><b>仅 owner 单独指示时更新本视图</b>，且严格据 <code>字段链路大表.md</code> 填值，不让视图领先于 .md。</li>
+    <li>只改 <code>&lt;script id="tableData"&gt;</code> 的 JSON；<b>不要动样式和渲染脚本</b>，设计靠它们保持一致。</li>
+    <li>未设计节点（CJ / Coord / HRN / Final）留空，不臆造。</li>
+    <li>动作只有六个：<code>create / remake / pass / read / set / save</code>；某节点未出现就不写它的 key。</li>
+    <li>cells 写法：<code>"EI":[{"a":"create","sub":"小注"}]</code>；改完更新顶部 <code>lastUpdated</code>。</li>
+  </ul>
+</details>
+
+<script id="tableData" type="application/json">
+{
+  "title": "字段链路审核视图",
+  "subtitle": "字段链路大表的 HTML 审核视图（供人审核）。权威是 字段链路大表.md；本视图据其派生，仅在 owner 指示时更新。一行 = 一个值的一生（出生 → 流转 → 落点）。",
+  "lastUpdated": "2026-06-28",
+  "authority": "本视图非权威——Schema 设计以 字段链路大表.md 为准。已据 .md 填入：EI / ER / RM 三列；CJ · Coordinator · HRN · Finalization 四列留空（L3 未设计，不臆造）。",
+  "nodes": [
+    {"key":"EI","label":"EI","status":"live","title":"Evidence Intake"},
+    {"key":"ER","label":"ER","status":"live","title":"Entity Resolution"},
+    {"key":"RM","label":"RM","status":"live","title":"Rule Match"},
+    {"key":"CJ","label":"CJ","status":"pending","title":"Case Judgment · L3 未设计"},
+    {"key":"Coord","label":"Coord","status":"pending","title":"Coordinator · L3 未设计"},
+    {"key":"HRN","label":"HRN","status":"pending","title":"Human Review Node · L3 未设计"},
+    {"key":"Final","label":"Final","status":"pending","title":"Finalization · L3 未设计"}
+  ],
+  "backbone": [
+    {"value":"transaction_id","born":"EI · E块",
+      "cells":{"EI":[{"a":"create","sub":"铸号"}],"ER":[{"a":"pass"}],"RM":[{"a":"pass"}]},
+      "landing":"Transaction Log（finalization）","note":"整条链的锚"},
+    {"value":"raw_description","born":"EI · B块",
+      "cells":{"EI":[{"a":"remake","sub":"解析"}],"ER":[{"a":"read","sub":"alias 查询键 / unknown 输出"},{"a":"save","sub":"新建时写 alias"}],"RM":[{"a":"pass","sub":"仅 trace"}]},
+      "landing":"透传；新建时落 Alias + Entity Log","note":"运行期唯一表面文字名"},
+    {"value":"amount","born":"EI · B块",
+      "cells":{"EI":[{"a":"remake"}],"ER":[{"a":"read"}],"RM":[{"a":"read","sub":"匹配维度"}]},
+      "landing":"透传下游（JE / Transaction Log）","note":"绝对值，正负由 direction 表达"},
+    {"value":"direction","born":"EI · B块",
+      "cells":{"EI":[{"a":"remake"}],"ER":[{"a":"read"}],"RM":[{"a":"read","sub":"匹配维度"}]},
+      "landing":"透传下游","note":"enum 口径待与 RM / JE 统一","warn":true},
+    {"value":"transaction_date","born":"EI · B块",
+      "cells":{"EI":[{"a":"remake"}],"ER":[{"a":"read"}],"RM":[{"a":"read","sub":"匹配维度"}]},
+      "landing":"透传下游","note":"—"},
+    {"value":"currency","born":"EI · B块",
+      "cells":{"EI":[{"a":"remake"}],"ER":[{"a":"read"}],"RM":[{"a":"read","sub":"匹配维度"}]},
+      "landing":"透传下游","note":"—"},
+    {"value":"source_account","born":"EI · B块",
+      "cells":{"EI":[{"a":"remake"}],"ER":[{"a":"read","sub":"随交易"}]},
+      "landing":"透传下游","note":"原文级账户，非会计科目；RM schema 未携带"},
+    {"value":"evidence_refs","born":"EI · A块",
+      "cells":{"EI":[{"a":"create"}],"ER":[{"a":"read","sub":"身份取证基础"}],"RM":[{"a":"pass","sub":"trace / 审计"}]},
+      "landing":"透传","note":"回源材料指针；≠ identity_evidence_refs"},
+    {"value":"counterparty_signals","born":"EI · D块",
+      "cells":{"EI":[{"a":"create"}],"ER":[{"a":"read","sub":"对手方线索"}]},
+      "landing":"ER 消费（认身份）","note":"中途下车，不下传 RM"},
+    {"value":"evidence_association","born":"EI · D块",
+      "cells":{"EI":[{"a":"create"}],"ER":[{"a":"read","sub":"按需"}]},
+      "landing":"ER 读","note":"证据↔交易配对结果"},
+    {"value":"source_channel","born":"EI · A块",
+      "cells":{"EI":[{"a":"create"}],"ER":[{"a":"read","sub":"按需"}]},
+      "landing":"ER 读（按需）","note":"候选值 runtime / onboarding / supplemental"},
+    {"value":"evidence_type","born":"EI · A块",
+      "cells":{"EI":[{"a":"create"}],"ER":[{"a":"read","sub":"按需"}]},
+      "landing":"ER 读（按需）","note":"候选值 账单 / 收据 / 支票 / 发票 / 合同 / 留言"},
+    {"value":"identity_state","born":"ER · D块",
+      "cells":{"ER":[{"a":"create","sub":"B 命中=set"}],"RM":[{"a":"read","sub":"路由前提：仅 stable 进 RM"}]},
+      "landing":"下游 + Transaction Log","note":"enum = stable / unknown（已锁）"},
+    {"value":"entity_id","born":"ER · D/E块",
+      "cells":{"ER":[{"a":"read","sub":"复用"},{"a":"create","sub":"新建·E"}],"RM":[{"a":"read","sub":"查 RuleLog 键 + 命中输出"}]},
+      "landing":"下游 + Entity Log（新建）","note":"新建才 create"},
+    {"value":"identity_reason","born":"ER · B/D块",
+      "cells":{"ER":[{"a":"create"}],"RM":[{"a":"pass"}]},
+      "landing":"下游 + Transaction Log","note":"可审计身份理由"},
+    {"value":"identity_evidence_refs","born":"ER · D块",
+      "cells":{"ER":[{"a":"remake","sub":"投影 + 外部来源"}],"RM":[{"a":"pass"}]},
+      "landing":"下游 + Transaction Log","note":"≠ evidence_refs（身份子集 + 外部来源）"},
+    {"value":"created_by","born":"ER · E块",
+      "cells":{"ER":[{"a":"create"},{"a":"save","sub":"仅 stable·新建"}]},
+      "landing":"Entity Log","note":"exact enum 归 Entity Log M3"},
+    {"value":"alias","born":"ER · E块",
+      "cells":{"ER":[{"a":"read","sub":"B 查命中"},{"a":"create"},{"a":"save","sub":"新建时写"}]},
+      "landing":"Alias Log","note":"= raw_description 的确认绑定；alias_record schema 归 Alias Log L3"},
+    {"value":"rule_match_outcome","born":"RM · 命中数闸门",
+      "cells":{"RM":[{"a":"create","sub":"0→miss / 1→hit / ≥2→blocked"}]},
+      "landing":"路由（hit→JE / miss→CJ / blocked→review·gov）","note":"对下游唯一契约面；enum exact 归 Stage 3"},
+    {"value":"rule_id","born":"RuleLog 来源",
+      "cells":{"RM":[{"a":"read","sub":"→ 输出（命中时）"}]},
+      "landing":"JE Generation + Transaction Log（审计）","note":"不钉版本；exact 格式归 RuleLog M3"},
+    {"value":"approved_accounting_treatment","born":"RuleLog 来源",
+      "cells":{"RM":[{"a":"read","sub":"→ 输出（命中时）"}]},
+      "landing":"JE Generation","note":"exact shape 归 RuleLog / JE Generator L3"},
+    {"value":"classified_by","born":"RM · C块",
+      "cells":{"RM":[{"a":"set","sub":"= rule_match（仅 rule_hit）"}]},
+      "landing":"Case Log / Transaction Log","note":"与 confirmed_by 分离（D11）；enum 归 Case Log M3 / Transaction Log L3"}
+  ],
+  "bypass": [
+    {"value":"statement_chain_status","born":"EI · C块","action":"create","to":"目标层","type":"状态","desc":"连续 / 缺口 / 重叠 / 无法验证"},
+    {"value":"coverage_signal","born":"EI · C块","action":"create","to":"目标层","type":"信号","desc":"缺月 / 重叠账单"},
+    {"value":"duplicate_material_signal","born":"EI · A块","action":"create","to":"纠错 / 材料层","type":"信号","desc":"文件级重复"},
+    {"value":"content_fingerprint","born":"EI · A块","action":"create","to":"材料层","type":"键","desc":"查重键"},
+    {"value":"quality_issue_signal","born":"EI · F块","action":"create","to":"Coordinator / Review","type":"信号","desc":"证据质量问题（A/C/D 冒出，F 汇总）"}
+  ],
+  "checks": [
+    "同值同名：raw_description 在 EI / ER 同名透传，不漂移；alias 仅为写入两个 log 时的存储记录名，不是运行期改名。",
+    "identity_evidence_refs 为何不直接用 evidence_refs：它是身份子集 + 并入 C 的外部来源 ref，属 remake，故单列。",
+    "每个值有出生有落点：主干表无断头线、无无主字段。",
+    "direction 枚举口径：EI 标注内部取值待与 Rule Match / JE 统一；RM 现作匹配维度 read，跨节点 enum 统一仍留 JE 段。",
+    "evidence_refs vs identity_evidence_refs：前者 EI「交易→源材料」指针、后者 ER 身份投影；在 RM 内均 pass、都不作匹配条件，不混。",
+    "RM 输出不止结局信号：rule_hit 时连同 rule_id + approved_accounting_treatment + entity_id + 客观事实一并吐给 JE Generation。"
+  ],
+  "openings": [
+    "alias_record 的 exact field schema、normalization / equivalence / 冲突修正 / supersession → Alias Log L3 / L4。",
+    "created_by 的 exact enum、entity_record / 最小创建 provenance schema → Entity Log L3（M3）。",
+    "identity_evidence_refs 外部来源 exact 字段（URL / source title / retrieved_at / snippet）→ Stage 3。",
+    "ER 新建实体的同步 finalization 实际写入执行者 / 调用方式 / 两 log 写入顺序 / 幂等 → L4 / seam。",
+    "transaction_id 等审计材料按 entity 索引检索 → L4 / seam（不复制进 Entity Log，见 Decisions D5）。",
+    "上游 eligibility router（消费 force_pending、改道 force_pending 交易、组装 RM handoff）→ L4 / seam；force_pending exact enum → EntityLog / RuleLog / Governance 联合 L3。",
+    "rule_id exact 格式 → RuleLog M3；approved_accounting_treatment exact shape → RuleLog / JE Generator L3；rule_match_outcome 枚举 + handoff schema → Stage 3；classified_by / confirmed_by enum → Case Log M3 / Transaction Log L3（见 D11）。",
+    "历史 rule 版本审计还原 = rule_id + 交易时间 + Governance Log 回放（要求 Governance Log 记够可重建内容）→ Governance Log L2（见 Decisions D9）。",
+    "evidence_condition / transaction_type / objective_tags：Rule Match 不需要，已删，不挂开口（owner 2026-06-26）。"
+  ]
+}
+</script>
+
+<script>
+(function(){
+  var ACTIONS={create:"k-create",remake:"k-remake",set:"k-set",pass:"k-pass",read:"k-read",save:"k-save"};
+  var data=JSON.parse(document.getElementById("tableData").textContent);
+
+  function esc(s){return String(s==null?"":s).replace(/[&<>"]/g,function(c){return {"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;"}[c];});}
+  function chip(a){var cls=ACTIONS[a];return cls?'<span class="chip '+cls+'">'+esc(a)+'</span>':"";}
+  function cell(items){
+    if(!items||!items.length)return '<span class="dash">—</span>';
+    return items.map(function(it){
+      var s="";
+      if(it.a)s+=chip(it.a);
+      if(it.sub)s+='<span class="sub">'+esc(it.sub)+'</span>';
+      return s;
+    }).join("");
+  }
+
+  document.getElementById("title").textContent=data.title;
+  document.getElementById("subtitle").textContent=data.subtitle;
+  document.getElementById("lastUpdated").textContent=data.lastUpdated;
+  document.getElementById("authority").textContent=data.authority;
+  document.title=data.title+" · 常驻视图";
+
+  var nodes=data.nodes;
+  var head="<tr><th class='c-val'>值</th><th>出生</th>"+
+    nodes.map(function(n){return "<th class='"+(n.status==="live"?"live":"fut")+"' title='"+esc(n.title||n.label)+"'>"+esc(n.label)+"</th>";}).join("")+
+    "<th>最终落点</th><th>口径 / 备注</th></tr>";
+  document.getElementById("bbHead").innerHTML=head;
+
+  var body=data.backbone.map(function(r){
+    var tds=nodes.map(function(n){
+      if(n.status==="pending")return "<td class='fut'>·</td>";
+      return "<td>"+cell(r.cells&&r.cells[n.key])+"</td>";
+    }).join("");
+    var note=r.warn?("<span class='warn'>⚠ "+esc(r.note)+"</span>"):esc(r.note||"—");
+    var hay=((r.value||"")+" "+(r.note||"")+" "+(r.landing||"")+" "+(r.born||"")).toLowerCase();
+    return "<tr data-text='"+esc(hay)+"'><td class='c-val val'>"+esc(r.value)+"</td><td class='born'>"+esc(r.born)+
+      "</td>"+tds+"<td class='land'>"+esc(r.landing)+"</td><td class='note'>"+note+"</td></tr>";
+  }).join("");
+  document.getElementById("bbBody").innerHTML=body;
+  document.getElementById("bbCount").textContent="（"+data.backbone.length+" 个值）";
+
+  document.getElementById("bpHead").innerHTML="<tr><th class='c-val'>值</th><th>出生</th><th>动作</th><th>去向</th><th>类型</th><th>说明</th></tr>";
+  document.getElementById("bpBody").innerHTML=data.bypass.map(function(r){
+    return "<tr><td class='c-val val'>"+esc(r.value)+"</td><td class='born'>"+esc(r.born)+"</td><td>"+chip(r.action)+
+      "</td><td class='land'>"+esc(r.to)+"</td><td class='note'>"+esc(r.type)+"</td><td class='note'>"+esc(r.desc)+"</td></tr>";
+  }).join("");
+
+  document.getElementById("checksList").innerHTML=(data.checks||[]).map(function(t){return "<li>"+esc(t)+"</li>";}).join("");
+  document.getElementById("openingsList").innerHTML=(data.openings||[]).map(function(t){return "<li>"+esc(t)+"</li>";}).join("");
+
+  var f=document.getElementById("filter");
+  f.addEventListener("input",function(){
+    var q=f.value.trim().toLowerCase();
+    var n=0,rows=document.querySelectorAll("#bbBody tr");
+    rows.forEach(function(tr){
+      var show=!q||tr.getAttribute("data-text").indexOf(q)>=0;
+      tr.style.display=show?"":"none";if(show)n++;
+    });
+    document.getElementById("bbCount").textContent="（"+n+" / "+rows.length+" 个值）";
+  });
+})();
+</script>
+</body>
+</html>

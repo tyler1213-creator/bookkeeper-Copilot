@@ -10,53 +10,51 @@
 | entity-centered Alias（以 entity 为中心的别名集合） | `Entity Log`（实体日志） | 某个 stable entity 名下有哪些已确认 Alias，是该 entity 身份权威状态的一部分 | 所有历史 description、未确认 surface text、normalized display text（标准化展示文本）、Alias Log 作为第二套身份权威、LLM rationale（模型理由） |
 | alias lookup projection（别名反查投影） | `Alias Log`（别名日志）作为由已确认 Alias 建立的 alias -> entity projection / index | 服务 Entity Resolution 从当前 surface text 查询 stable entity；查询方向不同，不改变 Alias entity-centered 语义归属 | Rule Match 横向信息源、独立身份主档案、未确认 alias authority |
 | entity_status / supersession（生命周期状态 / 重定向） | `Entity Log`（实体日志）加 approved governance refs（已批准治理引用） | 限制 entity 是否可作为 active identity target；merge / split 后提供当前 surviving entity / supersession 指向 | transaction outcome（交易结果）、case pattern（案例模式）、automation permission（自动化许可）、merge / split 事件历史 |
-| automation_policy（自动化策略） | `Entity Log`（实体日志）保存当前 entity 级控制决定 / 状态；Case Log 保存支撑证据；Governance Log 保存审批事件历史 | 限制 entity-level automation（实体级自动化）；upgrade / relaxation 必须 accountant approval，系统自动降级只限受控收紧并保留治理可见性 | active status（有效状态）、case frequency（案例频率）、rule payload（规则内容）、审批事件历史 |
-| identity risk flags（身份级风险标记） | `Entity Log`（实体日志）保存当前会作为 runtime 卡点的身份风险 | 只保留疑似同名、疑似应 merge、identity conflict 等身份风险；可阻断或降级依赖身份安全的自动化路径 | 分类不稳定、记账结果漂移、case-derived automation risk、直接分类结论、rule authority（规则权威） |
+| force_pending / promotion_lock（强制人审 / 升级锁） | `Entity Log`（实体日志）保存当前 entity 级控制决定 / 状态；Case Log 保存支撑证据；Governance Log 保存审批事件历史 | force_pending 强制该 entity 每笔交易走人审 Pending（压过名下 active rule）、promotion_lock 禁止该 entity 任何分类升级为 Rule；两者都只能会计师人发起（Human Review → Finalization 落盘），系统不自发设 / 收紧 | active status（有效状态）、case frequency（案例频率）、rule payload（规则内容）、审批事件历史 |
 | trace refs（追溯指针） | Evidence Log / Governance Log / creation trace 等对应来源 | Entity Log 只保存 refs，支撑 review / correction / governance / audit 回查“凭什么” | 原始证据正文、推理正文、accountant approval 本身、governance approval 本身 |
 
 ## 2. 读取者
 
 | Reader | 读取目的 | 可读内容 | 限制 |
 | --- | --- | --- | --- |
-| Entity Resolution Node（实体识别节点） | 判断当前 evidence（证据）是否指向 stable entity（稳定实体） | entity identity（实体身份）、Alias 库、status（状态）、risk flags（风险标记）、automation policy（自动化策略） | `new_stable_entity` 时可触发 Entity Log + Alias Log 同步 finalization；Alias 仅限该交易已确认 raw surface text -> stable entity 的初始 identity reuse projection，不包含 automation policy / rule |
-| Rule Match Node（规则匹配节点，经 Entity Resolution handoff 投影） | 消费上游已确认 stable entity 的放行 / 卡点上下文，用于 rule route 和 eligibility 判断 | 不直接读取 Entity Log；由 Entity Resolution 读取 Entity Log 后，将该 entity 的 automation_policy / eligibility 当前状态和身份基础投影进 handoff | Entity Log 仍是 automation_policy / identity control 的 source of truth，但不是 Rule Match 的直接读取对象；Rule Match 必须自行读取 Rule Log，Entity Log 不提供 rule condition；Alias lookup 只发生在上游 Entity Resolution |
-| Case Judgment Node（案例判断节点） | 使用 entity context（实体上下文）和 automation boundary（自动化边界） | identity basis（身份基础）、risk flags（风险标记）、automation policy（自动化策略） | 不能把 Entity Log 当 Case Log（案例日志）或 classification memory（分类记忆） |
-| Coordinator / Pending 路径（协调 / Pending 路径） | 将 identity gap（身份缺口）转成人工问题所需的 identity 背景 | blocking context（阻断上下文）、candidate refs（候选引用）——均由 Case Judgment 在构造 Pending handoff 时读取并投影进 Pending | Coordinator 本身不直接读取 Entity Log，全部 identity 上下文随 CJ Pending 在手；identity risk flags（风险标记）不投影给 Coordinator（归 Human Review / Governance 的会计师人发起路径消费），accountant answer（会计师回答）不能由 Coordinator 直接写入 Entity Log |
-| Human Review Node（人审节点） | 向 accountant（会计师）展示当前 entity authority（实体权威）和候选风险，并作为会计师人发起 merge / split / policy mutation 的确认面 | active state（有效状态）、authority refs（权威引用）、candidate context（候选上下文）、current state / old value / evidence refs | 本节点不批准 durable entity mutation；批准 = 会计师 read-back 签字，落盘经 Finalization 凭证校验 + Governance Log 留痕 |
-| Knowledge Compilation Node（知识编译节点） | 生成 readable customer knowledge（可读客户知识） | entity identity（实体身份）、aliases（别名）、risk and policy summary（风险和策略摘要） | summary（摘要）不能替代 Entity Log authority（实体日志权威） |
+| Entity Resolution Node（实体识别节点） | 判断当前 evidence（证据）是否指向 stable entity（稳定实体） | entity identity（实体身份）、Alias 库、status（状态）、force_pending | `new_stable_entity` 时可触发 Entity Log + Alias Log 同步 finalization；Alias 仅限该交易已确认 raw surface text -> stable entity 的初始 identity reuse projection，不包含 force_pending / promotion_lock / rule |
+| Rule Match Node（规则匹配节点，经 Entity Resolution handoff 投影） | 消费上游已确认 stable entity 的放行 / 卡点上下文，用于 rule route 和 eligibility 判断 | 不直接读取 Entity Log；由 Entity Resolution 读取 Entity Log 后，将该 entity 的 eligibility 当前状态和身份基础投影进 handoff（force_pending 命中已在上游 ER→RM router 改道 Case Judgment / Pending、不进 Rule Match；promotion_lock 由确定性发现 job 消费；两者 Rule Match 都不读） | Entity Log 仍是 force_pending / promotion_lock / identity control 的 source of truth，但不是 Rule Match 的直接读取对象；Rule Match 必须自行读取 Rule Log，Entity Log 不提供 rule condition；Alias lookup 只发生在上游 Entity Resolution |
+| Case Judgment Node（案例判断节点） | 使用 entity context（实体上下文）和 automation boundary（自动化边界） | identity basis（身份基础）、force_pending | 不能把 Entity Log 当 Case Log（案例日志）或 classification memory（分类记忆） |
+| Coordinator / Pending 路径（协调 / Pending 路径） | 将 identity gap（身份缺口）转成人工问题所需的 identity 背景 | blocking context（阻断上下文）、candidate refs（候选引用）——均由 Case Judgment 在构造 Pending handoff 时读取并投影进 Pending | Coordinator 本身不直接读取 Entity Log，全部 identity 上下文随 CJ Pending 在手；accountant answer（会计师回答）不能由 Coordinator 直接写入 Entity Log |
+| Human Review Node（人审节点） | 向 accountant（会计师）展示当前 entity authority（实体权威）和候选变更，并作为会计师人发起 merge / split / force_pending / promotion_lock mutation 的确认面 | active state（有效状态）、authority refs（权威引用）、candidate context（候选上下文）、current state / old value / evidence refs | 本节点不批准 durable entity mutation；批准 = 会计师 read-back 签字，落盘经 Finalization 凭证校验 + Governance Log 留痕 |
+| Knowledge Compilation Node（知识编译节点） | 生成 readable customer knowledge（可读客户知识） | entity identity（实体身份）、aliases（别名）、force_pending / promotion_lock 等控制状态摘要 | summary（摘要）不能替代 Entity Log authority（实体日志权威） |
 
-> 已删除的读取者（按现行设计改读）：**Post-Batch Lint Node** 与 **Governance Review Node** 已废除。系统自发语义判断 merge / split / 身份风险的发现层已裁撤删除；可确定性化的身份 / 一致性冲突由 Entity Resolution 运行期判句 + 确定性发现 job + 写入前同步守卫发现，merge / split 只由会计师在 Human Review 人发起；automation risk 归 Entity Log automation_policy maintenance / mutation contract；governance 批准 = 会计师 read-back 签字（Human Review）+ Finalization 凭证强制，不再有独立 Governance Review Node 读取面。
+> 已删除的读取者（按现行设计改读）：**Post-Batch Lint Node** 与 **Governance Review Node** 已废除。系统自发语义判断 merge / split / 身份风险的发现层已裁撤删除；可确定性化的身份 / 一致性冲突由 Entity Resolution 运行期判句 + 确定性发现 job + 写入前同步守卫发现，merge / split 只由会计师在 Human Review 人发起；force_pending / promotion_lock 归会计师人发起 Human Review → Finalization（系统不自发设 / 收紧）；governance 批准 = 会计师 read-back 签字（Human Review）+ Finalization 凭证强制，不再有独立 Governance Review Node 读取面。
 
 ## 3. 写入者
 
 | Writer | 可以写什么 | 写入类型 | 需要 approval 吗 |
 | --- | --- | --- | --- |
-| 会计师人发起（经 Human Review Node 确认面，落盘经 Finalization） | entity lifecycle mutation（实体生命周期变更）、merge / split projection（合并 / 拆分投影）、automation policy mutation（自动化策略变更）的备料 | 节点备料 → Finalization 落盘（无节点裸写） | 是；批准 = 会计师 read-back 签字 + Finalization 凭证强制 + Governance Log 留痕；除系统受控自动降级外 |
-| Entity Log automation_policy maintenance / mutation contract（自动化策略维护机制，非节点） | 受控 restrictive auto-downgrade（收紧型自动降级） | restrictive mutation（收紧变更） | 自动降级必须保留治理可见性；放宽或升级必须 accountant approval |
-| Human Review Node（人审节点，会计师人发起） | merge / split、identity risk、policy mutation candidate（合并 / 拆分、身份风险、策略变更候选）备料 | candidate（候选） | 是；本节点不直接写 stable authority，candidate 经 Finalization 落盘 |
-| Entity Resolution Node（实体识别节点） | `new_stable_entity` entity 本体、最小创建 provenance（具体字段名留 M3）、该交易对应的初始 Alias identity reuse surface，以及 identity conflict / risk signal（身份冲突 / 风险信号） | direct stable entity body plus creation trace / initial Alias projection / runtime risk signal（直接稳定实体本体加创建追溯 / 初始 Alias 投影 / 运行时风险信号） | `new_stable_entity` 本体、创建追溯和对应 Alias projection 写入不需要 governance approval；Rule / automation_policy / Case Log / final transaction outcome 不随 entity 本体写入 |
-| Accountant explicit identity confirmation path（会计师明确身份确认路径，执行者留 L4 / seam） | stable entity 本体、最小创建 provenance（具体字段名留 M3）和该交易对应的初始 Alias identity reuse surface | direct stable entity creation plus Alias projection via finalization / memory write mechanism（实际机制未冻结） | 不需要 governance approval；只确认 identity 及其对应 Alias projection，不隐含分类结果、Rule、automation_policy 或 Case Log 写入 |
+| 会计师人发起（经 Human Review Node 确认面，落盘经 Finalization） | entity lifecycle mutation（实体生命周期变更）、merge / split projection（合并 / 拆分投影）、force_pending / promotion_lock mutation 的备料 | 节点备料 → Finalization 落盘（无节点裸写） | 是；批准 = 会计师 read-back 签字 + Finalization 凭证强制 + Governance Log 留痕 |
+| Human Review Node（人审节点，会计师人发起） | merge / split、force_pending / promotion_lock mutation candidate（合并 / 拆分、控制变更候选）备料 | candidate（候选） | 是；本节点不直接写 stable authority，candidate 经 Finalization 落盘 |
+| Entity Resolution Node（实体识别节点） | `new_stable_entity` entity 本体、最小创建 provenance（具体字段名留 M3）、该交易对应的初始 Alias identity reuse surface | direct stable entity body plus creation trace / initial Alias projection（直接稳定实体本体加创建追溯 / 初始 Alias 投影） | `new_stable_entity` 本体、创建追溯和对应 Alias projection 写入不需要 governance approval；Rule / force_pending / promotion_lock / Case Log / final transaction outcome 不随 entity 本体写入 |
+| Accountant explicit identity confirmation path（会计师明确身份确认路径，执行者留 L4 / seam） | stable entity 本体、最小创建 provenance（具体字段名留 M3）和该交易对应的初始 Alias identity reuse surface | direct stable entity creation plus Alias projection via finalization / memory write mechanism（实际机制未冻结） | 不需要 governance approval；只确认 identity 及其对应 Alias projection，不隐含分类结果、Rule、force_pending / promotion_lock 或 Case Log 写入 |
 
 ## 4. Candidate 边界
 
 以下内容可以作为 candidate（候选）：
 
-- `merge_split_candidate`（合并 / 拆分候选）。
-- `automation_policy_candidate`（自动化策略候选）。
-- `entity_risk_candidate`（实体风险候选），仅限身份级风险候选；分类不稳定等 case-derived risk 归 Case Log / governance candidate。
+- `force_pending` / `promotion_lock` candidate（控制变更候选，会计师人发起）。
+
+> 原 `merge_split_candidate`（合并 / 拆分候选）已删除（见 Decisions D1）：系统不自发产 merge / split 候选；merge / split 改为会计师人发起经 Human Review 处置，Entity Log 只记录其 merge / split 变更语义（见 §6），不再设独立 merge / split 候选字段。
 
 Candidate signal（候选信号）不能直接成为：
 
 - stable entity identity authority（稳定实体身份权威）。
 - Alias。
 - active rule authority（生效规则权威）。
-- relaxed automation policy（放宽后的自动化策略）。
+- 放宽 / 解除后的 force_pending / promotion_lock。
 
 Candidate signal（候选信号）进入 durable non-authority context 或 governance path（长期非权威上下文或治理路径）的条件：
 
 - 必须有 traceable evidence refs（可追溯证据引用）或 completed case refs（已完成案例引用）。
-- 必须明确 mutation target（变更目标），例如 entity lifecycle（实体生命周期）或 automation policy（自动化策略）。
-- 必须经过 accountant / governance approval（会计师 / 治理批准），除非是已批准边界内的 restrictive auto-downgrade（收紧型自动降级）。
+- 必须明确 mutation target（变更目标），例如 entity lifecycle（实体生命周期）或 force_pending / promotion_lock。
+- 必须经过 accountant / governance approval（会计师 / 治理批准）。
 - 必须留下 Governance Log（治理日志）或等价 audit trace（审计追溯）。
 
 Alias（别名）的当前定义已确认：
@@ -76,7 +74,7 @@ Alias（别名）的当前定义已确认：
 | `merged`（已合并） | 该 entity 已并入 surviving entity，不能再直接作为 active target | 会计师批准（Human Review + Finalization） | 通常不退出；治理回滚规则留 L4 | runtime 应按当前 supersession 指向跳转到 surviving entity |
 | `archived`（已归档） | 该 entity 不再作为常规 active target，但保留历史解释和审计引用 | 会计师批准（Human Review + Finalization） | 会计师批准（Human Review + Finalization）；恢复条件留 L3 / L4 | 不得被静默当作 active identity target；可作历史解释 |
 
-Automation policy 不属于 lifecycle state。它是独立的 entity-level control state，用来控制自动化卡点；lifecycle state 只回答 identity target 是否仍有效。
+force_pending / promotion_lock 不属于 lifecycle state。它们是独立的 entity-level control state，用来控制自动化卡点；lifecycle state 只回答 identity target 是否仍有效。
 
 ## 6. Mutation Path
 
@@ -88,7 +86,7 @@ Entity Resolution judges new_stable_entity
 -> Entity Log records stable entity body, minimal creation provenance, and initial entity-centered Alias surface
 -> Alias Log records the corresponding alias -> entity lookup projection
 -> downstream can read stable identity
--> no Rule / automation_policy / Case Log / final transaction outcome write is implied
+-> no Rule / force_pending / promotion_lock / Case Log / final transaction outcome write is implied
 ```
 
 ```text
@@ -96,13 +94,13 @@ accountant explicit identity confirmation in downstream pending path
 -> stable entity creation plus corresponding Alias projection without governance approval
 -> Entity Log records stable entity body, minimal creation provenance, and initial entity-centered Alias surface
 -> Alias Log records the corresponding alias -> entity lookup projection
--> no Rule / automation_policy / Case Log / final transaction outcome write is implied
+-> no Rule / force_pending / promotion_lock / Case Log / final transaction outcome write is implied
 ```
 
 ```text
 candidate signal (确定性发现 job / ER 运行期判句 / 会计师人发起 Human Review)
 -> evidence and authority review
--> accountant approval (Human Review read-back 签字), unless restrictive auto-downgrade is explicitly allowed
+-> accountant approval (Human Review read-back 签字)
 -> Entity Log mutation
 -> Governance Log or equivalent audit trace
 -> downstream reads updated authority
@@ -113,7 +111,6 @@ candidate signal (确定性发现 job / ER 运行期判句 / 会计师人发起 
 - Entity Resolution `new_stable_entity` 后 Entity Log + Alias Log 同步 finalization 的实际写入执行者、调用方式、写入顺序和多 log finalization 机制；但及时可见、无需 governance approval、同步写入对应 Alias projection 已冻结。
 - accountant explicit identity confirmation 后由哪个 finalization / memory write mechanism（完成 / 记忆写入机制）执行 stable entity 创建和对应 Alias projection 写入；但无需 governance approval 与同步写入对应 Alias projection 已冻结。
 - Alias（别名）在 Entity Log 与 Alias Log 之间的存储形态、projection / index 构建、同步更新和写入顺序尚未冻结。
-- automation policy auto-downgrade（自动化策略自动降级）的 detection、exact approval / visibility contract（精确批准 / 可见性契约）；该检测归 Entity Log automation_policy maintenance，不归当前确定性发现 job。
 - merge / split（合并 / 拆分）后 aliases（别名）、rules（规则）和 cases（案例）的跨 log 迁移、阻断、finalization、audit trace 和回滚机制。
 
 约束：
@@ -121,18 +118,14 @@ candidate signal (确定性发现 job / ER 运行期判句 / 会计师人发起 
 - Accountant 只确认会计分类、没有明确确认 identity 时，不创建 stable entity，也不写 Entity Log。
 - 两类 stable entity 创建入口都确认 entity 本体、最小创建 provenance 和该交易对应的已确认 Alias identity reuse surface；本层不重新判断“是否够格”，只记录已由发起路径确认的 authority。
 
-例外：
-
-- 系统可以执行 restrictive auto-downgrade（收紧型自动降级），例如降低 automation policy（自动化策略），但必须保留治理可见性；任何 upgrade / relaxation（升级 / 放宽）都不能自动执行。
-
 ## 7. 与其他 memory/log 的边界
 
 | Other Store | 已确认边界 | 未冻结边界 |
 | --- | --- | --- |
 | Evidence Log（证据日志） | 保存 raw evidence（原始证据）和 evidence refs（证据引用）；Entity Log 只保存链接，不复制原文 | evidence sufficiency threshold（证据充分门槛）尚未冻结 |
-| Transaction Log（交易日志） | 保存 final transaction audit record（最终交易审计记录）；不参与 runtime identity decision（运行时身份决策） | reprocessing / correction（重处理 / 纠正）如何影响 entity risk candidate（实体风险候选）尚未冻结 |
+| Transaction Log（交易日志） | 保存 final transaction audit record（最终交易审计记录）；不参与 runtime identity decision（运行时身份决策） | reprocessing / correction（重处理 / 纠正）如何影响既有 entity 身份 / 控制状态尚未冻结 |
 | Alias Log（别名日志） | Alias 的 entity-centered source of truth 在 Entity Log；Alias Log 是面向 Entity Resolution 的 alias -> entity 反查 projection / index。治理 merge / split 时 Entity Log 与 Alias Log 同步更新 | 物理存储关系、projection / index 构建方式、同步执行机制、写入顺序和多 log finalization 尚未冻结 |
-| Case Log（案例日志） | 保存 entity-indexed completed-case learning memory（按实体索引的已完成案例学习记忆）；分类历史、常用 COA、repeated outcome pattern 和分类不稳定等 case-derived risk 归 Case Log / governance candidate；Entity Log 只保存当前 automation_policy 与身份级 risk flags | case-derived automation / policy candidate 的 exact governance contract 尚未冻结；merge / split 后 case 归属、限制或 supersession 的执行机制留 L4 / seam |
+| Case Log（案例日志） | 保存 entity-indexed completed-case learning memory（按实体索引的已完成案例学习记忆）；分类历史、常用 COA、repeated outcome pattern 和分类不稳定等 case-derived risk 归 Case Log / governance candidate；Entity Log 只保存当前 force_pending / promotion_lock | case-derived 治理候选 的 exact governance contract 尚未冻结；merge / split 后 case 归属、限制或 supersession 的执行机制留 L4 / seam |
 | Rule Log（规则日志） | 保存 approved deterministic rules（已批准确定性规则）；Entity Log 不保存 rule condition、rule payload、approved accounting treatment 或 rule_id 成员列表 | Rule eligibility、阻断或迁移在 merge / split 后如何 finalization，归 Rule Match / Rule Log / Governance，机制尚未冻结 |
 | Governance Log（治理日志） | 保存高权限变化、批准、拒绝、降级、合并和拆分历史；Entity Log 只保存当前 lifecycle / supersession / control state 和 governance refs | Entity Log 是否直接存 projected state（投影状态）还是由 Governance Log 投影生成，属于存储 / projection 形态，尚未冻结 |
 | Knowledge Summary（知识摘要） | 可读摘要，不是 source authority（来源权威）；entity 级自由经验批注归 entity_level Knowledge Summary，不进 Entity Log | summary conflict repair（摘要冲突修复）尚未冻结 |
@@ -146,7 +139,7 @@ Entity merge / split 后，Entity Log 只保存 Entity 侧当前身份状态、s
 
 - authority 顺序：Governance Log（治理日志）中的 approved / applied event（已批准 / 已生效事件）优先。
 - runtime 行为：下游应保守使用 governance-applied authority（已生效治理权威）。
-- 是否阻断自动化：如果冲突影响 Alias（别名）、entity status（实体状态）或 automation policy（自动化策略），应阻断相关自动化路径。
+- 是否阻断自动化：如果冲突影响 Alias（别名）、entity status（实体状态）或 force_pending / promotion_lock，应阻断相关自动化路径。
 - 是否生成 review / governance candidate：是。
 
 如果 Entity Log（实体日志）与 Knowledge Summary（知识摘要）冲突：
@@ -156,11 +149,11 @@ Entity merge / split 后，Entity Log 只保存 Entity 侧当前身份状态、s
 - 是否阻断自动化：如果 summary 暗示风险但未进入 Entity Log / Governance Log，不能直接改变 authority；可生成 review candidate（审核候选）。
 - 是否生成 review / governance candidate：可以。
 
-如果 Case Log（案例日志）显示分类不稳定、记账结果漂移或 automation / policy 风险，但 Entity Log（实体日志）尚未更新：
+如果 Case Log（案例日志）显示分类不稳定、记账结果漂移或 automation 风险，但 Entity Log（实体日志）尚未更新：
 
 - authority 顺序：Entity Log（实体日志）当前 identity / control authority（身份 / 控制权威）仍有效；Case Log（案例日志）只提供 case-derived evidence（案例衍生依据）。
 - runtime 行为：由确定性发现 job / ER 运行期判句生成确定性 candidate，或由会计师在 Human Review 人发起生成 candidate（候选）；系统不自发做语义判断。
-- 是否阻断自动化：除非已有 policy / governance constraint（策略 / 治理限制），否则 Case Log 本身不直接阻断；分类不稳定本身不写入 Entity Log risk_flags。
+- 是否阻断自动化：除非已有 policy / governance constraint（策略 / 治理限制），否则 Case Log 本身不直接阻断；分类不稳定本身不写入 Entity Log。
 - 是否生成 review / governance candidate：是。
 
 如果 current runtime signal（当前运行时信号）与 Entity Log（实体日志）冲突：
@@ -178,7 +171,7 @@ Entity merge / split 后，Entity Log 只保存 Entity 侧当前身份状态、s
 - evidence refs（证据引用），只指向证据来源，不复制正文。
 - governance refs（治理引用），只指向批准、拒绝、降级、合并、拆分或策略变更事件，不复制事件历史。
 - supersession / redirection refs（替代 / 重定向引用）。
-- risk / policy rationale refs（风险 / 策略理由引用），用于解释结构化控制状态，不是自由文本 note 字段。
+- force_pending / promotion_lock 等控制状态的 rationale refs（理由引用），用于解释结构化控制状态，不是自由文本 note 字段。
 - matched surface text / created time / updated-by / auto-created marker 等 provenance 信息如需字段化，字段名和形态留 M3。
 
 这些 trace 用于：
@@ -203,10 +196,10 @@ Entity merge / split 后，Entity Log 只保存 Entity 侧当前身份状态、s
 以下问题未冻结：
 
 1. `entity_record`（实体记录）的 exact field schema（精确字段结构）。
-2. 五类保存信息各自的 exact field schema、enum（含 entity_status、automation_policy、risk 标记取值）、validation 和 refs 形态。
+2. 五类保存信息各自的 exact field schema、enum（含 entity_status、force_pending、promotion_lock 取值）、validation 和 refs 形态。
 3. `new_stable_entity` 与 accountant explicit identity confirmation 的最小创建 provenance 字段形态。
 4. `Alias Log` 的技术形态，以及 Entity Log 与 Alias Log 的物理存储关系、projection / index 构建方式、同步机制和写入顺序。
-5. `automation_policy`（自动化策略）与 Governance Log（治理日志）的存储 / projection 形态，以及自动降级 detection、exact approval / visibility contract。
+5. `force_pending` / `promotion_lock` 与 Governance Log（治理日志）的存储 / projection 形态。
 6. ER `new_stable_entity` 与 accountant explicit identity confirmation 后，Entity Log + Alias Log 同步 finalization 的实际写入执行者、调用方式、写入顺序和多 log finalization；但无需 governance approval、及时可见与对应 Alias projection 同步写入语义已冻结。
 7. merge / split（合并 / 拆分）的治理审批、批量重判、跨 log finalization、audit trace 和回滚机制。
 8. Profile 内部结构事实建模，以及 Profile 与 Entity Log 的 ref / projection 形态；person 类型 stable entity 不特殊排除这一点已冻结。

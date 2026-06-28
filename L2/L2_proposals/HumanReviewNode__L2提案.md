@@ -1,6 +1,8 @@
+> ⚠️ **已过时 / superseded（owner 2026-06-27）** — 本 L2 提案的 L1 / L2 结论已由 `BK_Copilot/workflow_nodes/human_review_node/` 正式草案取代，仅作历史来源保留。当前权威以 `BK_Copilot/` 正式草案 +（产出后）对应 L3 schema 为准；**勿据本文件回灌已删除的概念 / 字段**。
+
 # HumanReviewNode — L2 提案
 
-> 状态：L1-L2 主体收口（O1–O7 + C1/C2 + Chatbot + N1/N2 已拍板；"授权确认机制"折叠进本节点已确认）。本节点为 owner 新创造的临时节点，设计来源唯一为 `独立question文档/Review_Node_question.md`（充当 owner 已拍板看法）+ 本轮对话；契约面从 A 类正式草案重建。仍有第一性原理复查暴露的若干 L1-L2 问题待讨论（见第六节）。
+> 状态：L1-L2 主体收口（O1–O7 + C1/C2 + Chatbot + N1/N2 已拍板；"授权确认机制"折叠进本节点已确认）。本节点为 owner 新创造的临时节点，设计来源唯一为 `独立question文档/Review_Node_question.md`（**已删除 / 已归档**，充当 owner 已拍板看法的历史 provenance；正式 draft 已落 `BK_Copilot/workflow_nodes/human_review_node/`）+ 本轮对话；契约面从 A 类正式草案重建。仍有第一性原理复查暴露的若干 L1-L2 问题待讨论（见第六节）。
 > 目标：集齐足以将 HumanReviewNode 从 L1 转成正式 `BK_Copilot/workflow_nodes/human_review_node/00|01|02` 的信息。
 > 纪律：每条契约结构要么指回 A 类原文、要么指回用户拍板决定；`new system/` / `old_system_nodedesign/` 永不作依据。
 > 待建正式文档目录（命名待最终确认）：`BK_Copilot/workflow_nodes/human_review_node/`。

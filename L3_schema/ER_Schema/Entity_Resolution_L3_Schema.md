@@ -51,7 +51,7 @@
 
 ### 读取 / 透传输入（上游已留名，ER 只 read/pass，不在此造名）
 
-`transaction_id`（EI，pass，全程锚）· `raw_description`（EI，read/pass；运行期唯一表面文字名，unknown 时输出它）· `evidence_refs`（EI，read，身份取证基础）· `counterparty_signals`（EI，read，对手方线索）· `evidence_association` / 客观交易事实（EI，read，随交易）· `structural_path_status` + 非结构原因（Profile，read，触发前置）· Entity Log（实体 / status / risk_flags / automation_policy）/ Alias Log / Governance Log / Intervention Log / Knowledge Summary / 外部搜索（read）。
+`transaction_id`（EI，pass，全程锚）· `raw_description`（EI，read/pass；运行期唯一表面文字名，unknown 时输出它）· `evidence_refs`（EI，read，身份取证基础）· `counterparty_signals`（EI，read，对手方线索）· `evidence_association` / 客观交易事实（EI，read，随交易）· `structural_path_status` + 非结构原因（Profile，read，触发前置）· Entity Log（实体 / status）/ Alias Log / 外部搜索（read）。
 
 ---
 

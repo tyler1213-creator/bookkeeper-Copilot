@@ -33,8 +33,8 @@
 - `BK_Copilot/node:layer spec template/`：正式 node / memory layer spec 的模板规则。
 - `L2_proposals/`：已审或讨论中对象的 L2 提案与追溯入口；不替代 `BK_Copilot/` 正式草案。
 - `独立question文档/`：主题讨论 / 机制结论入口；角色逐文件决定。若用户明确把某一 question 文档升为“当前唯一权威设计文档”，则在其主题范围内按该声明使用，直到落入正式 `BK_Copilot/` spec。已被正式草案替代的 question 文档只作历史背景。
-- `interaction_agent.md`：交互 / 目标层 Agent 的根目录概念入口；正式 spec 未冻结。
-- `未解决问题暂存清单.md`：已废弃历史参考，不再作为当前待办入口。
+- `独立question文档/interaction_agent_question.md`：交互 / 目标层 Agent 概念入口；正式 spec 未冻结。
+- `未解决问题暂存清单.md`（已删除）：已废弃历史参考，不再作为当前待办入口。
 - `new system/`：New System 旧材料，已作废；不再作为审计目标、baseline、authority 或默认读档材料。未经用户明确同意，不得读取其文档内容。
 - `old_system_nodedesign/`：Old-System 旧材料；不作为审计目标、baseline、authority 或默认读档材料。未经用户明确同意，不得读取其文档内容。
 

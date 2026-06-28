@@ -34,7 +34,7 @@
 | --- | --- | --- | --- |
 | Transaction Log | final outcome、最终 COA / HST-GST、`confirmed_by` 审计留痕、processing path、rule-hit source / rule ref（字段形态未冻结） | 展示复核视图、定位已 finalized 事实、支持 correction append 备料 | 只读，非 authority producer；reasoning / audit narrative 不能成为 reusable authority、accountant approval 或 governance approval。 |
 | Case Log | relevant precedent、exception context、`use_level`、`confirmed_by`（exact enum 未冻结） | 帮助 accountant 理解历史案例；决定哪些 system-confirmed 先例语义上可被 supersede / update | Case Log 不是 deterministic rule、不是 final audit record；本节点不把案例变成 rule、entity authority 或 governance approval。 |
-| Entity Log | active state、authority refs、candidate context、identity risk / merge-split / policy context | 展示当前 entity authority 与候选风险；支持人发起 merge / split 或 entity mutation 的确认面 | 本节点不批准 durable entity mutation；candidate 不是 stable identity authority。 |
+| Entity Log | active state、authority refs、candidate context、merge-split / force_pending / promotion_lock context | 展示当前 entity authority 与候选变更；支持人发起 merge / split 或 entity mutation 的确认面 | 本节点不批准 durable entity mutation；candidate 不是 stable identity authority。 |
 | Rule Log | 当前 executable rule 上下文、rule provenance、当前执行状态、rule 是否 active | 判断某笔是否来自 active rule；支持会计师在 review 时判断 rule 是否失效，以及 rule 改动 / 降级 / 纯升级的确认面 | candidate / promotion request 不能执行；rule authority 必须经 accountant sign-off 和 Rule 侧治理路径。 |
 
 ## 4. 写入对象
@@ -52,13 +52,13 @@
 - Transaction Log correction append：更正记录，表达谁改、改后最终分类结果、关联 Intervention ID。authority 来源是会计师 read-back 签字；Transaction Log 保持 append-only，原记录不删除、不覆盖。（决策 7 / 12）
 - Intervention Log record：纠错原因、交互事实、read-back / 签字上下文和 Intervention ID。authority 来源是交互事实；Intervention Log 正式 spec 待建。（决策 7 / 9）
 - Case Log 先例更新 / supersede：语义上只作废 system-confirmed 先例，不动 accountant-confirmed 先例；如果需一并作废人工确认先例，必须进入 read-back 由会计师决定。exact `confirmed_by` enum 留 L3。（决策 7 / 12）
-- Entity Log / Rule Log 扩张型 mutation input：merge / split、entity lifecycle、automation 放宽、rule create / update / downgrade 等长期确定性权威变更的备料。authority 来源是会计师 read-back 签字 + Finalization 凭证死代码强制；具体 mutation path 归对应 memory / Rule 侧治理。（决策 6 / 9 / 10）
+- Entity Log / Rule Log 扩张型 mutation input：merge / split、entity lifecycle、force_pending / promotion_lock 设置 / 解除、rule create / update / downgrade 等长期确定性权威变更的备料。authority 来源是会计师 read-back 签字 + Finalization 凭证死代码强制；具体 mutation path 归对应 memory / Rule 侧治理。（决策 6 / 9 / 10）
 - Governance Log audit material：每笔扩张型变更的审计留痕。Governance Log 是审计账本，数据层待建；本节点不把 trace 写成 governance approval。（决策 6 / 9 / 10）
 
 ### 只能提出 candidate
 
 - rule 升级候选的确认触发：候选来自审核 inbox，本节点只把候选和证据摆给会计师确认，并触发 Rule 侧固定执行路径；固定路径定义归 Rule 侧。（决策 13；用户澄清 3）
-- merge / split、automation_policy、entity_risk 等治理候选仅是非身份候选；它们不是 candidate entity / candidate identity，也不是 stable / unknown 之外的身份状态。
+- merge / split、force_pending / promotion_lock 等治理候选仅是非身份候选；它们不是 candidate entity / candidate identity，也不是 stable / unknown 之外的身份状态。
 
 ### 绝不能写入或修改
 
@@ -121,7 +121,7 @@
 | correction record | 会计师 read-back 签字后的更正语义：谁改、改后最终分类、关联 Intervention ID。 | Transaction Log（经 Finalization） | append 更正记录；原记录不删除、不覆盖。 | 不代表本节点裸写 Transaction Log，不冻结 correction record schema，不代表 Case Log / Rule Log 已同步完成。 |
 | Intervention 记录 + ID | 纠错原因、交互事实、read-back / 签字上下文和可追溯 Intervention ID。 | Intervention Log（待建） | 供 correction / review / audit 回查交互事实。 | 不代表业务 authority、final outcome、Case Log authority 或 governance approval。 |
 | 先例更新 / supersede | 将错误或被纠正的可复用先例更新为正确态，或标记为失效 / superseded；只在语义上动符合条件的先例。 | Case Log（经 Finalization / 写入机制） | 后续 case-based judgment 不再静默复用错误先例；Case Log 仍非审计层。 | 不代表就地改 Transaction Log，不冻结 `use_level` / `confirmed_by` enum，不把 case 变成 rule authority。 |
-| 扩张型 mutation 备料 | 针对 Entity / Rule / automation 等长期确定性权威的变更 input，附 read-back 签字和凭证。 | Entity Log / Rule Log（via Finalization；Rule 侧治理） | 进入对应 durable mutation path；扩张型变更需凭证和对应不变量校验。 | 不代表本节点批准 stable authority、不代表 Rule Log 固定路径已定义、不代表 Finalization 机制已冻结。 |
+| 扩张型 mutation 备料 | 针对 Entity / Rule / force_pending / promotion_lock 等长期确定性权威的变更 input，附 read-back 签字和凭证。 | Entity Log / Rule Log（via Finalization；Rule 侧治理） | 进入对应 durable mutation path；扩张型变更需凭证和对应不变量校验。 | 不代表本节点批准 stable authority、不代表 Rule Log 固定路径已定义、不代表 Finalization 机制已冻结。 |
 | 扩张型变更审计 | 每笔长期权威变更的审计材料和批准线索。 | Governance Log（待建） | 留下 governance / audit trace，支持后续复核。 | 不代表 Governance Log 是决策者，不替代 accountant 签字，不成为 entity / rule / case authority。 |
 | rule 升级触发 | 对审核 inbox 中 rule 升级候选进行会计师确认后，触发 Rule 侧固定执行路径。 | Rule 侧固定执行路径（Rule Log / Rule Match 治理；NEW-1） | 纯 rule 升级不走开放式 Change List Engine；路径定义归 Rule 侧。 | 不代表本节点定义固定路径、不代表 candidate 自动升级、不代表未经会计师签字可执行。 |
 
@@ -182,7 +182,7 @@ diff 处理：
 
 如果 Case Log、Transaction Log、Entity Log 或 Rule Log 之间出现冲突：
 
-- authority 顺序：Transaction Log / 等价 finalization source 对 final outcome 与 audit trail 优先；Entity Log 对 stable identity / automation policy 优先；Rule Log 对 executable rule authority 优先；Case Log 只作为可复用先例且受 `use_level` / finalization proof 限制。
+- authority 顺序：Transaction Log / 等价 finalization source 对 final outcome 与 audit trail 优先；Entity Log 对 stable identity / force_pending / promotion_lock 优先；Rule Log 对 executable rule authority 优先；Case Log 只作为可复用先例且受 `use_level` / finalization proof 限制。
 - 本节点行为：展示冲突、组织 read-back 和签字；不让 LLM 覆盖任一 source of truth。
 - 是否生成 review / governance candidate：可以生成非身份治理候选或 rule / entity mutation 备料，但 candidate 不成为 durable authority。
 

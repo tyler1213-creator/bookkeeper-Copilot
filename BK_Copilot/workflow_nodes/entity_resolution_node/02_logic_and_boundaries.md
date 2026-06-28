@@ -36,7 +36,7 @@
 | AI 联网搜索 / external lookup（外部查询） | 针对 vendor / payee / counterparty 身份的搜索线索、相似对象、公开身份解释、由搜索打开并可追溯的外部来源 | 当 bank descriptor 只显示支付平台、缩写或不完整名称时，辅助判断当前交易主体是谁；搜索结果列表和搜索摘要只能作为 clue；可追溯外部来源在与当前交易 evidence 共同指向清晰、唯一、无实质竞争的业务对象时，可作为 stable reason 的 evidence point | 搜索行为本身不是 authority；外部来源 evidence point 只支持 identity，不支持 COA / HST / GST / 业务用途 / Rule / automation permission |
 | Evidence Intake（证据接收 / 预处理）分配的 transaction_id | `transaction_id`（稳定交易 ID） | 保证本次身份判断绑定到稳定交易对象 | 交易身份不等于 entity identity（实体身份），也不等于 accounting authority（会计权威） |
 | Profile / Structural Match handoff（客户结构匹配交接） | `structural_path_status`（结构性路径状态）、non-structural reason（非结构性原因）、profile context refs（客户结构上下文引用） | 防止结构性交易穿透后被普通实体流程处理 | candidate profile fact（候选客户结构事实）不能当 stable profile truth（稳定客户结构事实） |
-| Entity Log（实体日志） | known entities（已知实体）、`entity_status`（实体生命周期状态）、authority metadata（权威元数据）、risk flags（风险标记） | 判断 evidence（证据）是否安全指向稳定 entity（实体），或新建 stable entity 是否与既有 entity 竞争 | Summary（摘要）不能覆盖 Entity Log（实体日志）；Entity Log identity authority 不携带会计分类、Rule 或 automation permission 判断 |
+| Entity Log（实体日志） | known entities（已知实体）、`entity_status`（实体生命周期状态）、authority metadata（权威元数据）、force_pending | 判断 evidence（证据）是否安全指向稳定 entity（实体），或新建 stable entity 是否与既有 entity 竞争 | Summary（摘要）不能覆盖 Entity Log（实体日志）；Entity Log identity authority 不携带会计分类、Rule 或 automation permission 判断 |
 | Alias Log / Alias 查询接口 | 已确认 Alias surface text 到 stable entity 的对应关系 | exact Alias lookup（完全命中查询）；完全命中时可直接复用 Alias 指向的 stable entity | Alias Log / Alias 库具体技术形态未冻结；Alias exact match 是身份复用路径，不是分类路径；未确认 surface text 不能当 Alias |
 | Governance Log（治理日志） | applied merge / split, lifecycle, policy constraints（已生效的合并 / 拆分、生命周期、策略限制） | 限制或解释当前身份判断 | pending / rejected governance event（待批准 / 已拒绝治理事件）不能当 positive authority（正向权威） |
 | Intervention Log（人工介入日志） | identity correction（身份纠正）、accountant confirmation（会计师确认）、recent dispute（近期争议） | 识别当前身份风险或限制 | 人工介入记录只有明确确认对象时才可作为对应 authority（权威）；不能泛化 |
@@ -59,11 +59,11 @@
 - Entity Log 侧保存 stable entity 本体、最小创建 provenance 和初始 entity-centered Alias surface；Alias Log 侧写入面向 ER 查询的 alias -> entity 反查 projection。两者是同一已确认身份关系的两个访问面，不是两套独立身份 authority。
 - 实际由 ER 亲手写入，还是由 ER 同步调用专门写入 / 存储节点立即完成，属于 L4 / seam；exact provenance / alias_record field schema 属于 L3。
 
-该 finalization 不代表 Rule（规则）、automation policy（自动化策略）、Case Log（案例日志）或 Transaction Log（交易审计日志）已经写入。
+该 finalization 不代表 Rule（规则）、force_pending / promotion_lock、Case Log（案例日志）或 Transaction Log（交易审计日志）已经写入。
 
 ### 非身份输出只剩 `unknown` 的 reason / context
 
-本节点不产出与身份状态并行的候选 / 风险通道。原 `candidate_signal`、`merge_split_candidate`、`alias_conflict_issue`、`identity_governance_issue` **已删除（2026-06-25 收口）**：它们无下游消费者（Case Judgment 只读身份结果与 `unknown` reason，见 §6；Human Review 从 Entity Log 读 merge / split / risk 上下文并只接会计师人发起）、与 `unknown` reason 重复、或超出本节点能力 / 职责（merge / split 见 §5、§9）。
+本节点不产出与身份状态并行的候选 / 风险通道。原 `candidate_signal`、`merge_split_candidate`、`alias_conflict_issue`、`identity_governance_issue` **已删除（2026-06-25 收口）**：它们无下游消费者（Case Judgment 只读身份结果与 `unknown` reason，见 §6；Human Review 从 Entity Log 读 merge / split / force_pending 上下文并只接会计师人发起）、与 `unknown` reason 重复、或超出本节点能力 / 职责（merge / split 见 §5、§9）。
 
 除新建 stable entity 的同步 Entity Log + Alias Log finalization 外，本节点唯一的非身份输出是：
 
@@ -74,13 +74,13 @@
 本节点绝不能写入或修改：
 
 - `Transaction Log`（交易审计日志）。
-- 未够格 Alias（别名）、Alias correction / governance mutation、automation policy（自动化策略）、merge / split projection（合并 / 拆分投影）等高权限或非初始写入；初始够格 Alias 随新建 stable entity 同步 finalization。
+- 未够格 Alias（别名）、Alias correction / governance mutation、force_pending / promotion_lock、merge / split projection（合并 / 拆分投影）等高权限或非初始写入；初始够格 Alias 随新建 stable entity 同步 finalization。
 - `Case Log`（案例日志）。
 - `Rule Log`（规则日志）。
 - `Governance Log`（治理日志）。
 - `Profile`（客户结构档案）。
 - active rule（生效规则）。
-- `automation_policy`（自动化策略）。
+- `force_pending` / `promotion_lock`。
 
 ## 5. 决策权限
 
@@ -109,7 +109,7 @@
 - 在本节点新建 stable entity finalization 边界之外创建 stable entity（稳定实体）。
 - 在存在多个合理 identity 解释、冲突、证据缺失或 alias issue 时选择一个 winner（胜出实体）。
 - merge / split entity（合并 / 拆分实体）。
-- 修改 `automation_policy`（自动化策略）。
+- 修改 `force_pending` / `promotion_lock`。
 - 执行 rule match（规则匹配）。
 - 判断 case precedent（历史案例先例）是否足以支持分类。
 - 选择 COA / HST / GST treatment（会计科目 / 税务处理）。
@@ -127,7 +127,7 @@
 - 新建 stable entity 的即时 Entity Log + Alias Log finalization 不需要 governance approval；除此之外的 stable entity lifecycle mutation（稳定实体生命周期变更）必须按治理边界处理。
 - merge / split entity（合并 / 拆分实体）。
 - archive / reactivate entity（归档 / 重新激活实体）。
-- upgrade or relax `automation_policy`（升级或放宽自动化策略）。
+- 设置或解除 `force_pending` / `promotion_lock`。
 - create / promote / modify / delete / downgrade active rule（创建 / 升级 / 修改 / 删除 / 降级生效规则）。
 
 ## 6. 输出类别
@@ -148,7 +148,7 @@ stable reason 的证据边界：
 - 如果当前 surface text 完全命中 Alias Log / Alias 库中既有 Alias，本节点输出 `stable`，并在 reason 中标明 exact Alias match。该输出不代表 Rule Match 成功、会计分类或自动化许可。
 - stable reason 可以引用可追溯 external evidence point，但该引用只支持 identity，不支持 COA / HST / GST / 业务用途 / Rule / automation permission。
 - AI 联网搜索的搜索结果列表、搜索摘要或模型复述只能作为 clue；只有由搜索打开并可追溯的外部来源，在与当前交易 evidence 共同指向唯一、清晰、无实质竞争的业务对象时，才可以作为 stable reason 的 evidence point。
-- `new_stable_entity` 不再是独立 identity state；它是 `stable` 的 provenance=新建语义。对应 stable entity 必须在继续下游前完成同步 Entity Log + Alias Log finalization 或等价可见化；该 finalization 不代表 Rule、automation policy、Case Log 或 Transaction Log 已写入。
+- `new_stable_entity` 不再是独立 identity state；它是 `stable` 的 provenance=新建语义。对应 stable entity 必须在继续下游前完成同步 Entity Log + Alias Log finalization 或等价可见化；该 finalization 不代表 Rule、force_pending / promotion_lock、Case Log 或 Transaction Log 已写入。
 
 Alias 查询对输出的影响：
 

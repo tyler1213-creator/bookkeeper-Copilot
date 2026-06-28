@@ -22,7 +22,7 @@
 
 ## 当前未冻结边界
 
-- automation_policy 中“哪种取值 = 放行 rule-based automation”的 exact 取值集合 / 语义尚未冻结；归 L3，需 RuleLog / EntityLog 联合对齐 Governance。
+- force_pending 中“哪种取值 = 上游 router 改道、不放行 rule-based automation”的 exact 取值集合 / 语义尚未冻结；归 L3，需 RuleLog / EntityLog 联合对齐 Governance。
 - RuleMatch 输入 handoff 的 exact 字段 schema 尚未冻结；归 L3。handoff 由谁组装属于 L4 / seam。
 - RuleLog reader 的调用机制属于 L4 / seam。RuleLog 必须支持按 `entity_id` 索引，且每条 rule 承载 applicability；这是对 RuleLog 的前置约束，待 RuleLog 设计落定。
 - rule 资格判句的最终归档之家尚未冻结，取决于 RuleLog M1-M2；本节点只声明自己消费该资格语义标准。
@@ -37,6 +37,6 @@
 - RuleLog M1-M2 落定：资格判句之家、`entity_id` 索引语义、rule payload authority 和 rule lifecycle 边界。
 - Rule 侧 promotion 发现 contract 落定：判句归属、审核 inbox、CaseLogEvidence、固定执行路径和 Human Review 触发接缝。
   > 关于 rule 升级（promotion）发现侧的扫描 / 候选产出机制，参见 `独立question文档/Deterministic_Discovery_question.md`（确定性发现机制当前唯一权威文档）；promotion 资格判句的定义权仍归本（Rule）侧，确定性发现只套用。
-- automation_policy 取值集合和放行 rule-based automation 的 exact 语义完成联合 L3，并与 Governance 对齐。
+- force_pending 取值集合和上游 router 放行 / 改道 rule-based automation 的 exact 语义完成联合 L3，并与 Governance 对齐。
 - RuleMatch handoff exact schema 完成 L3。
 - JE Generator 接口口径完成联合收口，说明 approved accounting treatment 的可执行完整性需要哪些语义。

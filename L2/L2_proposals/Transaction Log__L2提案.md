@@ -1,3 +1,5 @@
+> ⚠️ **已过时 / superseded（owner 2026-06-27）** — 本 L2 提案的 L1 / L2 结论已由 `BK_Copilot/memory_layers/transaction_log/` 正式草案取代，仅作历史来源保留。当前权威以 `BK_Copilot/` 正式草案 +（产出后）对应 L3 schema 为准；**勿据本文件回灌已删除的概念 / 字段**。
+
 # Transaction Log L2 提案
 
 > 对象类型：**memory layer**（本轮已与用户确认：Transaction Log 是围绕「每一条交易」构建的记忆层，与 Entity Log / Case Log / Alias Log 同族，不是 workflow node）。

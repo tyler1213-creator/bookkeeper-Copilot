@@ -1,3 +1,5 @@
+> ⚠️ **已过时 / superseded（owner 2026-06-27）** — 本 L2 提案的 L1 / L2 结论已由 `BK_Copilot/memory_layers/case_log/` 正式草案取代，仅作历史来源保留。当前权威以 `BK_Copilot/` 正式草案 +（产出后）对应 L3 schema 为准；**勿据本文件回灌已删除的概念 / 字段**。
+
 # Case Log L2 提案
 
 ## 依赖
@@ -103,7 +105,7 @@
 - 结论:
   Case Log 可以为 rule promotion、automation risk review、entity risk update、policy review 提供历史案例**依据**；但它不直接创建 / 升级 / 修改 / 降级 active rule，不修改 Entity Log（`risk_flags` / `automation_policy` / Alias / `entity_status`），不改 Governance Log。候选的产生与审批走治理路径。
 
-  候选信号是**给下游节点的临时 handoff**，不是 durable 学习内容，因此**不作为 Case Log 的存储字段**（不设 `candidate_signal_refs`）。
+  候选信号是**给下游节点的临时 handoff**，不是 durable 学习内容，因此**不作为 Case Log 的存储字段**（原拟 `candidate_signal_refs` 不设；ER 输出的 `candidate_signal` 本身亦已删，见 Decisions D1）。
 
 - 为什么(锚定核心产品目标的哪条):
   锚定「accountant control」与「审计性」。把「提依据」与「做变更」分离，避免学习层越权变成规则 / 治理执行者，也避免把治理工作队列混进学习记忆。

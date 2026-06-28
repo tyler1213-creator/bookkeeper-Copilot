@@ -50,7 +50,7 @@ Transaction Log 是以 `transaction_id` 为主索引的逐笔交易审计 source
 - 统一 finalization 写入机制凭 `transaction_log_ref` / finalization proof 写 Case Log 的 exact 机制与 trigger order。
 - Transaction Log 与对外 final output report / export artifact 的 field-level 边界。
 - Governance（授权确认 = Human Review + Finalization）、Knowledge Summary / Knowledge Compilation、Evidence Log、Profile / Structural Match 与 Transaction Log 的 exact 读写边界。（Post-Batch Lint 已废除，删除。）
-- transaction correction 如何影响 Alias review / mutation、entity risk candidate。
+- transaction correction 如何影响 Alias review / mutation、既有 entity 控制状态（force_pending / promotion_lock）。
 
 ### DEFERRED
 

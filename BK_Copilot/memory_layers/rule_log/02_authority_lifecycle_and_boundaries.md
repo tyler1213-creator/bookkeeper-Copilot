@@ -28,7 +28,7 @@ Rule Log 的执行面必须保证同一 entity 下的 executable rules 两两互
 
 | Reader | 读取目的 | 可读内容 | 限制 |
 | --- | --- | --- | --- |
-| RuleMatchNode 执行面 | 在已获得 stable `entity_id` 且上级 automation_policy 放行后，确定当前交易是否命中已批准 rule。 | 按 `entity_id` 查询当前可执行 rule 集合、applicability 和 approved treatment。 | 不读取 paused / retired / replaced / deleted / candidate / 历史管理信息来自行判断哪些还能执行；不读取 CaseLog 重算资格；不做会计判断。 |
+| RuleMatchNode 执行面 | 在已获得 stable `entity_id` 且上级 eligibility 放行（force_pending 未命中、未在上游 router 改道）后，确定当前交易是否命中已批准 rule。 | 按 `entity_id` 查询当前可执行 rule 集合、applicability 和 approved treatment。 | 不读取 paused / retired / replaced / deleted / candidate / 历史管理信息来自行判断哪些还能执行；不读取 CaseLog 重算资格；不做会计判断。 |
 | Governance / Review / maintenance 管理面 | 审批、暂停、废除、恢复、替代、修复、复核冲突和维护 rule 集合。 | 更完整的 rule 状态、provenance refs、暂停 / 废除 / 替代语义、冲突上下文；外部 Governance / review context 中的 candidate 关联引用如需展示，只能作为外部管理上下文。 | 管理面信息不构成 RuleMatch runtime 选择依据；candidate 关联引用不表示 candidate 存在于 Rule Log；exact reader / assembler / projection / cache / permission 边界留 L4 / seam。 |
 
 ## 3. 写入者
@@ -100,18 +100,18 @@ Candidate 不能以 candidate 身份进入 durable Rule Log state；外部 candi
 
 | Other Store | 已确认边界 | 未冻结边界 |
 | --- | --- | --- |
-| Entity Log | Entity Log 是 stable entity identity、entity_status 和 automation_policy / control state 的主档案；不保存 rule_id 列表、rule condition、approved treatment 或 rule lifecycle。EntityLog automation_policy 是 RuleMatch 的上级放行控制；RuleLog 中存在 executable rule 只是可执行内容条件。Entity merge / split 后，Rule Log 服从 Governance 裁定，旧 rule 不自动迁移、不自动继承；在治理明确保留、迁移、收窄、废除或恢复前，不应作为新 entity 边界下的 executable authority。 | automation_policy exact enum；RuleMatch eligibility projection / handoff exact contract；merge / split 后 rule 重判、批量 mutation、迁移 / 阻断 / 恢复执行、回滚和治理 trace。 |
-| Case Log | Case Log 可以提供 promotion 依据和历史案例证据，但 repeated cases / CaseLog 趋势不能直接创建、升级、修改、删除或降级 executable rule。Rule-hit case 的 rule ref 可以由 Transaction Log / Case Log 逐笔记录派生统计。 | CaseLogEvidence 打包格式；case-derived rule / automation governance contract；rule-hit ref 在 Case Log 中的 exact 字段形态；统计 / rollup / cache 机制。 |
+| Entity Log | Entity Log 是 stable entity identity、entity_status 和 force_pending / promotion_lock 等 control state 的主档案；不保存 rule_id 列表、rule condition、approved treatment 或 rule lifecycle。EntityLog force_pending（经上游 eligibility router 改道）是 RuleMatch 的上级放行控制；RuleLog 中存在 executable rule 只是可执行内容条件。Entity merge / split 后，Rule Log 服从 Governance 裁定，旧 rule 不自动迁移、不自动继承；在治理明确保留、迁移、收窄、废除或恢复前，不应作为新 entity 边界下的 executable authority。 | force_pending / promotion_lock exact enum；RuleMatch eligibility projection / handoff exact contract；merge / split 后 rule 重判、批量 mutation、迁移 / 阻断 / 恢复执行、回滚和治理 trace。 |
+| Case Log | Case Log 可以提供 promotion 依据和历史案例证据，但 repeated cases / CaseLog 趋势不能直接创建、升级、修改、删除或降级 executable rule。Rule-hit case 的 rule ref 可以由 Transaction Log / Case Log 逐笔记录派生统计。 | CaseLogEvidence 打包格式；case-derived rule / force_pending / promotion_lock governance contract；rule-hit ref 在 Case Log 中的 exact 字段形态；统计 / rollup / cache 机制。 |
 | Transaction Log | Transaction Log 是最终交易审计 source of truth，适合保存某笔 finalized transaction 最终由哪条 rule 处理的 source 语义和 rule ref。Rule Log 不做历史解释。 | rule-hit source / rule ref exact 字段形态；finalization / record path 的写入顺序；历史修正与 rule ref 追溯机制。 |
 | Governance Log | Governance Log 承载审批、暂停、废除、替代、恢复、merge / split 裁定等治理事件正文；Rule Log 只反映当前执行状态，不与治理裁定竞争。 | approval workflow、approval capture、candidate queue、direct accountant write、mutation path、跨 log lifecycle 命名统一。 |
 | JE Generator | Rule Log 是 approved treatment authority；JE Generator 是 JE construction / validation layer。Rule Log 不生成 JE，JE Generator 不判断 rule applicability。 | approved treatment exact shape；COA / HST / GST / split / allocation schema；JE Generator contract 与 validation rule。 |
 
 ## 8. 冲突处理
 
-如果 Rule Log 与 Entity Log automation_policy / control state 冲突：
+如果 Rule Log 与 Entity Log force_pending / control state 冲突：
 
-- authority 顺序：EntityLog automation_policy 是 RuleMatch 的上级放行控制，优先于 RuleLog executable rule。
-- runtime 行为：RuleLog 有 executable rule 只是必要非充分条件；automation_policy 未明确放行时，当前交易不得进入 RuleMatch。
+- authority 顺序：EntityLog force_pending 优先于 RuleLog executable rule：force_pending 命中即在上游 router 改道、压过名下 active rule。
+- runtime 行为：RuleLog 有 executable rule 只是必要非充分条件；force_pending 命中（上游 eligibility router 改道）时，当前交易不得进入 RuleMatch。
 - 是否阻断自动化：是。
 - 是否生成 review / governance candidate：可生成，但 exact 机制留 Governance / L4 seam。
 
@@ -155,11 +155,11 @@ Candidate 不能以 candidate 身份进入 durable Rule Log state；外部 candi
 
 以下问题解决前，不能进入 M3 data contract、M4 storage and operations 或 implementation：
 
-- **L3**：rule record exact 字段名、rule ref / rule_id 形态、scope enum、current execution state 字段名 / enum、source / approval provenance refs 形态。
+- **L3**：rule record exact 字段名、`rule_id` 的 exact 字符串 / 格式、scope enum、current execution state 字段名 / enum、source / approval provenance refs 形态。（`rule_id` 的**存在与角色已定**，见 Decisions D9：稳定唯一、贯穿生命周期、作引用 / 审计 handle；仅 exact 格式留 M3。）
 - **L3**：entity-level / pattern-level rule exact schema、condition enum、客观条件表达、catch-all pattern 语法糖。
 - **L3 / L4**：overlap-validation 算法、condition satisfiability 检查、amount range validation、冲突 repair path。
 - **L3 / JE Generator**：approved accounting treatment exact shape、COA / HST / GST / split / allocation schema、JE Generator contract 与 validation rule。
-- **L3，EntityLog / RuleLog / Governance 联合**：automation_policy 中哪种取值表示允许 rule-based automation / RuleMatch。
+- **L3，EntityLog / RuleLog / Governance 联合**：force_pending 取值如何在上游 eligibility router 决定交易是否放行进入 rule-based automation / RuleMatch（命中即改道、不进 RuleMatch）。
 - **L4 / seam**：RuleLog 执行面 query contract、reader / assembler 调用顺序、projection / cache / permission 边界。
 - **L4 / seam**：RuleLog 按 `entity_id` 索引的存储结构、检索和维护机制。
 - **L2·外阻，Governance / review path**：rule promotion 发现侧判句（含 CaseLogEvidence 资格、结果唯一性、证据强度；不承接 rule 失效 / 降级判断）、rule candidate queue / 审核 inbox、system-proposed promotion request、CaseLogEvidence 打包格式、accountant approval workflow。
@@ -167,6 +167,6 @@ Candidate 不能以 candidate 身份进入 durable Rule Log state；外部 candi
 - **L4 / Governance seam**：accountant direct rule creation 的 exact write mechanism、approval capture、写入执行者。
 - **L2·外阻 / L4，Governance / 记录层**：rule modification / overwrite / versioning / supersession / deletion / restore exact mutation path。
 - **L3 / Governance**：跨 log lifecycle 字段命名统一。
-- **L3，联合 Transaction Log / Case Log**：rule-hit source / rule ref 在 Transaction Log / Case Log 中的 exact 字段形态。
+- **L3，联合 Transaction Log / Case Log**：rule-hit source / rule ref 在 Transaction Log / Case Log 中的 exact 字段形态。（**已定**，见 Decisions D9：rule-hit 引用 = `rule_id` 裸值、不钉版本；历史版本还原靠 `rule_id` + 交易时间 + Governance Log 回放。仅 exact 字段形态留 L3。）
 - **L4 / seam**：match_count、last_hit、health / staleness 派生统计、rollup、cache、maintenance job。
 - **L4 / Governance**：merge / split 后 rule 重判、批量 mutation、迁移 / 阻断 / 恢复执行、回滚和治理 trace。

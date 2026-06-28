@@ -95,7 +95,7 @@
 
 ## 5. 已知约束
 
-- Alias Log 当前 L2 authority 来源是 `L2_proposals/Alias Log__L2提案.md`；`Alias question.md` 是历史主题速记。
+- Alias Log 当前 L2 authority 来源是 `L2_proposals/Alias Log__L2提案.md`；原 `Alias question.md` 历史主题速记已删除。
 - Alias 只辅助判断当前交易主体是谁。
 - Alias 只保存已确认 transaction surface text 和 stable entity 的对应关系。
 - Alias 不是 Rule Match 的规则库。

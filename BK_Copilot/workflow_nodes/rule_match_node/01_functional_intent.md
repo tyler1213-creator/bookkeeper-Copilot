@@ -41,7 +41,7 @@ entity-level rule 是下文“Rule 资格的内容判据”在 condition set 为
 
 本节点可以辅助产生：
 
-- rule-hit context / trace，用于后续 finalization、audit、learning / review 追溯本次自动分类使用的 StableEntity ref 与 Rule ref。
+- rule-hit context / trace，用于后续 finalization、audit、learning / review 追溯本次自动分类使用的 StableEntity ref（= `entity_id`）与 `rule_id`（命中规则的稳定 id，见 Decisions D9）。
 
 但这些不是主职责。
 
@@ -103,8 +103,8 @@ entity-level rule 是下文“Rule 资格的内容判据”在 condition set 为
 
 具体贡献：
 
-- 自动化率提升：对已具备 StableEntity、放行控制状态和 active approved rule 的交易，直接应用 deterministic rule，减少重复人工判断。
-- 审计性：每次自动分类都可经 rule-hit context 回到 StableEntity ref 与 Rule ref，说明本次 treatment 的 rule authority。
+- 自动化率提升：对已具备 StableEntity、上游 eligibility 放行（force_pending 未命中）和 active approved rule 的交易，直接应用 deterministic rule，减少重复人工判断。
+- 审计性：每次自动分类都可经 rule-hit context 回到 StableEntity ref（= `entity_id`）与 `rule_id`，说明本次 treatment 的 rule authority。
 - accountant control：active rule 的可执行权威来自 accountant / governance 的事前批准；运行时 RuleMatchNode 不扩权、不学习新 rule、不放宽条件。
 
 ## 6. 已知约束
@@ -112,7 +112,7 @@ entity-level rule 是下文“Rule 资格的内容判据”在 condition set 为
 - rule authority 仅来自 RuleLog 中 active approved rule。
 - RuleMatchNode 是 runtime-only 节点，不直接执行 durable write。
 - RuleMatchNode 运行时不重算 rule 资格，只信任 RuleLog 中 active + approved 的规则。
-- RuleMatchNode 只消费上游 handoff 中投影的 automation_policy / control state，不直接读取 EntityLog 判 eligibility。
+- RuleMatchNode 只消费上游 handoff 中投影的 eligibility（force_pending 已在上游 ER→RM router 过滤、命中即改道，不进 RuleMatch），不直接读取 EntityLog 判 eligibility，也不读 force_pending / promotion_lock。
 - RuleMatchNode 不使用 LLM / AI；LLM 可判断项：无。
 - RuleMatchNode 自身不产出 candidate；rule promotion / review candidate 属于 RuleLog / Governance 路径。
 

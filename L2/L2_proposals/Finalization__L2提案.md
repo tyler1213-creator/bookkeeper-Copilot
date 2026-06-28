@@ -1,6 +1,8 @@
+> ⚠️ **已过时 / superseded（owner 2026-06-27）** — 本 L2 提案的 L1 / L2 结论已由 `BK_Copilot/shared_mechanisms/finalization/` 正式草案取代，仅作历史来源保留。当前权威以 `BK_Copilot/` 正式草案 +（产出后）对应 L3 schema 为准；**勿据本文件回灌已删除的概念 / 字段**。
+
 # Finalization 写入机制 — L2 提案
 
-> 状态：L1-L2 主体收口（G1–G8 原始八缺口 + 第一性原理 N1–N6 全部拍板）。Finalization 是 owner 已有设计结论的**第三类对象——跨层共享机制**（非 workflow node、非 memory layer），设计来源唯一为 `独立question文档/Finalization_question.md`（充当 owner 已拍板看法）+ 本轮对话（2026-06-23）；契约面从 A 类正式草案重建。
+> 状态：L1-L2 主体收口（G1–G8 原始八缺口 + 第一性原理 N1–N6 全部拍板）。Finalization 是 owner 已有设计结论的**第三类对象——跨层共享机制**（非 workflow node、非 memory layer），设计来源唯一为 `独立question文档/Finalization_question.md`（**已删除 / 已归档**，充当 owner 已拍板看法的历史 provenance；正式 draft 已落 `BK_Copilot/shared_mechanisms/finalization/`）+ 本轮对话（2026-06-23）；契约面从 A 类正式草案重建。
 > 目标：集齐足以将 Finalization 从 L1 转成正式 spec 的信息。**模板归属另定**——节点模板的「触发条件 / runtime 位置」等字段不适用于"被调用的共享库"，转正式文档时需改写（见 L2·外阻）。
 > 纪律：每条契约结构要么指回 A 类原文、要么指回用户拍板决定；`new system/` / `old_system_nodedesign/` 永不作依据。
 > 待建正式文档目录（命名待最终确认）：`BK_Copilot/`（第三类对象，归属目录待定）。

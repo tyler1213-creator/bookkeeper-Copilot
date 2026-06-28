@@ -26,7 +26,7 @@
 
 > 输出当前交易的 identity state（身份状态：`stable` 或 `unknown`），并为该判断附上可审计的 identity reason（含 `unknown` 时的 reason / context）。
 
-本节点不产出与身份状态并行的候选 / 风险通道。原 `candidate_signal`、`merge_split_candidate`、`identity_risk_flags`、`blocking_reason` 已删除（2026-06-25 收口，理由见 §3 与 `02_logic_and_boundaries.md` §6）：身份层的冲突、歧义、缺证、alias 问题一律收敛为 `unknown` 的 reason / context；merge / split 与身份风险归 Entity Log + 会计师人发起 Human Review，本节点只读、不产。
+本节点不产出与身份状态并行的候选 / 风险通道。原 `candidate_signal`、`merge_split_candidate`、`identity_risk_flags`、`blocking_reason` 已删除（2026-06-25 收口，理由见 §3 与 `02_logic_and_boundaries.md` §6）：身份层的冲突、歧义、缺证、alias 问题一律收敛为 `unknown` 的 reason / context；merge / split 与身份风险归会计师人发起 Human Review（身份风险并入 force_pending），本节点只读、不产。
 
 ## 3. 明确排除范围
 
@@ -39,15 +39,15 @@
 - accountant-facing question generation（面向会计师的问题生成）。
 - transaction finalization（交易最终确认）。
 - durable memory write mechanism（长期记忆写入机制）；但 ER 判定新建 stable entity 后，必须在下游继续前发起同步 Entity Log + Alias Log finalization，且无需 governance approval（治理批准）。
-- 产出 merge / split 候选、identity risk flags（身份风险标记），或任何与身份状态并行的候选 / 风险信号；merge / split 与身份风险归 Entity Log + 会计师人发起 Human Review，本节点只读相关 Entity Log 状态、不产候选。
+- 产出 merge / split 候选，或任何与身份状态并行的候选 / 风险信号；merge / split 与身份风险归会计师人发起 Human Review（身份风险并入 force_pending），本节点只读相关 Entity Log 状态、不产候选。
 
 本节点绝不能：
 
 - 在未满足 stable 判断标准时把对象当作新建 stable entity 写入。
 - 绕过统一 finalization 机制裸写 Alias（别名），或把未确认 / 未够格的 surface text 写成 Alias。
-- 在新建 stable entity finalization 时夹带 automation policy（自动化策略）修改或创建 rule（规则）。
+- 在新建 stable entity finalization 时夹带 force_pending / promotion_lock 修改或创建 rule（规则）。
 - merge / split entity（合并 / 拆分实体）。
-- 修改 `automation_policy`（自动化策略）。
+- 修改 `force_pending` / `promotion_lock`。
 - 创建、升级、修改、删除或降级 active rule（生效规则）。
 - 写入 `Transaction Log`（交易审计日志）。
 - 批准 governance event（治理事件）。

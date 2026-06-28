@@ -4,7 +4,7 @@
 
 本文件记录 Governance Log 当前已确认的临时结论，是 Finalization L2 审计（决策 9）与 Human Review Node 正式草案的副产物入口，并综合各正式 memory layer 草案对它的引用整理而成。Governance Log 数据层尚未正式审计、当前不存在、**待建**；本文**不是正式 spec**，不冻结 schema、字段、writer、retention 或 data contract。后续正式审计 Governance Log 时，以本文作为讨论结论入口。
 
-与 `intervention-log-question.md`、`Coordinator_question.md`、`interaction_agent.md` 同级存放（均为"讨论结论入口"类文档，非正式 spec）。
+与 `intervention-log-question.md`、`interaction_agent_question.md` 同级存放（均为"讨论结论入口"类文档，非正式 spec）；原 `Coordinator_question.md` 已删除，Coordinator 主题已落正式草案。
 
 ## 背景
 
@@ -45,6 +45,7 @@
 
 - **记录哪些变动（触发轴 vs 凭证轴是否一致）〔留待之后拍板〕**：Governance Log 到底记**所有扩张型变更**，还是只记"凭证轴"上需要签字的那批？例如 restrictive auto-downgrade 等**免凭证变动**是否也入账（Finalization 决策 9 open boundary、缺口地图 §41）。此判定决定 Governance Log 的"厚薄"——划清后才能保证它是一本**薄的、事件级 ledger-of-record**，不去重复 Transaction Log `confirmed_by` / correction 与权威层 provenance refs 里已有的内容。
 - **审计内容与 Transaction Log / 权威层 refs 的去重边界**：交易绑定的纠正已在 Transaction Log 有 `confirmed_by` + correction，权威层已有 provenance refs；Governance Log 记录的最小必要正文 vs 仅记 ref，需在正式审计时与上述去重边界一并定。
+- **〔本轮新提，2026-06-26｜来自 Decisions D9〕rule（及 entity policy）变更事件必须留足"可重建历史态"的正文**：RuleLog 已定每条 rule 只存**当前态**、用稳定 `rule_id` 作 handle，**版本 / 变更历史不进 RuleLog 而归本账本**（Decisions D9；RuleLog 不与治理裁定竞争，Rule Log 02:106）。因此 Transaction Log 只记 `rule_id` 裸值；审计某笔历史交易"当时那条 rule 是什么" = `rule_id` + 交易时间 + **回放本账本的变更事件**。**这要求本账本的 rule 变更事件记到"能重建当时 rule 内容"的程度**（改成什么 / 前后值或快照），不能只记"rule X 被改过"。此约束直接收窄上面"记录哪些变动 / 记最小正文 vs 仅记 ref"的判定：至少 rule（及 entity policy）的变更必须含可重建内容，否则 `rule_id` 回放审计断链。同理适用于 `force_pending` / `promotion_lock` 等 entity policy 变更（Decisions D8）。
 
 ## 仍未冻结 / 圈外
 

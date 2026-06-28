@@ -109,8 +109,8 @@
 
 ### Governance 必须批准
 
-- 任何长期身份 / alias / rule / automation policy 变化。
-- merge / split、rule promotion / modification / deletion / downgrade、automation policy 放宽等高权限 lifecycle mutation。
+- 任何长期身份 / alias / rule / force_pending / promotion_lock 变化。
+- merge / split、rule promotion / modification / deletion / downgrade、force_pending / promotion_lock 设置 / 解除等高权限 lifecycle mutation。
 
 ## 6. 输出类别
 

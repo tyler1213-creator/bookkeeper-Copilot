@@ -1,3 +1,5 @@
+> ⚠️ **已过时 / superseded（owner 2026-06-27）** — 本 L2 提案的 L1 / L2 结论已由 `BK_Copilot/workflow_nodes/coordinator_node/` 正式草案取代，仅作历史来源保留。当前权威以 `BK_Copilot/` 正式草案 +（产出后）对应 L3 schema 为准；**勿据本文件回灌已删除的概念 / 字段**。
+
 # Coordinator 节点 — L2 提案
 
 > 状态：L1-L2 本轮收口（决策 1–15 + 决策7(0)/F1 已与用户讨论确认，Q12–Q16 已落盘；第一性原理复查无剩余待拍板项）。进 Stage 3 待圈外依赖落文 + L3/L4 单独推进，见第四/五节。
@@ -5,6 +7,7 @@
 > 纪律：每条契约结构要么指回 A 类原文、要么指回用户拍板决定；B 类（new/old system）永不作依据。
 > 待建正式文档目录（命名待最终确认）：`BK_Copilot/workflow_nodes/coordinator_node/`。
 > 工作区：`_audit_work/coordinator/`（00 规则 / 01 契约面与缺口 / 02 热身与防污染）。
+> 历史来源说明：下文多处「指回 Coordinator Question.md」中的 `Coordinator Question.md` 历史速记**已删除 / 已归档**，其内容已吸收进本提案与 `BK_Copilot/workflow_nodes/coordinator_node/` 正式草案；这些指回仅作历史 provenance，不再是可读入口。
 
 ---
 
@@ -52,17 +55,17 @@
 
 **结论**：Coordinator 锁为 **批级**——消费「一张 Bank Statement 跑完后的整批 Pending 集合」。**Coordinator 只消费，不控制、不保证整张表跑完**；「整表先处理完」属编排层控制流，不写进 Coordinator 内部逻辑。Coordinator 定位为 **runtime 交互通道**（onboarding 期交互不归本节点）。
 **为什么**：批级消费是聚合提问（决策 4）的前提；把控制流留在编排层，避免 Coordinator 变成持有路由权的自主 agent（违反「不把模型写成自主控制流 agent」）。
-**指回**：CJ 02 §3「批次定义和一次提交多张表的排序属于 Coordinator / 编排层」；interaction_agent.md（前期问目标/覆盖核对归交互 Agent，非 Coordinator）；用户 1c #4/#5 + Q2。
+**指回**：CJ 02 §3「批次定义和一次提交多张表的排序属于 Coordinator / 编排层」；interaction_agent_question.md（前期问目标/覆盖核对归交互 Agent，非 Coordinator）；用户 1c #4/#5 + Q2。
 **排除的替代**：逐笔触发 Coordinator（无法聚合）；Coordinator 自己驱动「跑完整表」的控制流（越权成 agent）。
 **open boundary**：多表提交的串行/并行排序、批起始记忆快照 → L4/seam（缺口地图 Coordinator section）。
 
 ### 决策 3 — 输入契约面：只收 CJ 的 Pending 〔指向 01 §4 读取、02_logic §2/§3〕
 
-**结论**：Coordinator 的输入本轮锁定为**单一来源：CJ 输出的 Pending 集合**。不直接消费 ER `candidate_signal` 或其他节点卡点（身份卡点已并入 CJ Pending 流入）。
+**结论**：Coordinator 的输入本轮锁定为**单一来源：CJ 输出的 Pending 集合**。身份卡点已并入 CJ Pending 流入（原 ER `candidate_signal` 等并行候选通道已删，见 Decisions D1）。
 **为什么**：A 仅锁「Pending 唯一 consumer = Coordinator」；其余触发源在 A 无依据，按铁律不据 B 补宽。单一入口也使契约面最小、最可审计。
 **指回**：CJ 02 §6；用户 Q3。
 **排除的替代**：照 B（new system）把触发源画成 EI/Transaction Identity/Profile/ER/RuleMatch/orchestrator 全可触发。理由：B 不具权威，且含已删除的 Transaction Identity 节点；A 无此依据。
-**open boundary**：ER `candidate_signal`（A 列 Coordinator 为 consumer 之一）是否最终也进 Coordinator，留后续 batch / 圈外接缝评估，本轮不纳入输入面。
+**open boundary（已关闭）**：原"ER `candidate_signal` 是否最终也进 Coordinator"一项已随 `candidate_signal` 删除而关闭（见 Decisions D1）；Coordinator 输入面仍锁 CJ Pending。
 
 ### 决策 4 — 聚合提问：同表内按 entity 聚合「身份提问」，分类逐笔独立 〔指向 02_logic §6 输出 / §8〕
 
@@ -165,7 +168,7 @@
 **排除的替代**：Coordinator 直接读 Entity Log 取「提问时刻鲜活」risk flags（审查方原议，已撤）——用户判定 Pending 既已携带 CJ 投影的 identity 背景即充分，且 risk flags 根本不归 Coordinator 消费（决策13），契约面更干净。
 **open boundary**：Intervention Log 正式 spec → 决策 9 + `intervention-log-question.md`（L2·外阻）。
 
-### 决策 12 — 与 interaction_agent 划界：不同阶段不同节点，人机呈现留编排层 〔指向 interaction_agent.md〕
+### 决策 12 — 与 interaction_agent 划界：不同阶段不同节点，人机呈现留编排层 〔指向 interaction_agent_question.md〕
 
 **结论**（用户 Q13 拍板）：Coordinator 与 interaction_agent 是**不同节点、不同阶段**：
 - **interaction_agent** = 系统**开始处理 Bank Statement 之前**（材料去重之后）与会计师对话，engagement 级 / 跨批：问目标 + 覆盖完整性核对（漏月 / 漏账户 / 多发重复）。
@@ -174,7 +177,7 @@
 - **人机对话的最终呈现形态不内化进 Coordinator**：是「多 Agent 群聊式」还是「单一前台 Agent 背后多 Agent 协管」属后期交互设计 / 编排层 open boundary（L4），本轮不操心、不塞进 Coordinator 内部逻辑（同决策 2，不让 Coordinator 持有人机对话编排权）。
 
 **为什么**：不同阶段天然分工，不必担心混淆；呈现合并留编排层既避免 Coordinator 越权成 agent，又避免过早冻结 UX（两种设计方案均可成立，正说明不该现在冻结）。
-**指回**：用户 Q13 拍板；`interaction_agent.md` §边界「不是 Coordinator」、§当前未决「与 Coordinator 接口未冻结」。
+**指回**：用户 Q13 拍板；`interaction_agent_question.md` §边界「不是 Coordinator」、§当前未决「与 Coordinator 接口未冻结」。
 **排除的替代**：把人机呈现 / 对话编排塞进 Coordinator 内部逻辑。
 **open boundary**：人类对话通道归属 + 多节点提问的合并 / 排序 / 呈现 = 编排 / 呈现层 L4；interaction_agent 本身圈外未正式设计，更细接口属圈外，不拿 B 填。
 
@@ -183,11 +186,11 @@
 **结论**（用户 Q14 拍板，收敛版；本轮明确不过度预设边缘情况）：
 - Coordinator **不无脑遵从会计师回复**。它**用会计知识 + 系统给出的上下文，独立判断"能不能据此构建出最终会计分类"**（信息是否完整 / 可落地）。
   - **与决策1/Q11 对齐**：此处"独立判断"是**判断信息够不够、能不能落地**，**不是 Coordinator 自己拍板分类内容**；最终分类仍以**会计师确认为唯一写入条件**。够 → 构建 / 放行下游；不够 → 追问保持 pending（决策5 出口②）。
-- **身份冲突 / 风险不归 Coordinator**：即便会计师指出的 entity 与 Entity Log 已有 entity 可能有风险或"打架"（疑似同名 / 疑似 merge / identity conflict），**也由治理层处置，不在 Coordinator 这一环**。Coordinator 按会计师确认正常推进（决策6 发身份写入信号、构建分类）；冲突的**发现与解决（merge/split）由 Entity Log §4 `merge_split_candidate` → Post-Batch Lint / Governance Review 独立承担**。
+- **身份冲突 / 风险不归 Coordinator**：即便会计师指出的 entity 与 Entity Log 已有 entity 可能有风险或"打架"（疑似同名 / 疑似 merge / identity conflict），**也由治理层处置，不在 Coordinator 这一环**。Coordinator 按会计师确认正常推进（决策6 发身份写入信号、构建分类）；冲突的**发现与解决（merge/split）由会计师人发起经 Human Review 处置、Entity Log 记录其变更语义独立承担**（原 `merge_split_candidate` 候选字段 → Post-Batch Lint / Governance Review 路径已删，见 Decisions D1）。
 - 本轮**不预设、不过度担心边缘情况**（证据造假、冒名等极端身份安全情形的运行期处置）。
 
-**为什么**：① 守住决策1——Coordinator 判断"够不够落地"而非自己分类，会计师确认才写；② 把身份冲突解决放回 owner（治理 / Entity Log §4 merge_split candidate 路径），不让 Coordinator 变成第二个身份审计员 / 裁判（第一性原理：不重复别人职责）；③ 与 Entity Log §6 一致——accountant 明确确认即创建 stable entity、无需治理审批，冲突由后续治理处置。
-**指回**：用户 Q14 拍板；决策1/Q11（不自下分类结论、会计师确认为唯一写入条件）；Entity Log §3/§6（accountant confirmation 创建 entity 无需治理审批）、§4（merge_split_candidate 归治理）、§8（accountant 明确纠正进 review/governance）；决策6（身份写入只发信号）。
+**为什么**：① 守住决策1——Coordinator 判断"够不够落地"而非自己分类，会计师确认才写；② 把身份冲突解决放回 owner（治理 / 会计师人发起 merge / split 经 Human Review、Entity Log 记录变更语义），不让 Coordinator 变成第二个身份审计员 / 裁判（第一性原理：不重复别人职责）；③ 与 Entity Log §6 一致——accountant 明确确认即创建 stable entity、无需治理审批，冲突由后续治理处置。
+**指回**：用户 Q14 拍板；决策1/Q11（不自下分类结论、会计师确认为唯一写入条件）；Entity Log §3/§6（accountant confirmation 创建 entity 无需治理审批；merge / split 归人发起 Human Review，原 `merge_split_candidate` 候选字段已删，见 Decisions D1）、§8（accountant 明确纠正进 review/governance）；决策6（身份写入只发信号）。
 **排除的替代**：让 Coordinator 在运行期侦测 / 裁决身份冲突、对身份风险硬阻断（上一版 Q14 四出口表）——用户判定越权且过度预设边缘情况，冲突解决归治理。
 **open boundary**：① 极端身份安全 / 证据真实性情形的运行期处置 → 治理 / 后续，本轮不设计；② 身份冲突 merge/split 解决机制 = Entity Log §4/§6/§7 治理路径（圈外）；③ **已连带清理（用户 Q14 确认）**：身份风险 flag 不被 Coordinator 消费，决策11 的"CJ Pending 强制 forward 身份风险 flag"义务已撤销，缺口地图 L3 已同步清理；决策11 核心（只消费 Pending、不独立读）不变。
 

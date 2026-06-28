@@ -22,8 +22,8 @@
 
 - `L2_proposals/Alias Log__L2提案.md` 是当前 Alias Log L2 回填的权威来源。
 - `L2_proposals/Entity Resolution__L2提案.md`、`当前任务状态.md` 与 `缺口地图.md` 提供本轮已锁上游 / 不变量。
-- `Alias question.md` 是 Alias 主题历史速记，不高于已审定 L2 提案。
-- `Entity相关的所有问题.md` 与 `BK_Copilot/workflow_nodes/entity_resolution_node/` 提供 Entity Resolution 使用 Alias 的上下文边界。
+- 原 `Alias question.md` Alias 主题历史速记已删除，权威以上述已审定 L2 提案为准。
+- `BK_Copilot/workflow_nodes/entity_resolution_node/` 与 `L2_proposals/Entity Resolution__L2提案.md` 提供 Entity Resolution 使用 Alias 的上下文边界（原 `Entity相关的所有问题.md` 历史速记已删除，内容归此）。
 - `BK_Copilot/memory_layers/entity_log/` 提供 stable entity authority（稳定实体权威）边界；Alias Log 与 Entity Log 的具体存储 / 投影关系尚未冻结。
 
 ## 当前标准文件

@@ -98,7 +98,7 @@ review / governance correction result
 | --- | --- | --- |
 | Evidence Log | Evidence Log 证明证据存在性；Transaction Log 保存 evidence binding / refs 与最终交易审计，不保存证据原文。 | Evidence Log 正式 spec、evidence refs exact 字段、Evidence Log 与 Transaction Log finalization 顺序。 |
 | Intervention Log | 交互事实归 Intervention Log；最终交易审计、final outcome、processing path 归 Transaction Log。 | Intervention Log 正式 spec、交互事实进入 Transaction Log processing path 的 exact ref / projection contract。 |
-| Entity Log | Entity Log 是具体身份与 stable entity 的 source of truth；Transaction Log 只保存该笔交易的具体 entity 或 `unknown` 审计内容。情况 X / Y 只 finalize 到 Transaction Log，不进 Entity Log。 | 身份字段 exact 形态；entity 更改后如何扇出影响名下交易、Alias review / mutation、entity risk candidate。 |
+| Entity Log | Entity Log 是具体身份与 stable entity 的 source of truth；Transaction Log 只保存该笔交易的具体 entity 或 `unknown` 审计内容。情况 X / Y 只 finalize 到 Transaction Log，不进 Entity Log。 | 身份字段 exact 形态；entity 更改后如何扇出影响名下交易、Alias review / mutation、既有 entity 控制状态（force_pending / promotion_lock）。 |
 | Case Log | Case Log 是可复用学习先例的 source of truth；Transaction Log 是最终交易审计 source of truth。Case Log 通过 `transaction_log_ref` / finalization proof 引用 Transaction Log，不存完整 processing path。情况 X / Y 不进 Case Log。 | 统一 finalization 写入机制凭 finalization proof 写 Case Log 的 exact 机制与 trigger order。 |
 | Rule Log | Rule Log 是 approved rule 的 source of truth；Transaction Log 可保存本笔交易的 rule-hit source 语义与 rule ref 作为审计痕迹。 | rule-hit ref exact 字段形态；rule-hit 统计派生 / rollup / cache / maintenance job。 |
 | Governance Log | Governance（授权确认 = Human Review + Finalization）可只读 Transaction Log 做 review、correction、governance、audit context；Transaction Log 不把 reasoning 变成 governance approval。 | Governance Log 正式 spec；governance 读取 Transaction Log 的 exact retrieval / projection / permission；correction path 与跨 log 传播。 |
@@ -180,7 +180,7 @@ review / governance correction result
 - 统一 finalization 写入机制凭 `transaction_log_ref` / finalization proof 写 Case Log 的 exact 机制与 trigger order。
 - Transaction Log 与对外 final output report / export artifact 的 field-level 边界。
 - Governance（授权确认 = Human Review + Finalization）、Knowledge Summary / Knowledge Compilation、Evidence Log、Profile / Structural Match 与 Transaction Log 的 exact 读写边界。（Post-Batch Lint 已废除，删除。）
-- transaction correction 如何影响 Alias review / mutation、entity risk candidate。
+- transaction correction 如何影响 Alias review / mutation、既有 entity 控制状态（force_pending / promotion_lock）。
 
 ### DEFERRED
 
